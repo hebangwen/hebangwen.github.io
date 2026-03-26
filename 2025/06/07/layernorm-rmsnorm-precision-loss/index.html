@@ -1,0 +1,260 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>记一个关于 RMSNorm 实现上的细节 | Yet Another 何榜文's Blog</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="背景在 RMSNorm 的实现中，都会强制把输入转为 float32 再进行计算，主要为了避免在计算过程中出现溢出的情况，特别是 float16。 bfloat16 由于动态范围更大，通常不会出现溢出问题，但在一些特定的计算场景下，仍然可能会遇到精度问题。因此，在实现 RMSNorm 时，强制转换为 float32 是一个通用的做法。 RMSNorm123456789101112131415imp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记一个关于 RMSNorm 实现上的细节">
+<meta property="og:url" content="http://hebangwen.github.io/2025/06/07/layernorm-rmsnorm-precision-loss/index.html">
+<meta property="og:site_name" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:description" content="背景在 RMSNorm 的实现中，都会强制把输入转为 float32 再进行计算，主要为了避免在计算过程中出现溢出的情况，特别是 float16。 bfloat16 由于动态范围更大，通常不会出现溢出问题，但在一些特定的计算场景下，仍然可能会遇到精度问题。因此，在实现 RMSNorm 时，强制转换为 float32 是一个通用的做法。 RMSNorm123456789101112131415imp">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2025-06-07T14:41:00.000Z">
+<meta property="article:modified_time" content="2025-06-10T15:16:17.268Z">
+<meta property="article:author" content="何榜文">
+<meta property="article:tag" content="LayerNorm">
+<meta property="article:tag" content="RMSNorm">
+<meta property="article:tag" content="数值精度">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "记一个关于 RMSNorm 实现上的细节",
+  "url": "http://hebangwen.github.io/2025/06/07/layernorm-rmsnorm-precision-loss/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2025-06-07T14:41:00.000Z",
+  "dateModified": "2025-06-10T15:16:17.268Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "http://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="http://hebangwen.github.io/2025/06/07/layernorm-rmsnorm-precision-loss/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '记一个关于 RMSNorm 实现上的细节',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">Yet Another 何榜文's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">记一个关于 RMSNorm 实现上的细节</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">记一个关于 RMSNorm 实现上的细节</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-06-07T14:41:00.000Z" title="发表于 2025-06-07 22:41:00">2025-06-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-06-10T15:16:17.268Z" title="更新于 2025-06-10 23:16:17">2025-06-10</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>在 RMSNorm 的实现中，都会强制把输入转为 float32 再进行计算，主要为了避免在计算过程中出现溢出的情况，特别是 float16。</p>
+<p>bfloat16 由于动态范围更大，通常不会出现溢出问题，但在一些特定的计算场景下，仍然可能会遇到精度问题。因此，在实现 RMSNorm 时，强制转换为 float32 是一个通用的做法。</p>
+<h2 id="RMSNorm"><a href="#RMSNorm" class="headerlink" title="RMSNorm"></a>RMSNorm</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">RMSNorm</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, dim, eps=<span class="number">1e-8</span></span>):</span><br><span class="line">        <span class="built_in">super</span>(RMSNorm, self).__init__()</span><br><span class="line">        self.weight = nn.Parameter(torch.ones(dim))</span><br><span class="line">        self.eps = eps</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="comment"># 强制转换为 float32</span></span><br><span class="line">        x = x.to(torch.float32)</span><br><span class="line">        <span class="comment"># 计算 RMS</span></span><br><span class="line">        rms = torch.sqrt(x.<span class="built_in">pow</span>(<span class="number">2</span>).mean(dim=-<span class="number">1</span>, keepdim=<span class="literal">True</span>) + self.eps)</span><br><span class="line">        <span class="keyword">return</span> self.weight * x / rms</span><br></pre></td></tr></table></figure>
+
+<h3 id="如果不转为-float32，精度情况"><a href="#如果不转为-float32，精度情况" class="headerlink" title="如果不转为 float32，精度情况"></a>如果不转为 float32，精度情况</h3><p>如果不将输入转换为 float32，直接使用 float16 进行计算，可能会导致数值精度的问题。例如，在计算 RMS 时，由于 float16 的表示范围和精度有限，可能会出现梯度消失或爆炸的情况，从而影响模型的训练效果。如下图，</p>
+<p><img src="https://s2.loli.net/2025/06/10/aC6BD7t5Sxh3I1v.png" alt="rmsnorm_error_vs_std_do_cast_False.png"></p>
+<p>可以看到，std 在达到 70 之后，f32 和 f16 计算的误差马上就从 0.001 上升到 8.0，此时发生了 f16 的溢出，导致 RMSNorm 的输出变为 Infinity。</p>
+<p>由于 float16 的表示范围有限，最大值只有 65504，很容易溢出。在 RMSNorm 中溢出的场景有两个：</p>
+<ol>
+<li><strong>求和溢出</strong>：当输入的数据过大时，求和的结果可能超过这个范围，导致溢出为 Infinity</li>
+<li><strong>平方溢出</strong>：在计算平方时，如果输入的数值过大，平方后的结果也会超过 float16 的表示范围，导致溢出为 Infinity</li>
+</ol>
+<h3 id="如果转为-float32，精度情况"><a href="#如果转为-float32，精度情况" class="headerlink" title="如果转为 float32，精度情况"></a>如果转为 float32，精度情况</h3><p>如果将输入转换为 float32，计算过程中的数值精度问题会得到有效缓解。如下图所示，最大误差不超过 4e-3。</p>
+<p><img src="https://s2.loli.net/2025/06/10/yg5EPY36QtCvwpq.png" alt="rmsnorm_error_vs_std_do_cast_True.png"></p>
+<h2 id="PyTorch-中的-LayerNorm-实现"><a href="#PyTorch-中的-LayerNorm-实现" class="headerlink" title="PyTorch 中的 LayerNorm 实现"></a>PyTorch 中的 LayerNorm 实现</h2><p>PyTorch 官方提供了 LayerNorm 算子，可以直接调用。为了避免产生 f16 的溢出问题，PyTorch 在实现中将输入 data-type 和累积 data-type 分离。具体来说，输入数据仍然是 float16，但在计算过程中会转换为 float32 进行处理，最后再转换回 float16。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/pytorch/pytorch/blob/e53ddaf1f6ef3f1d22075ad33a5922fb8b277fe0/aten/src/ATen/native/cuda/layer_norm_kernel.cu#L221">vectorized_layer_norm_kernel_impl</a> 实现如下。可以看到，输入数据 <code>X</code> 是 float16 类型，但是累加结果时使用的是 <code>T_ACC</code>（通常是 float32），最后拷贝到输出 <code>Y</code> 时会进行隐式类型转换。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> T_ACC,</span><br><span class="line"><span class="keyword">typename</span> std::<span class="type">enable_if_t</span>&lt;!std::is_same_v&lt;T, <span class="type">double</span>&gt;, <span class="type">int</span>&gt; = <span class="number">0</span>&gt;</span><br><span class="line">__device__ __inline__ <span class="type">void</span> <span class="built_in">vectorized_layer_norm_kernel_impl</span>(</span><br><span class="line">  <span class="type">const</span> <span class="type">int</span> N,</span><br><span class="line">  T_ACC eps,</span><br><span class="line">  <span class="type">const</span>  T* __restrict__ X,</span><br><span class="line">  <span class="type">const</span>  T* gamma,</span><br><span class="line">  <span class="type">const</span>  T* beta,</span><br><span class="line">  T_ACC* mean,</span><br><span class="line">  T_ACC* rstd,</span><br><span class="line">  T* Y)&#123;</span><br><span class="line">    <span class="keyword">extern</span> __shared__ <span class="type">float</span> s_data[]; <span class="comment">//if we made smem WelfordDataLN type, there would be bank conflicts,</span></span><br><span class="line">    <span class="comment">//as one thread would have to write 3 consecutive floats</span></span><br><span class="line">    <span class="keyword">auto</span> i1 = blockIdx.x;</span><br><span class="line">    <span class="type">const</span> T * block_row = X + i1 * N;</span><br><span class="line">    WelfordDataLN wd = <span class="built_in">compute_stats</span>(block_row, N, s_data);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">using</span> <span class="type">vec_t</span> = aligned_vector&lt;T, vec_size&gt;;</span><br><span class="line">    <span class="type">const</span> <span class="type">vec_t</span> * X_vec = <span class="built_in">reinterpret_cast</span>&lt;<span class="type">const</span> <span class="type">vec_t</span>*&gt;(block_row);</span><br><span class="line">    <span class="type">const</span> <span class="type">vec_t</span> * gamma_vec = (gamma != <span class="literal">nullptr</span>) ? <span class="built_in">reinterpret_cast</span>&lt;<span class="type">const</span> <span class="type">vec_t</span>*&gt;(gamma) : <span class="literal">nullptr</span>;</span><br><span class="line">    <span class="type">const</span> <span class="type">vec_t</span> * beta_vec = (beta != <span class="literal">nullptr</span>) ? <span class="built_in">reinterpret_cast</span>&lt;<span class="type">const</span> <span class="type">vec_t</span>*&gt;(beta) : <span class="literal">nullptr</span>;</span><br><span class="line">    <span class="type">vec_t</span> * Y_vec = <span class="built_in">reinterpret_cast</span>&lt;<span class="type">vec_t</span>*&gt;(Y + i1 * N);</span><br><span class="line"></span><br><span class="line">    <span class="type">const</span> <span class="type">int</span> numx = blockDim.x * blockDim.y;</span><br><span class="line">    <span class="type">const</span> <span class="type">int</span> thrx = threadIdx.x + threadIdx.y * blockDim.x;</span><br><span class="line">    <span class="type">const</span> <span class="type">int</span> n_vec_to_read = N/vec_size;</span><br><span class="line"></span><br><span class="line">    T_ACC rstd_val = c10::cuda::compat::<span class="built_in">rsqrt</span>(wd.sigma2 + eps);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// No tail, N is guaranteed to be multiple of vec size</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = thrx; i &lt; n_vec_to_read; i += numx) &#123;</span><br><span class="line">      <span class="type">vec_t</span> data = X_vec[i];</span><br><span class="line">      <span class="type">vec_t</span> out;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// Computation is performed in T_ACC, X is cast to T_ACC and result is implicitly cast to T</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">// <span class="doctag">NOTE:</span> 为了简洁，我忽略了 gamma 和 beta 的 nullptr 检查</span></span><br><span class="line">      <span class="meta">#<span class="keyword">pragma</span> unroll</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="type">int</span> ii=<span class="number">0</span>; ii &lt; vec_size; ii++)&#123;</span><br><span class="line">        out.val[ii] = <span class="built_in">static_cast</span>&lt;T_ACC&gt;(gamma_vec[i].val[ii]) * (rstd_val * (<span class="built_in">static_cast</span>&lt;T_ACC&gt;(data.val[ii]) - wd.mean))</span><br><span class="line">        + <span class="built_in">static_cast</span>&lt;T_ACC&gt;(beta_vec[i].val[ii]);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      Y_vec[i] = out;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (thrx == <span class="number">0</span>) &#123;</span><br><span class="line">      mean[i1] = wd.mean;</span><br><span class="line">      rstd[i1] = rstd_val;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io/2025/06/07/layernorm-rmsnorm-precision-loss/">http://hebangwen.github.io/2025/06/07/layernorm-rmsnorm-precision-loss/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://hebangwen.github.io" target="_blank">Yet Another 何榜文's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/LayerNorm/">LayerNorm</a><a class="post-meta__tags" href="/tags/RMSNorm/">RMSNorm</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%80%BC%E7%B2%BE%E5%BA%A6/">数值精度</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/06/16/road-test-part-II/" title="科目二考试 - 00"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">科目二考试 - 00</div></div><div class="info-2"><div class="info-item-1">科目二考试有关科目二的一些信息和内容分享。 一般来说，科目二教练在开始练习时让学员最先做的两件事就是：调整座椅和后视镜。这两件事其实都是为了点位这个概念服务的。 至于为什么需要【点位】？原因还是科目二考试需要一次性倒车入库成功，中间不可以换挡，例如从倒车档换成前进档，如果发生换挡，这次考试就挂了。为了方便教学，总结出了点位这个概念。 在座椅确定之后，空间位置就确定了。在这种情况下，记住在何时倒车、何时回正方向盘，就可以一把实现倒车入库了。所以，点位其实就是时间点在车辆空间中的位置。 座椅 座椅的调整是为了确定 3D 空间中的位置，用 3 个距离来描述我们的坐姿，从而在考试的时候复现这个位置。3 个距离如下：  大拇指：手臂水平伸直，大拇指的根部位于仪表盘罩上 头顶：头顶距离车顶 4 指高（一拳） 膝盖：距离前方 3 指宽  后视镜点位上面的两点都是为了【点位】这个概念服务的。 </div></div></div></a><a class="pagination-related" href="/2025/04/29/window-attn-in-qwen2-5vl/" title="Qwen2.5-VL 中视觉模型的窗口注意力机制"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Qwen2.5-VL 中视觉模型的窗口注意力机制</div></div><div class="info-2"><div class="info-item-1">背景在算能的 LLM-TPU 里有对 Qwen2.5-VL 视觉模型的导出，但是并没有增加对窗口注意力的支持，因此跟 Qwen2.5-VL 原生相比，性能下降较大。 UPDATE: 算能官方已经支持 qwen2.5-vl 的窗口注意力，具体实现参考 tpu-mlir&#x2F;llm。 qwen2.5-vl 视觉编码器的注意力机制qwen2.5-vl 中有两种不同的注意力机制：  全局注意力：用于处理全图特征，但是计算量较大，计算量增长随着图像尺寸的增加而呈平方增长，因此只在 4 个特殊的 layer 使用。 窗口注意力：只计算局部区域的注意力，计算量较小，适用于大多数层。  qwen2.5-vl 的视觉编码器注意力计算如下： 1234567891011121314151617181920212223class Qwen2_5_VLVisionFlashAttention2(nn.Module):    ...    def forward(        self,        hidden_states: torch.Tensor,        cu_seqlens: t...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/06/30/layernorm-part-II/" title="bfloat16 精度损失（II）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-30</div><div class="info-item-2">bfloat16 精度损失（II）</div></div><div class="info-2"><div class="info-item-1">在上一篇 记一个关于 RMSNorm 实现上的细节 中，我们讨论了 LayerNorm 和 RMSNorm 使用 float16 格式会导致的数值溢出问题，而 bfloat16 由于数值范围较大，通常不会出现溢出问题。那么本文我们讨论 bfloat16 较之于 float16，由于数据舍入而带来的精度损失问题。 浮点数表示方式浮点数的表示方式是通过科学计数法来表示一个实数。float16 和 bfloat16 都是浮点数格式，但它们的精度和范围不同，具体比特划分如下。    比特位 float16 bfloat16    符号位 1 1   指数位 5 8   尾数位 10 7   max 65504 3.38953e+38   min 6.10351e-05 1.17549e-38   resolution 0.001 0.01    可以看到，bfloat16 在指数位上使用了 8 位，而 float16 只使用了 5 位，这使得 bfloat16 在表示更大范围的数值时更加灵活。但是 bfloat16 的尾数位更短，相比于 float16，它在进行数值运算时会引入更多的舍入...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">43</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">63</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RMSNorm"><span class="toc-number">2.</span> <span class="toc-text">RMSNorm</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E6%9E%9C%E4%B8%8D%E8%BD%AC%E4%B8%BA-float32%EF%BC%8C%E7%B2%BE%E5%BA%A6%E6%83%85%E5%86%B5"><span class="toc-number">2.1.</span> <span class="toc-text">如果不转为 float32，精度情况</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E6%9E%9C%E8%BD%AC%E4%B8%BA-float32%EF%BC%8C%E7%B2%BE%E5%BA%A6%E6%83%85%E5%86%B5"><span class="toc-number">2.2.</span> <span class="toc-text">如果转为 float32，精度情况</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PyTorch-%E4%B8%AD%E7%9A%84-LayerNorm-%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.</span> <span class="toc-text">PyTorch 中的 LayerNorm 实现</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/26/ld-loader-glibc-version-compatibility/" title="ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析">ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析</a><time datetime="2026-03-26T11:30:00.000Z" title="发表于 2026-03-26 19:30:00">2026-03-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/19/torch-chunked-gated-delta-rule-optimization/" title="Torch Chunked Gated Delta Rule 并行优化指南">Torch Chunked Gated Delta Rule 并行优化指南</a><time datetime="2026-03-19T01:15:00.000Z" title="发表于 2026-03-19 09:15:00">2026-03-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/18/SonicMoE-Accelerating-MoE/" title="SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化">SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化</a><time datetime="2026-03-17T16:12:00.000Z" title="发表于 2026-03-18 00:12:00">2026-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/13/arm-intrinsics/" title="ARM 架构深度学习推理指令集的演进与技术范式分析报告">ARM 架构深度学习推理指令集的演进与技术范式分析报告</a><time datetime="2026-03-13T01:06:06.000Z" title="发表于 2026-03-13 09:06:06">2026-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/12/solid-principle/" title="软件工程中的 SOLID 原则">软件工程中的 SOLID 原则</a><time datetime="2026-03-12T15:58:04.000Z" title="发表于 2026-03-12 23:58:04">2026-03-12</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Effective STL - 04 - Algorithms | Yet Another 何榜文's Blog</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Algorithms条款30：确保目标区间足够大123456789101112131415vector&lt;int&gt; v &#x3D; &#123;0, 1, 2, 3, 4, 5, 6, 7&#125;;cout &lt;&lt; v &lt;&lt; endl;&#x2F;&#x2F; 对于使用区间的函数, 注意预先分配空间vector&lt;int&gt; v2;v2.reserve(v.size());tran">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Effective STL - 04 - Algorithms">
+<meta property="og:url" content="http://hebangwen.github.io/2024/03/17/Algorithms/index.html">
+<meta property="og:site_name" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:description" content="Algorithms条款30：确保目标区间足够大123456789101112131415vector&lt;int&gt; v &#x3D; &#123;0, 1, 2, 3, 4, 5, 6, 7&#125;;cout &lt;&lt; v &lt;&lt; endl;&#x2F;&#x2F; 对于使用区间的函数, 注意预先分配空间vector&lt;int&gt; v2;v2.reserve(v.size());tran">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2024-03-17T12:36:04.000Z">
+<meta property="article:modified_time" content="2026-03-19T04:52:28.501Z">
+<meta property="article:author" content="何榜文">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="STL">
+<meta property="article:tag" content="Algorithms">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Effective STL - 04 - Algorithms",
+  "url": "http://hebangwen.github.io/2024/03/17/Algorithms/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2024-03-17T12:36:04.000Z",
+  "dateModified": "2026-03-19T04:52:28.501Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "http://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="http://hebangwen.github.io/2024/03/17/Algorithms/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Effective STL - 04 - Algorithms',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">Yet Another 何榜文's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Effective STL - 04 - Algorithms</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">Effective STL - 04 - Algorithms</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-03-17T12:36:04.000Z" title="发表于 2024-03-17 20:36:04">2024-03-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-03-19T04:52:28.501Z" title="更新于 2026-03-19 12:52:28">2026-03-19</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Effective-STL/">Effective STL</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><h1 id="Algorithms"><a href="#Algorithms" class="headerlink" title="Algorithms"></a>Algorithms</h1><h2 id="条款30：确保目标区间足够大"><a href="#条款30：确保目标区间足够大" class="headerlink" title="条款30：确保目标区间足够大"></a>条款30：确保目标区间足够大</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">vector&lt;<span class="type">int</span>&gt; v = &#123;<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>&#125;;</span><br><span class="line">cout &lt;&lt; v &lt;&lt; endl;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 对于使用区间的函数, 注意预先分配空间</span></span><br><span class="line">vector&lt;<span class="type">int</span>&gt; v2;</span><br><span class="line">v2.<span class="built_in">reserve</span>(v.<span class="built_in">size</span>());</span><br><span class="line"><span class="built_in">transform</span>(v.<span class="built_in">begin</span>(), v.<span class="built_in">end</span>(), <span class="built_in">back_inserter</span>(v2), [] (<span class="type">int</span>&amp; a) &#123;</span><br><span class="line">    <span class="keyword">return</span> a * <span class="number">2</span>;</span><br><span class="line">&#125;);</span><br><span class="line">cout &lt;&lt; v2 &lt;&lt; endl;</span><br><span class="line"></span><br><span class="line">v2.<span class="built_in">reserve</span>(v.<span class="built_in">size</span>() * <span class="number">2</span>);</span><br><span class="line"><span class="built_in">transform</span>(v.<span class="built_in">begin</span>(), v.<span class="built_in">end</span>(), <span class="built_in">back_inserter</span>(v2), </span><br><span class="line">    <span class="built_in">bind</span>(<span class="built_in">multiplies</span>&lt;<span class="type">int</span>&gt;(), placeholders::_1, <span class="number">2</span>));</span><br><span class="line">cout &lt;&lt; v2 &lt;&lt; endl;</span><br></pre></td></tr></table></figure>
+
+<p>注意：<code>back_inserter</code> 会调用 <code>push_back</code> ，所以只能用于标准序列容器，即 vector、list、deque、string。（array 的迭代器没有 insert 方法，因此不能使用）</p>
+<p>无论何时你使用一个要求指定目的区间的算法，<strong>确保目的区间已经足够大或者在算法执行时可以增加大小（array就不能增加大小）</strong>。如果你选择增加大小，就<strong>使用插入迭代器，比如ostream_iterators或从back_inserter、front_inserter或inserter返回的迭代器</strong>。这是所有你需要记住的东西。</p>
+<h2 id="条款31：了解你的排序选择"><a href="#条款31：了解你的排序选择" class="headerlink" title="条款31：了解你的排序选择"></a>条款31：了解你的排序选择</h2><p>我们总结一下你的排序选择：</p>
+<ul>
+<li>如果你需要在vector、string、deque或数组上进行完全排序，你可以使用sort或stable_sort。</li>
+<li>如果你有一个vector、string、deque或数组，你只需要排序前n个元素，应该用partial_sort。</li>
+<li>如果你有一个vector、string、deque或数组，你需要鉴别出第n个元素或你需要鉴别出最前的n个元素，而不用知道它们的顺序，nth_element是你应该注意和调用的。</li>
+<li>如果你需要把标准序列容器的元素或数组<strong>分隔为满足和不满足某个标准</strong>，你大概就要找partition或stable_partition。</li>
+<li>如果你的数据是在list中，你可以直接使用partition和stable_partition，你可以使用list的sort来代替sort和stable_sort。如果你需要partial_sort或nth_element提供的效果，你就必须间接完成这个任务，但正如我在上面勾画的，会有很多选择。</li>
+</ul>
+<p>下面是使用 partition 实现快排的算法：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">qsort</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; v, <span class="type">int</span> begin, <span class="type">int</span> end)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (begin &gt;= end - <span class="number">1</span>)  <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// partition 的任务: 找到 pivot 的 upperBound</span></span><br><span class="line">  <span class="type">int</span> pivot = v[begin];</span><br><span class="line">  <span class="keyword">auto</span> it = <span class="built_in">partition</span>(v.<span class="built_in">begin</span>() + begin, v.<span class="built_in">begin</span>() + end, [&amp;pivot] (<span class="type">int</span>&amp; i) &#123;</span><br><span class="line">      <span class="keyword">return</span> i &lt;= pivot;</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 更新 pivot 的位置</span></span><br><span class="line">  <span class="built_in">swap</span>(*(v.<span class="built_in">begin</span>() + begin), *(--it));</span><br><span class="line">  <span class="built_in">qsort</span>(v, begin, it - v.<span class="built_in">begin</span>());</span><br><span class="line">  <span class="built_in">qsort</span>(v, it - v.<span class="built_in">begin</span>() + <span class="number">1</span>, end);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> RndIt&gt;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">qsort</span><span class="params">(<span class="type">const</span> RndIt&amp; begin, <span class="type">const</span> RndIt&amp; end)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (begin &gt;= end - <span class="number">1</span>)  <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> it = <span class="built_in">partition</span>(begin, end, </span><br><span class="line">        <span class="built_in">bind</span>(<span class="built_in">less_equal</span>&lt;<span class="keyword">typename</span> RndIt::value_type&gt;(), placeholders::_1, *begin));</span><br><span class="line">    <span class="built_in">swap</span>(*begin, *(--it));</span><br><span class="line">    <span class="built_in">qsort</span>(begin, it);</span><br><span class="line">    <span class="built_in">qsort</span>(it + <span class="number">1</span>, end);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="条款32：如果你真的想删除东西的话就在类似remove的算法后接上erase"><a href="#条款32：如果你真的想删除东西的话就在类似remove的算法后接上erase" class="headerlink" title="条款32：如果你真的想删除东西的话就在类似remove的算法后接上erase"></a>条款32：如果你真的想删除东西的话就在类似remove的算法后接上erase</h2><p><strong>remove并不“真的”删除东西，因为它做不到。只有容器成员函数可以除去容器元素，而那是本条款的整个要点：如果你真的要删除东西的话，你应该在remove后面接上erase。</strong></p>
+<p>remove移动指定区间中的元素直到所有“不删除的”元素在区间的开头（相对位置和原来它们的一样）。它返回一个指向最后一个的下一个“不删除的”元素的迭代器。返回值是区间的“新逻辑终点”。remove 不会保留所有值，因为那些值是不必要的了。（所以<strong>不能使用 remove_if 对数组进行排序</strong>）</p>
+<p>你要记住的唯一其他的东西是remove不是唯一这种情况的算法。另外有两种“类似remove”的算法：remove_if和unique。remove和remove_if之间的相似性很直截了当。所以我不会细讲，但<strong>unique行为也像remove。它用来从一个区间删除东西（邻近的重复值）而不用访问持有区间元素的容器</strong>。unique 应该就类似 <code>np.unique</code> ，用于保留一份拷贝。</p>
+<h2 id="条款33：提防在指针的容器上使用类似remove的算法"><a href="#条款33：提防在指针的容器上使用类似remove的算法" class="headerlink" title="条款33：提防在指针的容器上使用类似remove的算法"></a>条款33：提防在指针的容器上使用类似remove的算法</h2><p>因为一旦指针被替换，内存就泄露了。可以使用智能指针，能够实现自由释放内存。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vector&lt;unique_ptr&lt;<span class="type">int</span>&gt;&gt; v;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> size = <span class="number">100&#x27;000</span>;</span><br><span class="line">v.<span class="built_in">reserve</span>(size);</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; size; i++)  v.<span class="built_in">push_back</span>(<span class="built_in">make_unique</span>&lt;<span class="type">int</span>&gt;(i));</span><br><span class="line"></span><br><span class="line">v.<span class="built_in">erase</span>(<span class="built_in">remove_if</span>(v.<span class="built_in">begin</span>(), v.<span class="built_in">end</span>(), [] (<span class="keyword">auto</span>&amp; elm) &#123;</span><br><span class="line">    <span class="keyword">return</span> *elm &lt; <span class="number">30</span>;</span><br><span class="line">&#125;), v.<span class="built_in">end</span>());</span><br></pre></td></tr></table></figure>
+
+<h2 id="条款34：注意哪个算法需要有序区间"><a href="#条款34：注意哪个算法需要有序区间" class="headerlink" title="条款34：注意哪个算法需要有序区间"></a>条款34：注意哪个算法需要有序区间</h2><p>我知道你们中的一部分会用蛮力记忆，所以这里有一个只能操作有序数据的算法的表：</p>
+<table>
+<thead>
+<tr>
+<th>binary_search</th>
+<th>lower_bound</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>upper_bound</td>
+<td>equal_range</td>
+</tr>
+<tr>
+<td>set_union</td>
+<td>set_intersection</td>
+</tr>
+<tr>
+<td>set_difference</td>
+<td>set_symmetric_difference</td>
+</tr>
+<tr>
+<td>merge</td>
+<td>inplace_merge</td>
+</tr>
+<tr>
+<td>includes</td>
+<td></td>
+</tr>
+</tbody></table>
+<p>另外，下面的算法一般用于有序区间，虽然它们不要求：</p>
+<table>
+<thead>
+<tr>
+<th>unique</th>
+<th>unique_copy</th>
+</tr>
+</thead>
+</table>
+<p><strong>搜索算法binary_search、lower_bound、upper_bound和equal_range（参见条款45）需要有序区间，因为它们使用二分法查找来搜索值</strong>。像C库中的bsearch，这些算法保证了对数时间的查找，但作为交换的是，你必须给它们已经排过序的值。实际上，这些算法保证对数时间查找不是很正确。仅当传给它们的是<strong>随机访问迭代器</strong>时它们才能保证有那样的性能。如果给它们威力比较小的迭代器（比如双向迭代器），它们仍然进行对数次比较，但运行是线性时间的。那是因为，缺乏进行“迭代器算术（arithmetic）”的能力。<strong>它们在搜索的区间中需要花费线性时间来从一个地方移动到另一个地方</strong>。</p>
+<p><strong>算法set_union（交集）、set_intersection（并集）、set_difference（异或）和set_symmetric_difference（同或） 的四人组提供了线性时间设置它们名字所提出的操作的性能。</strong>为什么它们需要有序区间？因为如果不是的话，它们不能以线性时间完成它们的工作。如果你开始发觉一个趋势——需要有序区间的算法为了比它们用于可能无序区间提供更好的性能而这么做，你是对的。</p>
+<p>merge和inplace_merge执行了<strong>有效的单遍合并排序算法</strong>：它们读取两个有序区间，然后产生一个包含了两个源区间所有元素的新有序区间。它们以线性时间执行，如果它们不知道源区间已经有序就不能完成。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">mergeSort</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; v, <span class="type">int</span> begin, <span class="type">int</span> end)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (begin &gt;= end - <span class="number">1</span>)  <span class="keyword">return</span> vector&lt;<span class="type">int</span>&gt; &#123;v.<span class="built_in">begin</span>() + begin, v.<span class="built_in">begin</span>() + end&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> mid = begin + ((end - begin) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> left = <span class="built_in">mergeSort</span>(v, begin, mid);</span><br><span class="line">    <span class="keyword">auto</span> right = <span class="built_in">mergeSort</span>(v, mid, end);</span><br><span class="line"></span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; result;</span><br><span class="line">    result.<span class="built_in">reserve</span>(end - begin);</span><br><span class="line">    <span class="built_in">merge</span>(left.<span class="built_in">begin</span>(), left.<span class="built_in">end</span>(), right.<span class="built_in">begin</span>(), right.<span class="built_in">end</span>(), <span class="built_in">back_inserter</span>(result));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后一个需要有序区间的算法是includes。它用来检测是否<strong>一个区间的所有对象也在另一个区间</strong>中。因为includes可能假设它的两个区间都已经有序，所以它保证了线性时间性能。没有那个保证，一般来说它会变慢。</p>
+<h2 id="条款35：通过mismatch或lexicographical比较实现简单的忽略大小写字符串比较"><a href="#条款35：通过mismatch或lexicographical比较实现简单的忽略大小写字符串比较" class="headerlink" title="条款35：通过mismatch或lexicographical比较实现简单的忽略大小写字符串比较"></a>条款35：通过mismatch或lexicographical比较实现简单的忽略大小写字符串比较</h2><p>使用 tolower 可以将字符串全部变成小写。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">ciCharCompare</span><span class="params">(<span class="type">char</span> c1, <span class="type">char</span> c2)</span> </span>&#123;</span><br><span class="line">    c1 = <span class="built_in">tolower</span>(<span class="built_in">static_cast</span>&lt;<span class="type">unsigned</span> <span class="type">char</span>&gt;(c1));</span><br><span class="line">    c2 = <span class="built_in">tolower</span>(<span class="built_in">static_cast</span>&lt;<span class="type">unsigned</span> <span class="type">char</span>&gt;(c2));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> c1 &gt; c2 ? <span class="number">1</span> : c1 &lt; c2 ? <span class="number">-1</span> : <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用 mismatch 对字符串进行匹配</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">ciMismatchCompareImpl</span><span class="params">(<span class="type">const</span> string&amp; s1, <span class="type">const</span> string&amp; s2)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// bind 修改  最后一个函数的意义, 当字符相等时返回 true, 不等时返回 false</span></span><br><span class="line">    <span class="keyword">auto</span> it = <span class="built_in">mismatch</span>(s1.<span class="built_in">begin</span>(), s1.<span class="built_in">end</span>(), s2.<span class="built_in">begin</span>(), s2.<span class="built_in">end</span>(), </span><br><span class="line">        <span class="built_in">bind</span>([] (<span class="keyword">auto</span>&amp; c1, <span class="keyword">auto</span>&amp; c2) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">ciCharCompare</span>(c1, c2) == <span class="number">0</span>;</span><br><span class="line">        &#125;, placeholders::_1, placeholders::_2));</span><br><span class="line">    <span class="keyword">if</span> (it.first == s1.<span class="built_in">end</span>()) &#123;</span><br><span class="line">        <span class="comment">// s1 是短字符串, 因此当短字符串结束后, 长字符串还没有结束</span></span><br><span class="line">        <span class="comment">// 说明 s1 &lt; s2, 否则二者相等</span></span><br><span class="line">        <span class="keyword">if</span> (it.second == s2.<span class="built_in">end</span>())  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">else</span>  <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 二者均没有到达结尾时, 由不相等字符决定</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">ciCharCompare</span>(*it.first, *it.second);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">ciMismatchCompare</span><span class="params">(<span class="type">const</span> string&amp; s1, <span class="type">const</span> string&amp; s2)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (s1.<span class="built_in">size</span>() &gt;= s2.<span class="built_in">size</span>())  <span class="keyword">return</span> -<span class="built_in">ciMismatchCompareImpl</span>(s2, s1);</span><br><span class="line">    <span class="keyword">else</span>  <span class="keyword">return</span> <span class="built_in">ciMismatchCompareImpl</span>(s1, s2);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">ciLexicographicalCompare</span><span class="params">(<span class="type">const</span> string&amp; s1, <span class="type">const</span> string&amp; s2)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">lexicographical_compare</span>(s1.<span class="built_in">begin</span>(), s1.<span class="built_in">end</span>(), </span><br><span class="line">        s2.<span class="built_in">begin</span>(), s2.<span class="built_in">end</span>(),</span><br><span class="line">        [] (<span class="keyword">auto</span>&amp; c1, <span class="keyword">auto</span>&amp; c2) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">tolower</span>(c1) &lt; <span class="built_in">tolower</span>(c2);</span><br><span class="line">        &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="条款36：了解copy-if的正确实现"><a href="#条款36：了解copy-if的正确实现" class="headerlink" title="条款36：了解copy_if的正确实现"></a>条款36：了解copy_if的正确实现</h2><p>目前 MSVC 已经有了 copy_if 的实现了：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">_InIt</span>, <span class="keyword">class</span> <span class="title class_">_OutIt</span>, <span class="keyword">class</span> <span class="title class_">_Pr</span>&gt;</span><br><span class="line"><span class="function">_CONSTEXPR20 _OutIt <span class="title">copy_if</span><span class="params">(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred)</span> </span>&#123; <span class="comment">// copy each satisfying _Pred</span></span><br><span class="line">    _Adl_verify_range(_First, _Last);</span><br><span class="line">    <span class="keyword">auto</span> _UFirst      = _Get_unwrapped(_First);</span><br><span class="line">    <span class="type">const</span> <span class="keyword">auto</span> _ULast = _Get_unwrapped(_Last);</span><br><span class="line">    <span class="keyword">auto</span> _UDest       = _Get_unwrapped_unverified(_Dest);</span><br><span class="line">    <span class="keyword">for</span> (; _UFirst != _ULast; ++_UFirst) &#123;</span><br><span class="line">        <span class="keyword">if</span> (_Pred(*_UFirst)) &#123;</span><br><span class="line">            *_UDest = *_UFirst;</span><br><span class="line">            ++_UDest;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    _Seek_wrapped(_Dest, _UDest);</span><br><span class="line">    <span class="keyword">return</span> _Dest;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>STL有很多有趣的地方，其中一个是虽然有11个名字带“copy”的算法：</p>
+<table>
+<thead>
+<tr>
+<th>copy</th>
+<th>copy_backward</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>replace_copy</td>
+<td>reverse_copy</td>
+</tr>
+<tr>
+<td>replace_copy_if</td>
+<td>unique_copy</td>
+</tr>
+<tr>
+<td>remove_copy</td>
+<td>rotate_copy</td>
+</tr>
+<tr>
+<td>remove_copy_if</td>
+<td>partial_sort_copy</td>
+</tr>
+<tr>
+<td>unintialized_copy</td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="条款37：用accumulate或for-each来统计区间"><a href="#条款37：用accumulate或for-each来统计区间" class="headerlink" title="条款37：用accumulate或for_each来统计区间"></a>条款37：用accumulate或for_each来统计区间</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">cout &lt;&lt; <span class="built_in">accumulate</span>(v.<span class="built_in">begin</span>(), v.<span class="built_in">end</span>(), <span class="number">0</span>) &lt;&lt; endl;</span><br><span class="line"></span><br><span class="line">vector&lt;Point&lt;<span class="type">float</span>&gt;&gt; vp = &#123;&#123;<span class="number">0.0f</span>, <span class="number">0.1f</span>&#125;, &#123;<span class="number">1.3f</span>, <span class="number">4.2f</span>&#125;, &#123;<span class="number">3.6f</span>, <span class="number">9.1f</span>&#125;&#125;;</span><br><span class="line">cout &lt;&lt; <span class="built_in">accumulate</span>(vp.<span class="built_in">begin</span>(), vp.<span class="built_in">end</span>(), Point&lt;<span class="type">float</span>&gt;&#123;<span class="number">0.0f</span>, <span class="number">0.0f</span>&#125;, [] (<span class="keyword">auto</span>&amp; v, <span class="keyword">auto</span>&amp; res) &#123;</span><br><span class="line">    <span class="keyword">return</span> Point&lt;<span class="type">float</span>&gt;&#123;v.x + res.x, v.y + res.y&#125;;</span><br><span class="line">&#125;) / <span class="built_in">float</span>(vp.<span class="built_in">size</span>()) &lt;&lt; endl;</span><br><span class="line"></span><br><span class="line">Point&lt;<span class="type">float</span>&gt; startValue&#123;<span class="number">0.0f</span>, <span class="number">0.0f</span>&#125;;</span><br><span class="line">for_each(vp.<span class="built_in">begin</span>(), vp.<span class="built_in">end</span>(), [&amp;startValue] (<span class="keyword">auto</span>&amp; p) &#123;</span><br><span class="line">    startValue += p;</span><br><span class="line">&#125;);</span><br><span class="line">cout &lt;&lt; startValue / <span class="built_in">float</span>(vp.<span class="built_in">size</span>()) &lt;&lt; endl;</span><br></pre></td></tr></table></figure>
+
+<p><strong>accumulate 返回的是  容器的元素，for_each 返回的是  lambda 或者 仿函数对象。</strong></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io/2024/03/17/Algorithms/">http://hebangwen.github.io/2024/03/17/Algorithms/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://hebangwen.github.io" target="_blank">Yet Another 何榜文's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C/">C++</a><a class="post-meta__tags" href="/tags/STL/">STL</a><a class="post-meta__tags" href="/tags/Algorithms/">Algorithms</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2024/03/17/Functor/" title="Effective STL - 05 - Functor"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Effective STL - 05 - Functor</div></div><div class="info-2"><div class="info-item-1">Functor条款38：把仿函数类设计为用于值传递C 中的 qsort 使用的  函数指针  就是指针的拷贝，因此是一个默认的值传递。 因为函数对象以值传递和返回，你的任务就是确保当那么传递（也就是拷贝）时你的函数对象行为良好。这暗示了两个东西。第一，你的函数对象应该很小。否则它们的拷贝会很昂贵。第二，你的函数对象必须单态（也就是，非多态）——它们不能用虚函数。 不是所有的仿函数都是小的、单态的。函数对象比真的函数优越的的原因之一是仿函数可以包含你需要的所有状态。有些函数对象自然会很重，保持传这样的仿函数给STL算法和传它们的函数版本一样容易是很重要的。（像之前提到的算法中 Algorithms ，Points 类就使用了 PointsAverage 来保存对应的状态，我的实现使用了 lambda 和引用来保存求和的结果） 1234567891011121314151617181920212223242526272829/*使用 Bridge 模式*/template&lt;typename T&gt; // 用于修改的BPFCclass BPFCImpl: public una...</div></div></div></a><a class="pagination-related" href="/2024/03/17/Iterator/" title="Effective STL - 03 - Iterator"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Effective STL - 03 - Iterator</div></div><div class="info-2"><div class="info-item-1">Iterator条款26：尽量用iterator代替const_iterator，reverse_iterator和const_reverse_iterator  123456graph A[iterator] --&gt; B[const_iterator]A[iterator] --&gt; C[reverse_iterator]C[reverse_iterator] --&gt; D[const_reverse_iterator]C[reverse_iterator] --&gt;|base| A[iterator]D[const_reverse_iterator] --&gt;|base| B[const_iterator]   iterator 能够比 const_iterator 有更好的泛化性能，特别是对于 insert 、erase 函数，他们只支持 iterator 而不支持 const_iterator。 我们已经有足够的理由相信应该尽量使用iterator取代const或者reverse类型的迭代器：  insert和erase的一些版本要求iterator...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2024/03/17/Iterator/" title="Effective STL - 03 - Iterator"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-17</div><div class="info-item-2">Effective STL - 03 - Iterator</div></div><div class="info-2"><div class="info-item-1">Iterator条款26：尽量用iterator代替const_iterator，reverse_iterator和const_reverse_iterator  123456graph A[iterator] --&gt; B[const_iterator]A[iterator] --&gt; C[reverse_iterator]C[reverse_iterator] --&gt; D[const_reverse_iterator]C[reverse_iterator] --&gt;|base| A[iterator]D[const_reverse_iterator] --&gt;|base| B[const_iterator]   iterator 能够比 const_iterator 有更好的泛化性能，特别是对于 insert 、erase 函数，他们只支持 iterator 而不支持 const_iterator。 我们已经有足够的理由相信应该尽量使用iterator取代const或者reverse类型的迭代器：  insert和erase的一些版本要求iterator...</div></div></div></a><a class="pagination-related" href="/2024/03/17/Functor/" title="Effective STL - 05 - Functor"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-17</div><div class="info-item-2">Effective STL - 05 - Functor</div></div><div class="info-2"><div class="info-item-1">Functor条款38：把仿函数类设计为用于值传递C 中的 qsort 使用的  函数指针  就是指针的拷贝，因此是一个默认的值传递。 因为函数对象以值传递和返回，你的任务就是确保当那么传递（也就是拷贝）时你的函数对象行为良好。这暗示了两个东西。第一，你的函数对象应该很小。否则它们的拷贝会很昂贵。第二，你的函数对象必须单态（也就是，非多态）——它们不能用虚函数。 不是所有的仿函数都是小的、单态的。函数对象比真的函数优越的的原因之一是仿函数可以包含你需要的所有状态。有些函数对象自然会很重，保持传这样的仿函数给STL算法和传它们的函数版本一样容易是很重要的。（像之前提到的算法中 Algorithms ，Points 类就使用了 PointsAverage 来保存对应的状态，我的实现使用了 lambda 和引用来保存求和的结果） 1234567891011121314151617181920212223242526272829/*使用 Bridge 模式*/template&lt;typename T&gt; // 用于修改的BPFCclass BPFCImpl: public una...</div></div></div></a><a class="pagination-related" href="/2024/03/17/Vector-and-String/" title="Effective STL - 02 - Vector and String"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-17</div><div class="info-item-2">Effective STL - 02 - Vector and String</div></div><div class="info-2"><div class="info-item-1">Vector and String条款13：尽量使用vector和string来代替动态分配的数组无论何时，你发现你自己准备动态分配一个数组（也就是，企图写“new T[…]”），你应该首先考虑使用一个vector或一个string。 坦白地说，我想到了一个（也是唯一一个）用vector或string代替动态分配数组会出现的问题，而且它只关系到string。很多string实现在后台使用了引用计数（参见条款15），一个消除了不必要的内存分配和字符拷贝的策略，而且在很多应用中可以提高性能。事实上，一般认为通过引用计数优化字符串很重要，所以C++标准委员会特别设法保证了那是一个合法的实现。 唉，一个程序员的优化就是其他人的抱怨，而且如果你在多线程环境中使用了引用计数的字符串，你可能发现避免分配和拷贝所节省下的时间都花费在后台并发控制上了。（细节请参考Sutter的文章《Optimizations That Aren’t (In a Multithreaded World)》[20]。）如果你在多线程环境中使用引用计数字符串，就应该注意线程安全性支持所带来的的性能下降问题。 条款14：...</div></div></div></a><a class="pagination-related" href="/2024/03/17/Containers/" title="Effective STL - 01 - Containers"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-17</div><div class="info-item-2">Effective STL - 01 - Containers</div></div><div class="info-2"><div class="info-item-1">Containers条款 1 仔细选择你的容器 vector是一种可以默认使用的序列类型，当很频繁地对序列中部进行插入和删除时应该用list，当大部分插入和删除发生在序列的头或尾时可以选择deque这种数据结构   连续内存容器（也叫做基于数组的容器）在一个或多个（动态分配）的内存块中保存它们的元素。如果一个新元素被查入或者已存元素被删除，其他在同一个内存块的元素就必须向上或者向下移动来为新元素提供空间或者填充原来被删除的元素所占的空间。这种移动影响了效率（参见条款5和14）和异常安全（就像我们将会看到的）。标准的连续内存容器是vector、string和deque。   基于节点的容器在每个内存块（动态分配）中只保存一个元素。容器元素的插入或删除只影响指向节点的指针，而不是节点自己的内容。   你要把迭代器、指针和引用的失效次数减到最少吗？如果是，你就应该使用基于节点的容器，因为在这些容器上进行插入和删除不会使迭代器、指针和引用失效（除非它们指向你删除的元素）。一般来说，在连续内存容器上插入和删除会使所有指向容器的迭代器、指针和引用失效。   你需要具有有以下特性的序列容器吗：...</div></div></div></a><a class="pagination-related" href="/2024/03/17/Programming-by-STL/" title="Effective STL - 06 - Programming by STL"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-17</div><div class="info-item-2">Effective STL - 06 - Programming by STL</div></div><div class="info-2"><div class="info-item-1">Programming by STL条款43：尽量用算法调用代替手写循环 如果你要做的是算法已经提供了的，或者非常接近于它提供的，调用泛型算法更清晰。 如果循环里要做的事非常简单，但调用算法时却需要使用绑定和适配器或者需要独立的仿函数类，你恐怕还是写循环比较好。 最后，如果你在循环里做的事相当长或相当复杂，天平再次倾向于算法。  条款44：尽量用成员函数代替同名的算法关联容器提供了count、find、lower_bound、upper_bound和equal_range，而list提供了remove、remove_if、unique、sort、merge和reverse。大多数情况下，你应该用成员函数代替算法。这样做有两个理由。首先，成员函数更快。其次，比起算法来，它们与容器结合得更好（尤其是关联容器）。那是因为同名的算法和成员函数通常并不是是一样的。 12345678910111213set&lt;int&gt; s;for (int i = 0; i &lt; 1&#x27;000&#x27;000; i++)  s.insert(i);// 1ms// 使用 rand 避...</div></div></div></a><a class="pagination-related" href="/2024/03/13/%E4%BE%AF%E6%8D%B7CPP-STL/" title="侯捷CPP-STL"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-13</div><div class="info-item-2">侯捷CPP-STL</div></div><div class="info-2"><div class="info-item-1">课件截图容器  list list 是一个双向链表，如果需要写一个 MyList ，那就可以参考 list 的写法。  注意到这里的 bidirectional_iterator_tag ，这表明 list 的迭代器是一个双向迭代器，只支持图中展示的四个操作。但是 vector 的迭代器是 RandomAcessIterator ，可以支持随机访问，因此能够使用 std::sort ，而不需要本身带有一个 sort 函数。  在之前的黑马程序员里也讲过这个编译器优化案例。   list 的迭代器在 2.9 和 4.9 中存在一定的不同，2.9 中的指针类型和引用类型都是不固定的，可以任意指定，但是 4.9 中的都与数据成员 _Tp 一致。同时，指针类型也通过继承实现了自带的 next 和 prev 。（可以用于以后的实现） 但是目前 MSVC 的实现并不一样，而是使用了一个 Node_Ptr ，其等于 typename pointer_traits&lt;type-parameter-0-1&gt;::template rebind&lt;_List_node&lt;_Value...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">43</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">63</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Algorithms"><span class="toc-number">1.</span> <span class="toc-text">Algorithms</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A1%E6%AC%BE30%EF%BC%9A%E7%A1%AE%E4%BF%9D%E7%9B%AE%E6%A0%87%E5%8C%BA%E9%97%B4%E8%B6%B3%E5%A4%9F%E5%A4%A7"><span class="toc-number">1.1.</span> <span class="toc-text">条款30：确保目标区间足够大</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A1%E6%AC%BE31%EF%BC%9A%E4%BA%86%E8%A7%A3%E4%BD%A0%E7%9A%84%E6%8E%92%E5%BA%8F%E9%80%89%E6%8B%A9"><span class="toc-number">1.2.</span> <span class="toc-text">条款31：了解你的排序选择</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A1%E6%AC%BE32%EF%BC%9A%E5%A6%82%E6%9E%9C%E4%BD%A0%E7%9C%9F%E7%9A%84%E6%83%B3%E5%88%A0%E9%99%A4%E4%B8%9C%E8%A5%BF%E7%9A%84%E8%AF%9D%E5%B0%B1%E5%9C%A8%E7%B1%BB%E4%BC%BCremove%E7%9A%84%E7%AE%97%E6%B3%95%E5%90%8E%E6%8E%A5%E4%B8%8Aerase"><span class="toc-number">1.3.</span> <span class="toc-text">条款32：如果你真的想删除东西的话就在类似remove的算法后接上erase</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A1%E6%AC%BE33%EF%BC%9A%E6%8F%90%E9%98%B2%E5%9C%A8%E6%8C%87%E9%92%88%E7%9A%84%E5%AE%B9%E5%99%A8%E4%B8%8A%E4%BD%BF%E7%94%A8%E7%B1%BB%E4%BC%BCremove%E7%9A%84%E7%AE%97%E6%B3%95"><span class="toc-number">1.4.</span> <span class="toc-text">条款33：提防在指针的容器上使用类似remove的算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A1%E6%AC%BE34%EF%BC%9A%E6%B3%A8%E6%84%8F%E5%93%AA%E4%B8%AA%E7%AE%97%E6%B3%95%E9%9C%80%E8%A6%81%E6%9C%89%E5%BA%8F%E5%8C%BA%E9%97%B4"><span class="toc-number">1.5.</span> <span class="toc-text">条款34：注意哪个算法需要有序区间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A1%E6%AC%BE35%EF%BC%9A%E9%80%9A%E8%BF%87mismatch%E6%88%96lexicographical%E6%AF%94%E8%BE%83%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E7%9A%84%E5%BF%BD%E7%95%A5%E5%A4%A7%E5%B0%8F%E5%86%99%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%AF%94%E8%BE%83"><span class="toc-number">1.6.</span> <span class="toc-text">条款35：通过mismatch或lexicographical比较实现简单的忽略大小写字符串比较</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A1%E6%AC%BE36%EF%BC%9A%E4%BA%86%E8%A7%A3copy-if%E7%9A%84%E6%AD%A3%E7%A1%AE%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.7.</span> <span class="toc-text">条款36：了解copy_if的正确实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A1%E6%AC%BE37%EF%BC%9A%E7%94%A8accumulate%E6%88%96for-each%E6%9D%A5%E7%BB%9F%E8%AE%A1%E5%8C%BA%E9%97%B4"><span class="toc-number">1.8.</span> <span class="toc-text">条款37：用accumulate或for_each来统计区间</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/26/ld-loader-glibc-version-compatibility/" title="ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析">ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析</a><time datetime="2026-03-26T11:30:00.000Z" title="发表于 2026-03-26 19:30:00">2026-03-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/19/torch-chunked-gated-delta-rule-optimization/" title="Torch Chunked Gated Delta Rule 并行优化指南">Torch Chunked Gated Delta Rule 并行优化指南</a><time datetime="2026-03-19T01:15:00.000Z" title="发表于 2026-03-19 09:15:00">2026-03-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/18/SonicMoE-Accelerating-MoE/" title="SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化">SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化</a><time datetime="2026-03-17T16:12:00.000Z" title="发表于 2026-03-18 00:12:00">2026-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/13/arm-intrinsics/" title="ARM 架构深度学习推理指令集的演进与技术范式分析报告">ARM 架构深度学习推理指令集的演进与技术范式分析报告</a><time datetime="2026-03-13T01:06:06.000Z" title="发表于 2026-03-13 09:06:06">2026-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/12/solid-principle/" title="软件工程中的 SOLID 原则">软件工程中的 SOLID 原则</a><time datetime="2026-03-12T15:58:04.000Z" title="发表于 2026-03-12 23:58:04">2026-03-12</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

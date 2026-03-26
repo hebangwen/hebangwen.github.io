@@ -1,0 +1,331 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>ORT 模型部署 | Yet Another 何榜文's Blog</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Deploy ORT modelonnxruntime-inference-examples&#x2F;mobilenet.ipynb at main · microsoft&#x2F;onnxruntime-inference-examples 详细记录YOLACT实例分割ncnn实现 真正部署模型，不应该把后处理包括在模型推理中，这会影响模型在GPU上的部署，性能也不一定会好。这里的后处理，不">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ORT 模型部署">
+<meta property="og:url" content="http://hebangwen.github.io/2024/03/12/Deploy-ORT-model/index.html">
+<meta property="og:site_name" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:description" content="Deploy ORT modelonnxruntime-inference-examples&#x2F;mobilenet.ipynb at main · microsoft&#x2F;onnxruntime-inference-examples 详细记录YOLACT实例分割ncnn实现 真正部署模型，不应该把后处理包括在模型推理中，这会影响模型在GPU上的部署，性能也不一定会好。这里的后处理，不">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2024-03-12T00:52:43.000Z">
+<meta property="article:modified_time" content="2024-10-29T14:38:44.000Z">
+<meta property="article:author" content="何榜文">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "ORT 模型部署",
+  "url": "http://hebangwen.github.io/2024/03/12/Deploy-ORT-model/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2024-03-12T00:52:43.000Z",
+  "dateModified": "2024-10-29T14:38:44.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "http://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="http://hebangwen.github.io/2024/03/12/Deploy-ORT-model/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ORT 模型部署',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">Yet Another 何榜文's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">ORT 模型部署</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">ORT 模型部署</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-03-12T00:52:43.000Z" title="发表于 2024-03-12 08:52:43">2024-03-12</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-10-29T14:38:44.000Z" title="更新于 2024-10-29 22:38:44">2024-10-29</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><h1 id="Deploy-ORT-model"><a href="#Deploy-ORT-model" class="headerlink" title="Deploy ORT model"></a>Deploy ORT model</h1><p><a target="_blank" rel="noopener" href="https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/notebooks/imagenet_v2/mobilenet.ipynb">onnxruntime-inference-examples&#x2F;mobilenet.ipynb at main · microsoft&#x2F;onnxruntime-inference-examples</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/128974102">详细记录YOLACT实例分割ncnn实现</a></p>
+<p>真正部署模型，不应该把后处理包括在模型推理中，这会影响模型在GPU上的部署，性能也不一定会好。这里的后处理，不仅仅是<code>model(input)</code> 之后的，也可以是作者放在模型推理过程中，但是实际上可以归为后处理的部分。</p>
+<p>判断函数是否在ONNX trace的过程中：<code>torch.onnx.is_in_onnx_export()</code> 。</p>
+<p><a target="_blank" rel="noopener" href="https://www.notion.so/ONNX-to-TF-6049662a9e71472aaff545676a19050c">ONNX to TF</a></p>
+<h2 id="Torch-to-ONNX"><a href="#Torch-to-ONNX" class="headerlink" title="Torch to ONNX"></a>Torch to ONNX</h2><ol>
+<li>torch不支持<code>F.grid_sample</code> 算子。从<a target="_blank" rel="noopener" href="https://github.com/onnx/onnx/blob/main/docs/Operators.md">ONNX支持的算子列表</a>来看，<code>opset=16</code> 时，可以直接使用<code>grid_sampler</code> 而不需要手动设置符号函数。</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># https://github.com/pytorch/pytorch/issues/27212#issuecomment-1059773074</span></span><br><span class="line"><span class="comment"># https://gist.github.com/daigo0927/8c8b3005cffb61983e80ceab6c1f2274</span></span><br><span class="line"><span class="comment"># https://github.com/onnx/onnx/pull/3557</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> torch.onnx <span class="keyword">import</span> register_custom_op_symbolic</span><br><span class="line"><span class="keyword">import</span> torch.onnx.symbolic_helper <span class="keyword">as</span> sym_help</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">grid_sampler</span>(<span class="params">g, <span class="built_in">input</span>, grid, mode, padding_mode, align_corners</span>):</span><br><span class="line">    <span class="comment"># mode</span></span><br><span class="line">    <span class="comment">#   &#x27;bilinear&#x27;      : onnx::Constant[value=&#123;0&#125;]</span></span><br><span class="line">    <span class="comment">#   &#x27;nearest&#x27;       : onnx::Constant[value=&#123;1&#125;]</span></span><br><span class="line">    <span class="comment">#   &#x27;bicubic&#x27;       : onnx::Constant[value=&#123;2&#125;]</span></span><br><span class="line">    <span class="comment"># padding_mode</span></span><br><span class="line">    <span class="comment">#   &#x27;zeros&#x27;         : onnx::Constant[value=&#123;0&#125;]</span></span><br><span class="line">    <span class="comment">#   &#x27;border&#x27;        : onnx::Constant[value=&#123;1&#125;]</span></span><br><span class="line">    <span class="comment">#   &#x27;reflection&#x27;    : onnx::Constant[value=&#123;2&#125;]</span></span><br><span class="line">    mode = sym_help._maybe_get_const(mode, <span class="string">&quot;i&quot;</span>)</span><br><span class="line">    padding_mode = sym_help._maybe_get_const(padding_mode, <span class="string">&quot;i&quot;</span>)</span><br><span class="line">    mode_str = [<span class="string">&#x27;bilinear&#x27;</span>, <span class="string">&#x27;nearest&#x27;</span>, <span class="string">&#x27;bicubic&#x27;</span>][mode]</span><br><span class="line">    padding_mode_str = [<span class="string">&#x27;zeros&#x27;</span>, <span class="string">&#x27;border&#x27;</span>, <span class="string">&#x27;reflection&#x27;</span>][padding_mode]</span><br><span class="line">    align_corners = <span class="built_in">int</span>(sym_help._maybe_get_const(align_corners, <span class="string">&quot;b&quot;</span>))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> g.op(<span class="string">&quot;com.microsoft::GridSample&quot;</span>, <span class="built_in">input</span>, grid,</span><br><span class="line">                mode_s=mode_str,</span><br><span class="line">                padding_mode_s=padding_mode_str,</span><br><span class="line">                align_corners_i=align_corners)</span><br><span class="line">    </span><br><span class="line">register_custom_op_symbolic(<span class="string">&#x27;::grid_sampler&#x27;</span>, grid_sampler, <span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+
+<ol start="2">
+<li><code>_DCNv2</code> 完全不受支持。它是用CUDA编译的，无论是自带的DCNv2还是mmcv的DCNv2。</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@staticmethod</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">symbolic</span>(<span class="params"></span></span><br><span class="line"><span class="params">    g, <span class="built_in">input</span>, offset, mask, weight, bias, stride, padding, dilation, deformable_groups</span></span><br><span class="line"><span class="params"></span>):</span><br><span class="line">    <span class="keyword">from</span> torch.nn.modules.utils <span class="keyword">import</span> _pair</span><br><span class="line"></span><br><span class="line">    stride = _pair(stride)</span><br><span class="line">    padding = _pair(padding)</span><br><span class="line">    dilation = _pair(dilation)</span><br><span class="line">    <span class="comment"># as of trt 7, the dcn operation will be translated again by modifying the onnx file</span></span><br><span class="line">    <span class="comment"># so the exporting code is kept to resemble the forward()</span></span><br><span class="line">    <span class="keyword">return</span> g.op(</span><br><span class="line">        <span class="string">&quot;custom_domain::_DCNv2&quot;</span>,</span><br><span class="line">        <span class="built_in">input</span>,</span><br><span class="line">        offset,</span><br><span class="line">        mask,</span><br><span class="line">        weight,</span><br><span class="line">        bias,</span><br><span class="line">        stride_i=stride,</span><br><span class="line">        padding_i=padding,</span><br><span class="line">        dilation_i=dilation,</span><br><span class="line">        deformable_groups_i=deformable_groups,</span><br><span class="line">    )</span><br></pre></td></tr></table></figure>
+
+<p>在这里可以注册一个符号函数(<code>symbolic_function</code>)来自己手动通过cpp实现DCNv2，但是我其实并不确定它能不能运行到mobile端。最上面导出NCNN的方法其实说过，可以跳过它，就是不用它，换到一个Conv层就行。在实现层面上，参考下面的模型变量key：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">5</span>:<span class="string">&#x27;dla.ida_up.proj_1.conv.weight&#x27;</span></span><br><span class="line"><span class="number">6</span>:<span class="string">&#x27;dla.ida_up.proj_1.conv.bias&#x27;</span></span><br><span class="line"><span class="number">7</span>:<span class="string">&#x27;dla.ida_up.proj_1.conv.conv_offset_mask.weight&#x27;</span></span><br><span class="line"><span class="number">8</span>:<span class="string">&#x27;dla.ida_up.proj_1.conv.conv_offset_mask.bias&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>它自带了一个conv，同时还有一个conv_offset_mask来学习stride的微小偏移量，这使得我们可以不使用后面的conv_offset_mask，只使用conv本身的权重来推理。不过这样会丢掉一些性能。下面这个用的是TensorRT推理，所以可以支持CUDA。DCNv2的实现中，其中一个就是参考了这个repo的。它这里面实现了自定义的算子，并且用符号函数把算子和onnx计算图联系到了一起。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/CaoWGG/TensorRT-CenterNet/blob/master/readme/ctdet2onnx.md">TensorRT-CenterNet&#x2F;ctdet2onnx.md at master · CaoWGG&#x2F;TensorRT-CenterNet</a></p>
+<ol start="3">
+<li><code>Floating point exception (core dumped)</code> 。这个报错出现地非常地无厘头，因为它没有任何报错栈，只是单纯地显示它出错了。如果用torch1.9，会有更多的报错信息，虽然基本上也看不了。截图如下：</li>
+</ol>
+<p><img src="https://s2.loli.net/2024/03/12/tpTenzEYO7GFwB6.png" alt="raw_error.png"></p>
+<p><a target="_blank" rel="noopener" href="https://discuss.pytorch.org/t/dealing-with-floating-point-exceptions/51882/3">Dealing with floating point exceptions</a></p>
+<p>通过<code>gdb --args python [finetune.py](http://finetune.py) $&#123;params&#125;</code> ，可以查看到更多的报错信息，截图如下：</p>
+<p><img src="https://s2.loli.net/2024/03/12/oIicYZWQ9tR1Av7.png" alt="gdb_callstack.png"></p>
+<h2 id="ONNX-to-ORT"><a href="#ONNX-to-ORT" class="headerlink" title="ONNX to ORT"></a>ONNX to ORT</h2><ol>
+<li>除法算子导致张量除法的datatype不对应。<code>onnxruntime.capi.onnxruntime_pybind11_state.Fail: [ONNXRuntimeError] : 1 : FAIL : Load model from /media/tclab/980Pro/users/bangwhe/e2ec/gcn.onnx failed:Type Error: Type parameter (T) of Optype (Div) bound to different types (tensor(double) and tensor(float) in node (Div_337).</code></li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 原代码</span></span><br><span class="line">img_poly[..., <span class="number">0</span>] = img_poly[..., <span class="number">0</span>] / (w / <span class="number">2.</span>) - <span class="number">1</span></span><br><span class="line">img_poly[..., <span class="number">1</span>] = img_poly[..., <span class="number">1</span>] / (h / <span class="number">2.</span>) - <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改后的代码，w先做除法</span></span><br><span class="line">img_poly[..., <span class="number">0</span>] = img_poly[..., <span class="number">0</span>] / w * <span class="number">2.</span> - <span class="number">1</span></span><br><span class="line">img_poly[..., <span class="number">1</span>] = img_poly[..., <span class="number">1</span>] / h * <span class="number">2.</span> - <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>循环中的<code>==</code> 生成了bool，可能不受支持。<code>onnxruntime.capi.onnxruntime_pybind11_state.InvalidGraph: [ONNXRuntimeError] : 10 : INVALID_GRAPH : Load model from /media/tclab/980Pro/users/bangwhe/e2ec/gcn.onnx failed:This is an invalid model. Type Error: Type &#39;tensor(bool)&#39; of input parameter (763) of operator (ScatterND) in node (ScatterND_543) is invalid.</code></li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 原代码</span></span><br><span class="line">batch_size = cnn_feature.size(<span class="number">0</span>)</span><br><span class="line">gcn_feature = torch.zeros([img_poly.size(<span class="number">0</span>), cnn_feature.size(<span class="number">1</span>), img_poly.size(<span class="number">1</span>)]).to(img_poly.device)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(batch_size):</span><br><span class="line">    poly = img_poly[ind == i].unsqueeze(<span class="number">0</span>)</span><br><span class="line">    feature = torch.nn.functional.grid_sample(cnn_feature[i:i+<span class="number">1</span>], poly)[<span class="number">0</span>].permute(<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>)</span><br><span class="line">    gcn_feature[ind == i] = feature</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改后的代码</span></span><br><span class="line">gcn_feature[<span class="number">0</span>] = torch.nn.functional.grid_sample(cnn_feature[<span class="number">0</span>:<span class="number">1</span>], img_poly[<span class="number">0</span>:<span class="number">1</span>].unsqueeze(<span class="number">0</span>))[<span class="number">0</span>].permute(<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="ORT-NNAPI"><a href="#ORT-NNAPI" class="headerlink" title="ORT NNAPI"></a>ORT NNAPI</h2><p><a target="_blank" rel="noopener" href="https://github.com/BangwenHe/ORTSegDemo">https://github.com/BangwenHe/ORTSegDemo</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/microsoft/onnxruntime/blob/master/java/src/test/java/sample/ScoreMNIST.java">onnxruntime&#x2F;ScoreMNIST.java at master · microsoft&#x2F;onnxruntime</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/microsoft/onnxruntime-inference-examples/blob/main/mobile/examples/image_classification/android/app/src/main/java/ai/onnxruntime/example/imageclassifier/ImageUtil.kt">onnxruntime-inference-examples&#x2F;ImageUtil.kt at main · microsoft&#x2F;onnxruntime-inference-examples</a></p>
+<p>导出成onnx或者ort模型后，部署到手机上肯定是会支持CPU的，但是是否支持GPU还需要看模型的支持或者NNAPI的支持。增加CPU的线程数可以直接使用<code>mSessionOptions.setIntraOpNumThreads(4);</code> ，肯定是支持的。</p>
+<ol>
+<li>shape错误，应该是slice（切片）算子不受到NNAPI的支持。</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">W/System.err: ai.onnxruntime.OrtException: Error code - ORT_FAIL - </span><br><span class="line">message: model_builder.cc:<span class="number">374</span> RegisterModelOutputs shape_proto cannot be null <span class="keyword">for</span> output: <span class="number">217</span></span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>我认为我导出的这个e2ec或者是snake不能运行到mobile端的GPU上应该是因为添加了太多的逻辑运算，而不仅仅是Conv、BN、ReLU这些算子，例如NonZero，还有一些多维取值算子，例如ScatterND、Gather等。这些逻辑算子和取值算子对于逻辑运算单元少的GPU来说，并行起来是非常困难的。所以优化的角度应该是把类似后处理的逻辑运算给提取出来，只保留大部分的backbone，手动从heatmap中提取关键点的位置信息，<a target="_blank" rel="noopener" href="https://storage.googleapis.com/download.tensorflow.org/models/tflite/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite">posenet</a>输出的就是heatmap，需要手动做提取。</li>
+</ol>
+<h2 id="Build-ONNXRuntime-From-Source"><a href="#Build-ONNXRuntime-From-Source" class="headerlink" title="Build ONNXRuntime From Source"></a>Build ONNXRuntime From Source</h2><p><a target="_blank" rel="noopener" href="https://onnxruntime.ai/docs/build/android.html">Build for Android</a></p>
+<p>要求cmake 3.18+，android SDK需要手动通过sdkmanager下载。加上<code>--build_java</code> 会很慢，所以先删掉。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=/mnt/tbdisk/bangwhe/experiments/cmake-3.20.6-linux-x86_64/bin/:<span class="variable">$PATH</span></span><br><span class="line"></span><br><span class="line">./build.sh --android --build_nnapi\</span><br><span class="line">--android_sdk_path /mnt/tbdisk/bangwhe/env/Android/platforms/android-29/ \</span><br><span class="line">--android_ndk_path /mnt/tbdisk/bangwhe/env/android-ndk-r20b/</span><br></pre></td></tr></table></figure>
+
+<p>编译得到的so库都保存在build文件夹中，下面有子文件夹，分别保存安卓端和Linux桌面端。</p>
+<h2 id="OnnxRuntime-C-Impl"><a href="#OnnxRuntime-C-Impl" class="headerlink" title="OnnxRuntime C++ Impl"></a>OnnxRuntime C++ Impl</h2><h3 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a>Linux</h3><p><a target="_blank" rel="noopener" href="https://github.com/microsoft/onnxruntime-inference-examples/blob/main/c_cxx/model-explorer/model-explorer.cpp">onnxruntime-inference-examples&#x2F;model-explorer.cpp at main · microsoft&#x2F;onnxruntime-inference-examples</a></p>
+<p><code>error: use of deleted function ‘Ort::Experimental::Session::Session(const Ort::Experimental::Session&amp;)</code> ：函数被删除了，后面有debug信息。这个session不能通过函数传到其它的函数里，从而被调用。<code>Ort::Value</code> 也是一样的，但是通过<code>std::move</code> 将其变成右值，就可以传到<code>vector</code> 中。（Why？）</p>
+<p>vscode添加索引路径：command palette → C&#x2F;C++: Edit Configurations (JSON)</p>
+<p><code>2022-08-15 10:50:20.544504982 [W:onnxruntime:, graph.cc:1220 Graph] Initializer 1894 appears in graph inputs and will not be treated as constant value/weight. This may prevent some of the graph optimizations, like const folding. Move it out of graph inputs if there is no need to override it, by either re-generating the model with latest exporter/converter or with the tool onnxruntime/tools/python/remove_initializer_from_input.py.</code> initializer 1894 出现在图形输入中，不会被视为常量值&#x2F;权重，可能会阻止一些类似常量折叠的优化，可以使用<code>onnxruntime/tools/python/remove_initializer_from_input.py</code> 来进行移除操作。移除前的推理时间是45ms，移除后是19ms，提升还是比较大的。</p>
+<p><code>cv:dnn:blobFromImage</code> 不太好用，经常把320x320的Mat变成3x1的Mat。（Why？）</p>
+<p>OpenCV的<code>Mat</code> 类和ORT的<code>Ort::Value</code> 类都可以得到它们的数据指针，方法分别是：</p>
+<ul>
+<li><code>[Mat.data](http://Mat.data)</code> 可以直接得到数据的指针，但是更常用的是<code>Mat.at&lt;DataType&gt;()</code></li>
+<li><code>Ort::Value::GetTensorMutableData&lt;DataType&gt;()</code> ，得到<code>Ort::Value</code> 保存的张量的数据指针</li>
+<li>通过这两个指针，我们可以得到预处理得到的结果和输入网络前的张量的大小。如果需要对比预处理是否相同，可以自己读指针，然后打印数据出来跟python版的数据做对比。</li>
+</ul>
+<p><code>terminate called after throwing an instance of &#39;Ort::Exception&#39; what():  not enough space: expected 1228800, got 409600</code> ：明显的报错，空间不够。这是因为传入的<code>p_data_element_count</code> 和<code>*shape</code> 的乘积大小不相同，所以导致了报错，传入的参数为<code>102400</code> 和<code>307200</code> ，再乘上float类型占用的4byte，有<code>409600</code> 和<code>1228800</code> ，所以商（3）代表少了三个通道，给<code>p_data_element_count</code> 乘上3即可。</p>
+<p><code>incomplete type is not allowed</code> ：需要先定义一个type，才能在后续使用这个标识符的时候知道它是啥。这里报错是因为OrtSession这个类（标识符）不存在，需要变成指针类型才可以，即OrtSession*类型。</p>
+<p><a target="_blank" rel="noopener" href="https://www.notion.so/02-32a4f1797c1b46758f2a01ed714970bf">02</a></p>
+<p><code>error: use of deleted function ‘Ort::Session::Session(const Ort::Session&amp;)’</code> ：使用了被删除的拷贝构造函数，所以不能把它当作变量传到某一个函数中，编译器就会报错（为什么会删除呢？参考我的02）。那我们总不可能不用函数吧？在<a target="_blank" rel="noopener" href="https://github.com/microsoft/onnxruntime/blob/main/include/onnxruntime/core/session/onnxruntime_c_api.h#L3500">3501</a>行，注释中说：</p>
+<blockquote>
+<p>Prevent users from accidentally copying the API structure, it should always be passed as a pointer.</p>
+</blockquote>
+<p>所以我们应该传入一个指针。从类名往上溯源，发现一个<code>Base</code> 类，它有一个函数：<code>operator T*() &#123; return p_; &#125;</code> ，这个是类型转换的函数，所以我们只需要把Session转换成它的包装类即可，即</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">getOutputInfo((OrtSession*) session);</span><br></pre></td></tr></table></figure>
+
+<p><code>a nonstatic member reference must be relative to a specific object</code> ：函数不是静态函数，所以必须通过方法访问。</p>
+<h3 id="Android"><a href="#Android" class="headerlink" title="Android"></a>Android</h3><p>安卓平台和Linux平台的实现基本上都是一样的，参考我的两个demo：<a target="_blank" rel="noopener" href="https://github.com/BangwenHe/ORTSegDemo%E5%92%8Chttps://github.com/BangwenHe/ort-snake-cpp%E3%80%82%E4%B8%BB%E8%A6%81%E7%9A%84%E6%AD%A5%E9%AA%A4%E5%B0%B1%E6%98%AF%E7%BC%96%E5%86%99cmake%EF%BC%8C%E9%80%9A%E8%BF%87cmake%E6%8A%8A%E9%A2%84%E7%BC%96%E8%AF%91%E7%9A%84so%E5%BA%93%E9%93%BE%E6%8E%A5%E5%88%B0%E9%A1%B9%E7%9B%AE%E4%B8%AD%E3%80%82%E5%AE%89%E5%8D%93%E4%B8%8A%E6%9B%B4%E9%9C%80%E8%A6%81%E8%80%83%E8%99%91%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86JNI%EF%BC%8C%E4%BB%A5%E5%8F%8A%E7%BC%96%E8%AF%91%E7%9A%84%E9%97%AE%E9%A2%98%E3%80%82">https://github.com/BangwenHe/ORTSegDemo和https://github.com/BangwenHe/ort-snake-cpp。主要的步骤就是编写cmake，通过cmake把预编译的so库链接到项目中。安卓上更需要考虑怎么处理JNI，以及编译的问题。</a></p>
+<p>JNI的影响是jstring到string，long到jlong。</p>
+<p>编译：由于java版本和c++版本都有<code>libonnxruntime.so</code> 这个文件，所以如果打包到一起，会导致文件重复而报错。</p>
+<p>我写了一个 OnnxRuntime 手机端推理的 Demo，OrtSegDemo。只要能够导出 ONNX 文件，就可以用它在 CPU 上实现推理，GPU 不一定能够成功。下面是用法：</p>
+<p><img src="https://s2.loli.net/2024/03/12/bAGS7psJmnuhz2x.png" alt="1280X1280.PNG"></p>
+<p>需要修改的地方就是上面三个箭头指向的地方：</p>
+<ol>
+<li>把导出的 ONNX 模型放到 raw 文件夹中，注意文件名只能由字母、数字和下划线组成</li>
+<li>添加一个新的 ResId 变量，例如导出的文件名叫做 e2ec_sim.onnx ，那么可以加上一条新的语句：int e2ecId &#x3D; R.raw.e2ec_sim; </li>
+<li>修改第 54 行的传入参数，将 tinyposePath 修改成 e2ecId</li>
+<li>编译运行整个项目</li>
+</ol>
+<p>下面是我的运行结果：</p>
+<p><img src="https://s2.loli.net/2024/03/12/jrlUzmiu9F58vZS.png" alt="7f108cf0-91dd-43ca-943c-b1ef133b04b7.png"></p>
+<p>可以看到，最后会显示一个平均延时。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io/2024/03/12/Deploy-ORT-model/">http://hebangwen.github.io/2024/03/12/Deploy-ORT-model/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://hebangwen.github.io" target="_blank">Yet Another 何榜文's Blog</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2024/03/12/float32-to-float16-caffe/" title="Caffe2 中 float32 与 float16 的转换"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Caffe2 中 float32 与 float16 的转换</div></div><div class="info-2"><div class="info-item-1">generated by Copilot and translated by DeepL  这段 C++ 代码是一个名为 cpu_float2half_rn 的函数，用于将单精度浮点数（32 位）转换为半精度浮点数（16 位）。该函数将浮点数作为参数，并返回一个 float16 对象。转换过程涉及多个步骤，包括处理 NaN 和无穷大等特殊情况，从输入中提取符号、指数和尾数，以及四舍五入到最接近的偶数。  函数首先声明了一个 float16 对象 ret，用于保存转换结果。然后使用 static_assert 来确保无符号 int 和 float 的大小相同。这一点很重要，因为函数使用位操作来处理 float 的二进制表示，这需要将 float 解释为无符号整数。 函数使用 reinterpret_cast 获得指向 float 二进制表示形式的指针。然后创建该二进制表示的副本，屏蔽符号位，得到浮点数 u 的绝对值。 函数会处理特殊情况。如果 u 大于 0x7f800000，输入值为 NaN，函数会将结果设置为特殊的 NaN 值并返回。如果 u 大于 0x477fefff 或小于 ...</div></div></div></a><a class="pagination-related" href="/2024/03/11/MNN_GPU_float16/" title="MNN GPU float16 使用原理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">MNN GPU float16 使用原理</div></div><div class="info-2"><div class="info-item-1">我观察到 MNN 在使用 GPU OpenCL 时，会默认使用 float16 的格式，导致模型评测时时间不同，如图。因此查看了 MNN 的源码，发现了一些有趣的东西。  MNN 使用 MNN::BackendConfig::Precision_Low 时，会根据 GPU 的实际情况判断是否使用 float16 的数据格式。代码随附。 当导出的模型可以使用 float32 或者 float16 保存，当权重转换到 GPU 上时，会转换格式，在代码的第19行到第22行。代码随附。 Pipeline 中保存的 tensor 指向的 opencl buffer 保存的还是 float16。但是 OpenCL::onMapTensor 和 OpenCL::onUnmapTensor 的实现保证了映射前后得到的是 float32。OpenCLBackend::onAcquire 给出了 tensor 中保存的 buffer 格式，其中调用了 isSupportedFP16 判断目前是否支持 float16，如果支持则使用 float16 的大小创建 buffer。 OpenCLBacken...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">43</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">63</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Deploy-ORT-model"><span class="toc-number">1.</span> <span class="toc-text">Deploy ORT model</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Torch-to-ONNX"><span class="toc-number">1.1.</span> <span class="toc-text">Torch to ONNX</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ONNX-to-ORT"><span class="toc-number">1.2.</span> <span class="toc-text">ONNX to ORT</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ORT-NNAPI"><span class="toc-number">1.3.</span> <span class="toc-text">ORT NNAPI</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Build-ONNXRuntime-From-Source"><span class="toc-number">1.4.</span> <span class="toc-text">Build ONNXRuntime From Source</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OnnxRuntime-C-Impl"><span class="toc-number">1.5.</span> <span class="toc-text">OnnxRuntime C++ Impl</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux"><span class="toc-number">1.5.1.</span> <span class="toc-text">Linux</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Android"><span class="toc-number">1.5.2.</span> <span class="toc-text">Android</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/26/ld-loader-glibc-version-compatibility/" title="ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析">ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析</a><time datetime="2026-03-26T11:30:00.000Z" title="发表于 2026-03-26 19:30:00">2026-03-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/19/torch-chunked-gated-delta-rule-optimization/" title="Torch Chunked Gated Delta Rule 并行优化指南">Torch Chunked Gated Delta Rule 并行优化指南</a><time datetime="2026-03-19T01:15:00.000Z" title="发表于 2026-03-19 09:15:00">2026-03-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/18/SonicMoE-Accelerating-MoE/" title="SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化">SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化</a><time datetime="2026-03-17T16:12:00.000Z" title="发表于 2026-03-18 00:12:00">2026-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/13/arm-intrinsics/" title="ARM 架构深度学习推理指令集的演进与技术范式分析报告">ARM 架构深度学习推理指令集的演进与技术范式分析报告</a><time datetime="2026-03-13T01:06:06.000Z" title="发表于 2026-03-13 09:06:06">2026-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/12/solid-principle/" title="软件工程中的 SOLID 原则">软件工程中的 SOLID 原则</a><time datetime="2026-03-12T15:58:04.000Z" title="发表于 2026-03-12 23:58:04">2026-03-12</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

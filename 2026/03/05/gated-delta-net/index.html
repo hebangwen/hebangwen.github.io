@@ -1,0 +1,400 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Gated Delta Net | Yet Another 何榜文's Blog</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="门控增量网络（Gated Delta Network）的技术原理、性能优势与工业应用综述随着大语言模型（LLM）在长文本处理、多轮对话以及复杂指令遵循等任务中的广泛应用，传统 Transformer 架构所面临的计算挑战日益凸显。自注意力机制（Self-Attention）的计算复杂度与内存占用随序列长度 $L$ 呈二次方增长（$O(L^2)$），这一“效率之墙”严重制约了模型处理超长上下文的能力">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Gated Delta Net">
+<meta property="og:url" content="http://hebangwen.github.io/2026/03/05/gated-delta-net/index.html">
+<meta property="og:site_name" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:description" content="门控增量网络（Gated Delta Network）的技术原理、性能优势与工业应用综述随着大语言模型（LLM）在长文本处理、多轮对话以及复杂指令遵循等任务中的广泛应用，传统 Transformer 架构所面临的计算挑战日益凸显。自注意力机制（Self-Attention）的计算复杂度与内存占用随序列长度 $L$ 呈二次方增长（$O(L^2)$），这一“效率之墙”严重制约了模型处理超长上下文的能力">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2026-03-05T14:17:29.000Z">
+<meta property="article:modified_time" content="2026-03-19T04:54:35.334Z">
+<meta property="article:author" content="何榜文">
+<meta property="article:tag" content="Linear Attention">
+<meta property="article:tag" content="Transformer">
+<meta property="article:tag" content="Qwen">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Gated Delta Net",
+  "url": "http://hebangwen.github.io/2026/03/05/gated-delta-net/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2026-03-05T14:17:29.000Z",
+  "dateModified": "2026-03-19T04:54:35.334Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "http://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="http://hebangwen.github.io/2026/03/05/gated-delta-net/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Gated Delta Net',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">Yet Another 何榜文's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Gated Delta Net</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">Gated Delta Net</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-03-05T14:17:29.000Z" title="发表于 2026-03-05 22:17:29">2026-03-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-03-19T04:54:35.334Z" title="更新于 2026-03-19 12:54:35">2026-03-19</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><div class="ai-writer-badge" style="margin-bottom: 1rem; padding: 0.5rem 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px; display: inline-block; font-size: 0.85rem;">🤖 AI Writer: <strong>gemini</strong></div><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><h1 id="门控增量网络（Gated-Delta-Network）的技术原理、性能优势与工业应用综述"><a href="#门控增量网络（Gated-Delta-Network）的技术原理、性能优势与工业应用综述" class="headerlink" title="门控增量网络（Gated Delta Network）的技术原理、性能优势与工业应用综述"></a>门控增量网络（Gated Delta Network）的技术原理、性能优势与工业应用综述</h1><p>随着大语言模型（LLM）在长文本处理、多轮对话以及复杂指令遵循等任务中的广泛应用，传统 Transformer 架构所面临的计算挑战日益凸显。自注意力机制（Self-Attention）的计算复杂度与内存占用随序列长度 $L$ 呈二次方增长（$O(L^2)$），这一“效率之墙”严重制约了模型处理超长上下文的能力 。为了突破这一瓶颈，研究界探索了多种亚线性复杂度的替代方案，其中<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2412.06464">门控增量网络</a>（Gated Delta Network，简称 GDN 或 Gated DeltaNet）作为线性 Transformer 的演进版本，凭借其在记忆精确度与硬件效率之间的卓越平衡，正逐渐成为新一代长文本模型的核心技术 。</p>
+<h2 id="第一部分：Gated-Delta-Network-的核心原理与理论演进"><a href="#第一部分：Gated-Delta-Network-的核心原理与理论演进" class="headerlink" title="第一部分：Gated Delta Network 的核心原理与理论演进"></a>第一部分：Gated Delta Network 的核心原理与理论演进</h2><p>GDN 的设计灵感源于对现有线性递归模型局限性的深度审视。在线性 Transformer 的语境下，模型通常被视为一种基于外积的键值关联记忆（Outer-product-based key-value associative memory） 。然而，这种记忆机制存在一个本质缺陷：其能够存储的正交键值对数量受限于模型的维度。当序列长度超过维度时，不可避免地会发生“记忆碰撞”（Memory Collision），导致检索精确度大幅下降 。为了解决这一问题，GDN 引入了门控机制（Gating）与增量规则（Delta Rule）的协同作用 。</p>
+<h3 id="1-1-从单纯递归到门控增量规则"><a href="#1-1-从单纯递归到门控增量规则" class="headerlink" title="1.1 从单纯递归到门控增量规则"></a>1.1 从单纯递归到门控增量规则</h3><p>早期的线性 Transformer 采用纯加性更新规则，即 $S_t &#x3D; S_{t-1} + v_t k_t^T$。这种方式虽然简单，但容易导致记忆饱和且缺乏选择性 。</p>
+<p>随后，以 Mamba2 为代表的状态空间模型（SSM）引入了数据相关的门控衰减项 $\alpha_t \in (0,1)$，其更新规则演变为 $S_t &#x3D; \alpha_t S_{t-1} + v_t k_t^T$ 。虽然门控能够有效清除陈旧记忆，但它采取的是一种“无差别衰减”策略：如果模型需要忘记某个特定的旧关联，它必须降低整个记忆矩阵的强度，这种粗放的记忆管理方式在需要精确更新的场景中显得力不从心 。</p>
+<p>相比之下，基于增量规则的 DeltaNet 采用了类似于 Widrow-Hoff 法则的更新方式。它通过计算当前输入键 $k_t$ 与记忆矩阵中已有信息的偏差，实现对特定记忆槽位的“外科手术式更新” 。</p>
+<p>DeltaNet 的状态更新公式如下：</p>
+<p>$$S_t &#x3D; S_{t-1} ( I - \beta_t k_t k_t^T ) + \beta_t v_t k_t^T &#x3D; S_{t-1} + \beta_t (v_t - S_{t-1} k_t) k_t^T $$</p>
+<p>其中，$H &#x3D; I - \beta_t k_t k_t^T$ 为 Householder 变换矩阵，其作用为将输入向量 $x$ 变为由向量 $k$ 定义的超平面的镜像向量 $x^\prime$。$\Delta &#x3D; v_t - S_{t-1} k_t$ 可以认为是只需要更新增量 value。如果 $\Delta$ 趋近于 0，说明本次需要记忆的内容较少；反之，说明本次需要记忆的内容较多，达到了不同 token 具有不同贡献量的效果。</p>
+<p>GDN 将这两者的优势有机统一，提出了门控增量规则（Gated Delta Rule）。其核心状态更新公式表示为：</p>
+<p>$$S_t &#x3D; \alpha_t S_{t-1}(I - \beta_t k_t k_t^T) + \beta_t v_t k_t^T$$</p>
+<p>在此公式中，$S_t \in \mathbb{R}^{d_v \times d_k}$ 代表时刻 $t$ 的记忆状态，$\alpha_t$ 是负责全局记忆清理的衰减因子，而 $(I - \beta_t k_t k_t^T)$ 则代表广义 Householder 变换矩阵，负责在写入新信息前动态擦除与当前键 $k_t$ 相关的旧值 。$\beta_t$ 衡量了“写入强度”，决定了新信息替换旧信息的程度 。这种机制允许模型在 $\alpha_t \rightarrow 0$ 时迅速重置记忆，而在 $\alpha_t \rightarrow 1$ 时切换到纯增量更新模式，从而实现极其灵活的记忆控制 。</p>
+<h3 id="1-2-在线学习视角下的数学本质"><a href="#1-2-在线学习视角下的数学本质" class="headerlink" title="1.2 在线学习视角下的数学本质"></a>1.2 在线学习视角下的数学本质</h3><p>从在线学习（Online Learning）的理论视角来看，GDN 的更新规则并非凭空产生，而是特定优化目标的闭式解 。传统线性注意力（LA）和 Mamba2 通常优化简单的负内积损失，而 GDN 则通过在线回归（Online Regression）来增强键值关联的建模能力 。研究分析表明，GDN 实际上是在每个步长 $t$ 最小化以下正规化目标函数：</p>
+<p>$$\mathcal{L}(S_t) &#x3D; ||S_t - \alpha_t S_{t-1}||_F^2 - 2 \left &lt; S_t k_t, \beta_t(v_t - \alpha_t S_{t-1} k_t) \right &gt;$$</p>
+<p>通过这种方式，隐藏状态 $S$ 可以被视为一组“快速权重”（Fast Weights），而增量规则则是通过在测试阶段进行随机梯度下降（SGD）来优化记忆容量 。这种将记忆管理转化为回归任务的思路，使得 GDN 在处理复杂模式（如 UUID 等非结构化文本）的记忆与检索时，表现出显著优于常规递归模型的鲁棒性 。</p>
+<h3 id="1-3-硬件加速与并行算法：WY-表示法的应用"><a href="#1-3-硬件加速与并行算法：WY-表示法的应用" class="headerlink" title="1.3 硬件加速与并行算法：WY 表示法的应用"></a>1.3 硬件加速与并行算法：WY 表示法的应用</h3><p>线性递归模型在训练效率上长期受制于其串行本质。为了实现硬件高效的训练，GDN 采用了基于 WY 表示法（Bischof &amp; Loan, 1985）的块状并行（Chunkwise Parallel）算法 。该算法将长序列划分为大小为 $C$ 的块（通常为 128 或 256），并利用张量计算核心（Tensor Cores）进行并行加速 。在块内，算法通过将 Householder 矩阵的乘积转化为矩阵运算，极大地提高了算术强度（Arithmetic Intensity）。利用 UT 转换技术，模型可以将复杂的递归更新简化为如下矩阵形式：$$S_{[t+1]} &#x3D; S_{[t]} P_{[t]} + H_{[t]}$$其中 $P_{[t]}$ 和 $H_{[t]}$ 分别捕捉了块内的记忆擦除和写入效应 。这种实现方式确保了 GDN 在现代 GPU 上具有极高的吞吐量。实验数据证明，GDN 的训练速度与 Mamba2 相当，且在处理超长序列（如 16K 或 32K）时，由于避免了自注意力机制中频繁的显存交换，其优势更加明显 。目前，Flash Linear Attention (FLA) 库已经集成了针对 GDN 优化的 Triton 内核，提供了比原生 PyTorch 实现更快的运行速度 。</p>
+<h2 id="第二部分：GDN-与其他主流长文本技术的性能对比"><a href="#第二部分：GDN-与其他主流长文本技术的性能对比" class="headerlink" title="第二部分：GDN 与其他主流长文本技术的性能对比"></a>第二部分：GDN 与其他主流长文本技术的性能对比</h2><p>为了全面客观地评估 GDN 的技术地位，有必要将其与滑动窗口注意力（Sliding Window Attention, SWA）以及原生稀疏注意力（Native Sparse Attention, NSA）进行深度对比。这三种技术代表了解决长文本问题的不同技术路线：SWA 属于局部精确路径，NSA 属于动态稀疏路径，而 GDN 则属于递归压缩路径 。</p>
+<h3 id="2-1-GDN-vs-滑动窗口注意力-SWA"><a href="#2-1-GDN-vs-滑动窗口注意力-SWA" class="headerlink" title="2.1 GDN vs. 滑动窗口注意力 (SWA)"></a>2.1 GDN vs. 滑动窗口注意力 (SWA)</h3><p>滑动窗口注意力通过限制每个 Token 只能观察其附近固定长度 $W$ 的邻居，将复杂度降低至 $O(L \cdot W)$ 。</p>
+<p><strong>性能表现对比</strong>：</p>
+<p>在语言建模任务中，SWA 虽然在短程依赖和局部精确匹配（如语法结构）上表现出色，但其在处理长程依赖时存在明显的“信息丢失”现象 。相比之下，GDN 能够将过往信息压缩至固定大小的状态矩阵中，从而保留全局上下文 。</p>
+<table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">GDN (Gated Delta Net)</th>
+<th align="left">SWA (Sliding Window Attention)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">计算复杂度</td>
+<td align="left">$O(L \cdot d^2)$ (线性)</td>
+<td align="left">$O(L \cdot W)$ (准线性)</td>
+</tr>
+<tr>
+<td align="left">显存占用</td>
+<td align="left">固定（不随长度增长）</td>
+<td align="left">随窗口大小固定，但 KV Cache 管理复杂</td>
+</tr>
+<tr>
+<td align="left">长程依赖</td>
+<td align="left">通过递归状态实现全局记忆</td>
+<td align="left">无法获取窗口外的历史信息</td>
+</tr>
+<tr>
+<td align="left">检索精确度</td>
+<td align="left">近似检索（存在饱和上限）</td>
+<td align="left">窗口内 100% 精确检索</td>
+</tr>
+</tbody></table>
+<p><strong>协同效应</strong>：</p>
+<p>研究表明，GDN 与 SWA 并非互斥。在 Qwen 3.5 和 InfiniteVL 等混合架构中，通常会将 GDN 层与 SWA 层交替堆叠 。GDN 负责提供长程全局背景，而 SWA 负责补充高分辨率的局部细节，这种组合在 LongBench 等长文本理解基准测试中展现了超越单一架构的性能 。</p>
+<h3 id="2-2-GDN-vs-原生稀疏注意力-NSA"><a href="#2-2-GDN-vs-原生稀疏注意力-NSA" class="headerlink" title="2.2 GDN vs. 原生稀疏注意力 (NSA)"></a>2.2 GDN vs. 原生稀疏注意力 (NSA)</h3><p>原生稀疏注意力（NSA）是由 DeepSeek 提出的一种创新的层内并行分支结构。它通过三条并行路径（压缩 Token、选择 Token 和滑动窗口）来模拟全局和局部的注意力分布 。</p>
+<p><strong>架构哲学差异</strong>：</p>
+<p>NSA 仍然基于注意力机制，其核心在于“挑着看”，而 GDN 基于递归机制，其核心在于“记着看” 。</p>
+<p><strong>性能优势与代价</strong>：</p>
+<ol>
+<li><strong>推理速度与内存</strong>： NSA 虽然在解码阶段通过只加载部分 KV Block 实现了高达 11.6 倍的加速，但其 KV Cache 的显存占用仍然随长度线性增长 。对于极长序列（如 100 万 Token），NSA 的显存压力依然巨大。而 GDN 在推理时可转化为线性 RNN，其状态更新是常数内存开销，极大地降低了长文本推理的成本 。</li>
+<li><strong>训练特性</strong>： NSA 支持原生端到端训练，解决了以往稀疏方法训练推断不一致的问题 。GDN 同样支持块状并行训练，但在训练算术强度上，GDN 由于涉及复杂的 WY 表示法变换，其算子开发难度更高，但目前的 FLA 库已较好地解决了这一工程挑战 。</li>
+<li><strong>检索能力</strong>： NSA 凭借其动态令牌选择机制，在处理“海中捞针”（Needle-in-a-Haystack）任务时，由于可以直接访问原始 Key 向量，其上限高于递归模型 。GDN 虽然通过 Delta Rule 大幅改善了这一缺陷，但在极长上下文中的信息压缩损耗依然存在 。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">GDN</th>
+<th align="left">NSA</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">推理延迟</td>
+<td align="left">Token 生成耗时为常数</td>
+<td align="left">Token 生成耗时随长度缓慢增加</td>
+</tr>
+<tr>
+<td align="left">KV Cache 容量</td>
+<td align="left">$O(d^2)$ (与序列长度无关)</td>
+<td align="left">$O(L \cdot k)$ (随序列长度增长)</td>
+</tr>
+<tr>
+<td align="left">应用难易度</td>
+<td align="left">需专用 Triton&#x2F;CUDA 核优化</td>
+<td align="left">需复杂的索引和分块管理</td>
+</tr>
+<tr>
+<td align="left">主要优势</td>
+<td align="left">极致的显存效率与处理长度</td>
+<td align="left">极高的信息忠实度与稀疏速度</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-GDN-与-Mamba2-的直接对标"><a href="#2-3-GDN-与-Mamba2-的直接对标" class="headerlink" title="2.3 GDN 与 Mamba2 的直接对标"></a>2.3 GDN 与 Mamba2 的直接对标</h3><p>作为目前最强的 SSM 之一，Mamba2 是 GDN 最直接的竞争对手。GDN 在 ICLR 2025 的论文中明确指出，GDN 是对 Mamba2 在检索能力上的直接补强 。</p>
+<p>在 S-NIAH-1（通关密码检索）任务中，Mamba2 在上下文达到 2000 token 后性能开始出现断崖式下跌，原因在于其简单的衰减机制导致历史信息丢失过快 。而 GDN 凭借增量规则，能够将高精确度的检索能力维持到更长的距离 。在 S-NIAH-3（UUID 检索）任务中，GDN 的得分显著高于 Mamba2，验证了其在处理复杂非语义模式时的优越性 。</p>
+<table>
+<thead>
+<tr>
+<th align="left">任务 (1.3B 模型)</th>
+<th align="left">Mamba2</th>
+<th align="left">DeltaNet</th>
+<th align="left">Gated DeltaNet</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">S-NIAH-1 Avg. Acc</td>
+<td align="left">30.4</td>
+<td align="left">98.8</td>
+<td align="left">91.8</td>
+</tr>
+<tr>
+<td align="left">S-NIAH-2 Avg. Acc</td>
+<td align="left">17.0</td>
+<td align="left">14.4</td>
+<td align="left">29.6</td>
+</tr>
+<tr>
+<td align="left">Wikitext-103 PPL</td>
+<td align="left">12.56</td>
+<td align="left">16.88</td>
+<td align="left">12.17</td>
+</tr>
+<tr>
+<td align="left">Commonsense Avg.</td>
+<td align="left">54.89</td>
+<td align="left">52.14</td>
+<td align="left">55.32</td>
+</tr>
+</tbody></table>
+<h2 id="第三部分：GDN-的工业应用现状分析"><a href="#第三部分：GDN-的工业应用现状分析" class="headerlink" title="第三部分：GDN 的工业应用现状分析"></a>第三部分：GDN 的工业应用现状分析</h2><p>GDN 的成熟不仅体现在理论研究上，更体现在其在顶级大模型产品中的大规模应用。目前，GDN 已成为推动“原生长文本”和“智能体架构”的关键组件。</p>
+<h3 id="3-1-Qwen-3-5-的核心支撑"><a href="#3-1-Qwen-3-5-的核心支撑" class="headerlink" title="3.1 Qwen 3.5 的核心支撑"></a>3.1 Qwen 3.5 的核心支撑</h3><p>阿里巴巴最近发布的 Qwen 3.5 系列模型是 GDN 工业化应用的最典型案例 。Qwen 3.5 抛弃了以往对滑动窗口注意力的过度依赖，转而采用一种创新的混合注意力架构 。</p>
+<p><strong>架构设计细节</strong>：</p>
+<p>在 Qwen 3.5 中，模型通常按照 3:1 的比例进行层交替：每 3 层 GDN 层后跟随 1 层全注意力（Full Attention）层 。</p>
+<ul>
+<li><strong>GDN 层的角色</strong>： 充当“主力算子”，负责极长上下文的线性处理。由于 GDN 具有线性复杂度，它使得 Qwen 3.5 能够原生支持高达 262,144 token 的上下文，并通过 RoPE 扩展进一步支持到 100 万 token 。</li>
+<li><strong>全注意力层的角色</strong>： 充当“记忆锚点”。每隔几层进行一次全局注意力建模，能够纠正递归状态在长程传播中的累积漂移，保证逻辑推理的严密性 。</li>
+</ul>
+<p><strong>性能增益</strong>：</p>
+<p>得益于 GDN 的高吞吐量，Qwen 3.5 在处理 256k token 的超长上下文时，解码吞吐量比前代架构提升了 19 倍 。在智能体搜索（BrowseComp）和长文档分析（OmniDocBench）等任务中，该架构的表现优于同等规模的全注意力模型，且成本显著降低 。</p>
+<h3 id="3-2-Kimi-Linear-与-KDA-的演进"><a href="#3-2-Kimi-Linear-与-KDA-的演进" class="headerlink" title="3.2 Kimi Linear 与 KDA 的演进"></a>3.2 Kimi Linear 与 KDA 的演进</h3><p>Kimi (Moonshot AI) 开发的 Kimi Linear 则是 GDN 技术的另一个分支演进 。它引入了 Kimi Delta Attention (KDA)，在 GDN 的基础上进行了更细粒度的改进。</p>
+<p><strong>关键改进</strong>：通道级门控（Channel-wise Gating）</p>
+<p>传统的 GDN 对每个注意力头（Head）使用单一的衰减因子 $\alpha_t$，这被称为“粗粒度门控” 。KDA 将其升级为通道级门控，允许每个特征维度拥有独立的记忆衰减速率 。这种设计类似于长短期记忆网络（LSTM）中的遗忘门，使得模型能够更精准地决定哪些语义特征需要长期保留，哪些需要立即重置 。</p>
+<p><strong>应用成效</strong>：</p>
+<p>Kimi Linear 通过 3:1 的 KDA 与 MLA（Multi-head Latent Attention）混合比例，在 MMLU-Pro 和 RULER 等长文本测试中达到了帕累托最优（Pareto-optimal） 。在 100 万 token 的解码长度下，其每 token 的生成耗时（TPOT）仅为 1.84ms，而传统的 MLA 架构则需要 11.48ms 。</p>
+<h3 id="3-3-多模态与视频理解：InfiniteVL"><a href="#3-3-多模态与视频理解：InfiniteVL" class="headerlink" title="3.3 多模态与视频理解：InfiniteVL"></a>3.3 多模态与视频理解：InfiniteVL</h3><p>在视频理解领域，输入的帧序列具有极高的冗余度且往往需要极长的上下文窗口 。InfiniteVL 架构通过将 GDN 与 SWA 结合，解决了视频模型在超长流式输入下的内存崩溃问题 。</p>
+<p>该架构在处理 50K token 的长视频任务时，比基于 FlashAttention-2 的 Transformer 实现了 3.6 倍的加速，且显存占用始终稳定在 9GB 左右，不随视频帧数增加而增长 。这种“长度无关”的内存特性对于实时监控、自动驾驶监控等长时序视频分析场景具有决定性的商业价值 。</p>
+<h2 id="第四部分：深度分析与前瞻洞察"><a href="#第四部分：深度分析与前瞻洞察" class="headerlink" title="第四部分：深度分析与前瞻洞察"></a>第四部分：深度分析与前瞻洞察</h2><p>GDN 技术的崛起反映了序列建模领域从“算力暴力”向“算法精细化”的深刻转变。以下是针对 GDN 发展轨迹的深层次洞察。</p>
+<h3 id="4-1-记忆管理的“手术刀”效应"><a href="#4-1-记忆管理的“手术刀”效应" class="headerlink" title="4.1 记忆管理的“手术刀”效应"></a>4.1 记忆管理的“手术刀”效应</h3><p>GDN 成功的核心在于它将记忆状态从一个简单的“蓄水池”变成了一个高度动态的“交互式工作区”。通过 Delta Rule 实现的 Householder 转换，本质上是在进行一种实时的数据正交化（Data Orthogonalization） 。这意味着模型能够在不断写入新信息的同时，主动腾出不必要的空间，从而在有限的固定状态维度内挤出更高的记忆容量 。这种机制对于需要高频状态更新的任务（如编写长代码、执行复杂工作流）至关重要。</p>
+<h3 id="4-2-混合架构成为-LLM-的必然标准"><a href="#4-2-混合架构成为-LLM-的必然标准" class="headerlink" title="4.2 混合架构成为 LLM 的必然标准"></a>4.2 混合架构成为 LLM 的必然标准</h3><p>单一架构的时代正在结束。正如计算机系统采用 L1&#x2F;L2 缓存和内存的分层结构，现代 LLM 也正转向由 GDN 支撑的层分层结构 。</p>
+<ul>
+<li><strong>底层架构</strong>： 大量使用 GDN 层，以极低的成本维持基本的上下文流动。</li>
+<li><strong>关键节点</strong>： 插入稀疏注意力或全注意力层，处理高难度的跨片段逻辑跳转。</li>
+</ul>
+<p>这种“线性递归+稀疏&#x2F;全注意力”的组合，不仅在性能上逼近全注意力 Transformer，更在工程可行性上为 100 万甚至 1000 万 token 的超长上下文铺平了道路 。</p>
+<h3 id="4-3-与端侧-AI-On-Device-AI-的天然适配"><a href="#4-3-与端侧-AI-On-Device-AI-的天然适配" class="headerlink" title="4.3 与端侧 AI (On-Device AI) 的天然适配"></a>4.3 与端侧 AI (On-Device AI) 的天然适配</h3><p>GDN 的线性推理特性使其成为移动端、边缘计算设备的理想选择 。在显存带宽极度受限（通常比数据中心 GPU 低 30-50 倍）的智能手机和可穿戴设备上，GDN 能够避免庞大 KV Cache 带来的频繁内存读取操作，从而极大地降低功耗并提高生成响应速度 。Qwen 3.5 的 4B 和 2B 密集模型（Dense models）通过 GDN 架构，已经证明了在端侧实现流畅长文本交互的可能性 。</p>
+<h3 id="4-4-存在的挑战与改进方向"><a href="#4-4-存在的挑战与改进方向" class="headerlink" title="4.4 存在的挑战与改进方向"></a>4.4 存在的挑战与改进方向</h3><p>尽管表现优异，GDN 仍面临若干技术挑战：</p>
+<ol>
+<li><strong>状态容量极限</strong>： 无论增量规则如何高效，其物理上限仍受限于 $d^2$ 的状态矩阵大小 。对于极长且信息密度极高的任务，如何动态扩展隐藏状态或结合外部检索增强（RAG），仍是待研究的课题。</li>
+<li><strong>数值稳定性</strong>： 在超大规模预训练中，Householder 矩阵的乘积可能导致数值溢出或梯度峰值 。目前的解决方案通常包括 L2 归一化和精细化的 bias 初始化，但更稳健的数值策略仍在探索中 。</li>
+<li><strong>软件生态</strong>： 相比于高度成熟的 FlashAttention 生态，针对 GDN 的高效算子库（如 FLA, SGLang）仍处于快速迭代期，需要更多的工业实践来打磨性能稳定性 。</li>
+</ol>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>门控增量网络（Gated Delta Network）通过对记忆管理机制的深刻变革，成功解决了线性 Transformer 长期以来的记忆模糊问题。它不仅在理论上统一了门控衰减与增量更新，更在硬件实现上通过块状并行算法达到了工业级性能。对比滑动窗口注意力和原生稀疏注意力，GDN 在显存效率、推理一致性以及长程依赖建模上展现了独特优势。</p>
+<p>随着以 Qwen 3.5 和 Kimi Linear 为代表的标杆模型在商业化场景中取得巨大成功，我们可以预见，基于 GDN 的混合架构将成为未来大规模生成式系统的主流选择。它不仅代表了长文本技术的突破，更是通往高效、低碳、普惠 AI 的关键一步。在未来的发展中，随着通道级门控、负特征值追踪以及与测试时训练（TTT）等前沿技术的进一步融合，GDN 将继续刷新序列建模的性能边界 。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io/2026/03/05/gated-delta-net/">http://hebangwen.github.io/2026/03/05/gated-delta-net/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://hebangwen.github.io" target="_blank">Yet Another 何榜文's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Linear-Attention/">Linear Attention</a><a class="post-meta__tags" href="/tags/Transformer/">Transformer</a><a class="post-meta__tags" href="/tags/Qwen/">Qwen</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/03/06/chunkwise-parallel-algo/" title="Chunkwise 并行算法 —— 线性注意力"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Chunkwise 并行算法 —— 线性注意力</div></div><div class="info-2"><div class="info-item-1">为了在现代硬件上实现高效训练，Mamba2 和 DeltaNet 都通过分块并行（Chunkwise Parallel）策略将 $O(L)$ 的线性递归改写为矩阵迭代形式。这种变换的核心思想是将长序列划分为大小为 $C$ 的块，利用矩阵乘法（Matmul）处理块内计算，通过隐藏状态传递块间信息。 1. Mamba2：状态空间二元性（SSD）的矩阵迭代推导Mamba2 的核心贡献在于证明了选择性 SSM 实际上等价于一种带有特殊掩码的线性注意力机制。 1.1 从递归到块内状态展开Mamba2 的状态更新公式（矩阵形式）为： $$S_t &#x3D; \alpha_t S_{t-1} + v_t k_t^T \in \mathbb{R}^{d_v \times d_k}, \quad o_t &#x3D; S_t q_t \in \mathbb{R}^{d_v}$$ 其中 $\alpha_t \in (0,1)$ 是数据相关的衰减因子。定义 $\gamma_j &#x3D; \prod_{i&#x3D;1}^j \alpha_i$ 为全局累积衰减，是一个标量因子。 如果只考虑端侧 C...</div></div></div></a><a class="pagination-related" href="/2026/03/04/search-api-summary/" title="search-api-summary"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">search-api-summary</div></div><div class="info-2"><div class="info-item-1">搜索 API 价格汇总   API 免费额度 收费额度 其它    serpapi 250 次调用&#x2F;月 高级版 1000 次调用&#x2F;$25&#x2F;月 API 汇总较多   grounding-bing ❌ $14&#x2F;1000次调用 bing-search-api 已经停用，目前使用 grounding with bing 提供服务   百度智能云·千帆平台 100次调用&#x2F;天 ￥36&#x2F;1000次调用 优先扣除免费额度，每天最多调用 100’000 次（3600 元）   腾讯云 ❌ ¥30&#x2F;1000次调用 高级版 ¥46&#x2F;1000次调用，基于搜狗搜索引擎   智谱搜索API ❌ ¥10&#x2F;1000次调用 pro 版 ¥30，pro_sougou 版 ¥50。支持意图分析，融合大模型分析选择到搜索结果中   夸克搜索 ❌ ≥ ¥25 似乎只有对公服务，而且页面有点奇葩，销售感很重   阿里云 IQS 搜索服务 试用 1000次 &#x2F; 15天 ¥42&#x2F;1000次调用 仅有试用版   博查搜索...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/03/06/chunkwise-parallel-algo/" title="Chunkwise 并行算法 —— 线性注意力"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-06</div><div class="info-item-2">Chunkwise 并行算法 —— 线性注意力</div></div><div class="info-2"><div class="info-item-1">为了在现代硬件上实现高效训练，Mamba2 和 DeltaNet 都通过分块并行（Chunkwise Parallel）策略将 $O(L)$ 的线性递归改写为矩阵迭代形式。这种变换的核心思想是将长序列划分为大小为 $C$ 的块，利用矩阵乘法（Matmul）处理块内计算，通过隐藏状态传递块间信息。 1. Mamba2：状态空间二元性（SSD）的矩阵迭代推导Mamba2 的核心贡献在于证明了选择性 SSM 实际上等价于一种带有特殊掩码的线性注意力机制。 1.1 从递归到块内状态展开Mamba2 的状态更新公式（矩阵形式）为： $$S_t &#x3D; \alpha_t S_{t-1} + v_t k_t^T \in \mathbb{R}^{d_v \times d_k}, \quad o_t &#x3D; S_t q_t \in \mathbb{R}^{d_v}$$ 其中 $\alpha_t \in (0,1)$ 是数据相关的衰减因子。定义 $\gamma_j &#x3D; \prod_{i&#x3D;1}^j \alpha_i$ 为全局累积衰减，是一个标量因子。 如果只考虑端侧 C...</div></div></div></a><a class="pagination-related" href="/2024/03/13/llama2/" title="llama2"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-13</div><div class="info-item-2">llama2</div></div><div class="info-2"><div class="info-item-1">LLaMa2Transformer IntroductionArchitecturetransformer 最主要的结构就是这张图：   在纯 Encoder 或者纯 Decoder 的架构中，会变成只有左边的 transformer block 的结构，但是区别在于 Multi-Head Attention 是否存在 mask。Encoder-only 架构为了获取每一个 token 的完整上下文，因此没有对应的 mask；Decoder-only 架构为了让每一个 token 只能注意到它前面的 token，因此会存在一个从前往后的 mask，即生成的 $QK^T$ 矩阵（shape 为 $n_{tokens} \times n_{tokens}$）是一个下三角阵。  llama2 的 QK^T 矩阵注意力输出，Decoder 架构，因此是一个下三角阵 Encoder-DecoderTransformer-based Encoder-Decoder Models Transformer 是 Encoder-Decoder 结构的一种，这是为了解决在 NLP 中输入和输出长度不...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">43</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">63</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%97%A8%E6%8E%A7%E5%A2%9E%E9%87%8F%E7%BD%91%E7%BB%9C%EF%BC%88Gated-Delta-Network%EF%BC%89%E7%9A%84%E6%8A%80%E6%9C%AF%E5%8E%9F%E7%90%86%E3%80%81%E6%80%A7%E8%83%BD%E4%BC%98%E5%8A%BF%E4%B8%8E%E5%B7%A5%E4%B8%9A%E5%BA%94%E7%94%A8%E7%BB%BC%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">门控增量网络（Gated Delta Network）的技术原理、性能优势与工业应用综述</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E9%83%A8%E5%88%86%EF%BC%9AGated-Delta-Network-%E7%9A%84%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86%E4%B8%8E%E7%90%86%E8%AE%BA%E6%BC%94%E8%BF%9B"><span class="toc-number">1.1.</span> <span class="toc-text">第一部分：Gated Delta Network 的核心原理与理论演进</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E4%BB%8E%E5%8D%95%E7%BA%AF%E9%80%92%E5%BD%92%E5%88%B0%E9%97%A8%E6%8E%A7%E5%A2%9E%E9%87%8F%E8%A7%84%E5%88%99"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 从单纯递归到门控增量规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%9C%A8%E7%BA%BF%E5%AD%A6%E4%B9%A0%E8%A7%86%E8%A7%92%E4%B8%8B%E7%9A%84%E6%95%B0%E5%AD%A6%E6%9C%AC%E8%B4%A8"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 在线学习视角下的数学本质</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E7%A1%AC%E4%BB%B6%E5%8A%A0%E9%80%9F%E4%B8%8E%E5%B9%B6%E8%A1%8C%E7%AE%97%E6%B3%95%EF%BC%9AWY-%E8%A1%A8%E7%A4%BA%E6%B3%95%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc-number">1.1.3.</span> <span class="toc-text">1.3 硬件加速与并行算法：WY 表示法的应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E9%83%A8%E5%88%86%EF%BC%9AGDN-%E4%B8%8E%E5%85%B6%E4%BB%96%E4%B8%BB%E6%B5%81%E9%95%BF%E6%96%87%E6%9C%AC%E6%8A%80%E6%9C%AF%E7%9A%84%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94"><span class="toc-number">1.2.</span> <span class="toc-text">第二部分：GDN 与其他主流长文本技术的性能对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-GDN-vs-%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E6%B3%A8%E6%84%8F%E5%8A%9B-SWA"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 GDN vs. 滑动窗口注意力 (SWA)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-GDN-vs-%E5%8E%9F%E7%94%9F%E7%A8%80%E7%96%8F%E6%B3%A8%E6%84%8F%E5%8A%9B-NSA"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 GDN vs. 原生稀疏注意力 (NSA)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-GDN-%E4%B8%8E-Mamba2-%E7%9A%84%E7%9B%B4%E6%8E%A5%E5%AF%B9%E6%A0%87"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.3 GDN 与 Mamba2 的直接对标</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E9%83%A8%E5%88%86%EF%BC%9AGDN-%E7%9A%84%E5%B7%A5%E4%B8%9A%E5%BA%94%E7%94%A8%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90"><span class="toc-number">1.3.</span> <span class="toc-text">第三部分：GDN 的工业应用现状分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Qwen-3-5-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%94%AF%E6%92%91"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 Qwen 3.5 的核心支撑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Kimi-Linear-%E4%B8%8E-KDA-%E7%9A%84%E6%BC%94%E8%BF%9B"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 Kimi Linear 与 KDA 的演进</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%A4%9A%E6%A8%A1%E6%80%81%E4%B8%8E%E8%A7%86%E9%A2%91%E7%90%86%E8%A7%A3%EF%BC%9AInfiniteVL"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3 多模态与视频理解：InfiniteVL</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E5%9B%9B%E9%83%A8%E5%88%86%EF%BC%9A%E6%B7%B1%E5%BA%A6%E5%88%86%E6%9E%90%E4%B8%8E%E5%89%8D%E7%9E%BB%E6%B4%9E%E5%AF%9F"><span class="toc-number">1.4.</span> <span class="toc-text">第四部分：深度分析与前瞻洞察</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E8%AE%B0%E5%BF%86%E7%AE%A1%E7%90%86%E7%9A%84%E2%80%9C%E6%89%8B%E6%9C%AF%E5%88%80%E2%80%9D%E6%95%88%E5%BA%94"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1 记忆管理的“手术刀”效应</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%B7%B7%E5%90%88%E6%9E%B6%E6%9E%84%E6%88%90%E4%B8%BA-LLM-%E7%9A%84%E5%BF%85%E7%84%B6%E6%A0%87%E5%87%86"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2 混合架构成为 LLM 的必然标准</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E4%B8%8E%E7%AB%AF%E4%BE%A7-AI-On-Device-AI-%E7%9A%84%E5%A4%A9%E7%84%B6%E9%80%82%E9%85%8D"><span class="toc-number">1.4.3.</span> <span class="toc-text">4.3 与端侧 AI (On-Device AI) 的天然适配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E5%AD%98%E5%9C%A8%E7%9A%84%E6%8C%91%E6%88%98%E4%B8%8E%E6%94%B9%E8%BF%9B%E6%96%B9%E5%90%91"><span class="toc-number">1.4.4.</span> <span class="toc-text">4.4 存在的挑战与改进方向</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA"><span class="toc-number">1.5.</span> <span class="toc-text">结论</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/26/ld-loader-glibc-version-compatibility/" title="ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析">ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析</a><time datetime="2026-03-26T11:30:00.000Z" title="发表于 2026-03-26 19:30:00">2026-03-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/19/torch-chunked-gated-delta-rule-optimization/" title="Torch Chunked Gated Delta Rule 并行优化指南">Torch Chunked Gated Delta Rule 并行优化指南</a><time datetime="2026-03-19T01:15:00.000Z" title="发表于 2026-03-19 09:15:00">2026-03-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/18/SonicMoE-Accelerating-MoE/" title="SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化">SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化</a><time datetime="2026-03-17T16:12:00.000Z" title="发表于 2026-03-18 00:12:00">2026-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/13/arm-intrinsics/" title="ARM 架构深度学习推理指令集的演进与技术范式分析报告">ARM 架构深度学习推理指令集的演进与技术范式分析报告</a><time datetime="2026-03-13T01:06:06.000Z" title="发表于 2026-03-13 09:06:06">2026-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/12/solid-principle/" title="软件工程中的 SOLID 原则">软件工程中的 SOLID 原则</a><time datetime="2026-03-12T15:58:04.000Z" title="发表于 2026-03-12 23:58:04">2026-03-12</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

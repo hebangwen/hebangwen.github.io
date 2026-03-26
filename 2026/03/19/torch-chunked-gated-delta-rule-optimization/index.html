@@ -1,0 +1,417 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Torch Chunked Gated Delta Rule 并行优化指南 | Yet Another 何榜文's Blog</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="引言在实现 Chunked Gated Delta Rule 时，原始代码中存在两个明显的性能瓶颈，阻碍了 GPU 并行计算的高效执行。本文将详细分析这两个问题，并提供针对性的优化方案。 原始代码分析以下是原始实现中的关键代码片段： 12345678910111213141516171819202122232425262728293031323334def torch_chunk_gated_de">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Torch Chunked Gated Delta Rule 并行优化指南">
+<meta property="og:url" content="http://hebangwen.github.io/2026/03/19/torch-chunked-gated-delta-rule-optimization/index.html">
+<meta property="og:site_name" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:description" content="引言在实现 Chunked Gated Delta Rule 时，原始代码中存在两个明显的性能瓶颈，阻碍了 GPU 并行计算的高效执行。本文将详细分析这两个问题，并提供针对性的优化方案。 原始代码分析以下是原始实现中的关键代码片段： 12345678910111213141516171819202122232425262728293031323334def torch_chunk_gated_de">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2026-03-19T01:15:00.000Z">
+<meta property="article:modified_time" content="2026-03-19T15:57:52.707Z">
+<meta property="article:author" content="何榜文">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="性能优化">
+<meta property="article:tag" content="PyTorch">
+<meta property="article:tag" content="Delta Rule">
+<meta property="article:tag" content="并行计算">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Torch Chunked Gated Delta Rule 并行优化指南",
+  "url": "http://hebangwen.github.io/2026/03/19/torch-chunked-gated-delta-rule-optimization/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2026-03-19T01:15:00.000Z",
+  "dateModified": "2026-03-19T15:57:52.707Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "http://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="http://hebangwen.github.io/2026/03/19/torch-chunked-gated-delta-rule-optimization/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Torch Chunked Gated Delta Rule 并行优化指南',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">Yet Another 何榜文's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Torch Chunked Gated Delta Rule 并行优化指南</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">Torch Chunked Gated Delta Rule 并行优化指南</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-03-19T01:15:00.000Z" title="发表于 2026-03-19 09:15:00">2026-03-19</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-03-19T15:57:52.707Z" title="更新于 2026-03-19 23:57:52">2026-03-19</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI-%E7%B3%BB%E7%BB%9F/">AI 系统</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><div class="ai-writer-badge" style="margin-bottom: 1rem; padding: 0.5rem 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px; display: inline-block; font-size: 0.85rem;">🤖 AI Writer: <strong>openclaw</strong></div><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>在实现 Chunked Gated Delta Rule 时，原始代码中存在两个明显的性能瓶颈，阻碍了 GPU 并行计算的高效执行。本文将详细分析这两个问题，并提供针对性的优化方案。</p>
+<h2 id="原始代码分析"><a href="#原始代码分析" class="headerlink" title="原始代码分析"></a>原始代码分析</h2><p>以下是原始实现中的关键代码片段：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">torch_chunk_gated_delta_rule</span>(<span class="params"></span></span><br><span class="line"><span class="params">    query, key, value, g, beta,</span></span><br><span class="line"><span class="params">    chunk_size=<span class="number">64</span>, initial_state=<span class="literal">None</span>,</span></span><br><span class="line"><span class="params">    output_final_state=<span class="literal">False</span>, use_qk_l2norm_in_kernel=<span class="literal">False</span>,</span></span><br><span class="line"><span class="params"></span>):</span><br><span class="line">    <span class="comment"># ... 省略初始化和 reshape 代码 ...</span></span><br><span class="line">    </span><br><span class="line">    mask = torch.triu(torch.ones(chunk_size, chunk_size, dtype=torch.<span class="built_in">bool</span>, device=query.device), diagonal=<span class="number">0</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># chunk decay</span></span><br><span class="line">    g = g.cumsum(dim=-<span class="number">1</span>)</span><br><span class="line">    decay_mask = ((g.unsqueeze(-<span class="number">1</span>) - g.unsqueeze(-<span class="number">2</span>)).tril().exp().<span class="built_in">float</span>()).tril()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 问题 1: masked_fill 无法并行</span></span><br><span class="line">    attn = -((k_beta @ key.transpose(-<span class="number">1</span>, -<span class="number">2</span>)) * decay_mask).masked_fill(mask, <span class="number">0</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 问题 2: for 循环串行计算</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, chunk_size):</span><br><span class="line">        row = attn[..., i, :i].clone()</span><br><span class="line">        sub = attn[..., :i, :i].clone()</span><br><span class="line">        attn[..., i, :i] = row + (row.unsqueeze(-<span class="number">1</span>) * sub).<span class="built_in">sum</span>(-<span class="number">2</span>)</span><br><span class="line">    </span><br><span class="line">    attn = attn + torch.eye(chunk_size, dtype=attn.dtype, device=query.device)</span><br><span class="line">    value = attn @ v_beta</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># ... 省略后续代码 ...</span></span><br><span class="line">    </span><br><span class="line">    mask = torch.triu(torch.ones(chunk_size, chunk_size, dtype=torch.<span class="built_in">bool</span>, device=query.device), diagonal=<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 外层 chunk 循环中的另一个 masked_fill</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, total_sequence_length // chunk_size):</span><br><span class="line">        q_i, k_i, v_i = query[:, :, i], key[:, :, i], value[:, :, i]</span><br><span class="line">        attn = (q_i @ k_i.transpose(-<span class="number">1</span>, -<span class="number">2</span>) * decay_mask[:, :, i]).masked_fill_(mask, <span class="number">0</span>)</span><br><span class="line">        <span class="comment"># ... 省略后续计算 ...</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="问题一：Masked-Fill-的并行化优化"><a href="#问题一：Masked-Fill-的并行化优化" class="headerlink" title="问题一：Masked Fill 的并行化优化"></a>问题一：Masked Fill 的并行化优化</h2><h3 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h3><p>原始代码中使用了 <code>masked_fill(mask, 0)</code> 来实现因果掩码（causal masking）。这个操作在 GPU 上无法高效并行，因为：</p>
+<ol>
+<li><strong>写操作分散</strong>：需要根据 mask 的条件判断来决定是否写入 0</li>
+<li><strong>内存访问模式不规则</strong>：导致线程发散（thread divergence）</li>
+<li><strong>无法利用 Tensor Core</strong>：masked_fill 是逐元素操作，不适合矩阵运算优化</li>
+</ol>
+<h3 id="优化方案"><a href="#优化方案" class="headerlink" title="优化方案"></a>优化方案</h3><p>由于 <code>decay_mask</code> 已经通过指数衰减来降低历史 token 的影响，我们可以利用数学性质将 masked_fill 转换为纯矩阵乘法。</p>
+<p><strong>核心思想</strong>：使用 <code>0</code> 和 <code>-inf</code> 构造一个新的 <code>causal_mask_decay</code>，经过 <code>exp</code> 操作后：</p>
+<ul>
+<li>下三角部分（需要保留的部分）→ <code>exp(0) = 1</code></li>
+<li>上三角部分（需要掩码的部分）→ <code>exp(-inf) = 0</code></li>
+</ul>
+<p><strong>优化前代码</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mask = torch.triu(torch.ones(chunk_size, chunk_size, dtype=torch.<span class="built_in">bool</span>, device=query.device), diagonal=<span class="number">0</span>)</span><br><span class="line">attn = -((k_beta @ key.transpose(-<span class="number">1</span>, -<span class="number">2</span>)) * decay_mask).masked_fill(mask, <span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>优化后代码</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 构造因果衰减掩码</span></span><br><span class="line">causal_mask_decay = torch.triu(torch.full((chunk_size, chunk_size), <span class="built_in">float</span>(<span class="string">&#x27;-inf&#x27;</span>), device=query.device))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 合并 decay 和 causal mask，通过 exp 转换为乘法掩码</span></span><br><span class="line">g_diff = g.unsqueeze(-<span class="number">1</span>) - g.unsqueeze(-<span class="number">2</span>)  <span class="comment"># [B, H, chunk, chunk]</span></span><br><span class="line">attn_mask = (g_diff + causal_mask_decay).exp()  <span class="comment"># 下三角=1, 上三角=0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 矩阵乘法 + element-wise 乘法</span></span><br><span class="line">attn = -(k_beta @ key.transpose(-<span class="number">1</span>, -<span class="number">2</span>)) * attn_mask</span><br></pre></td></tr></table></figure>
+
+
+<p><strong>原理图解：</strong></p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">g_diff 矩阵 (chunk_size=4):</span><br><span class="line">    [ 0   -a   -b   -c  ]</span><br><span class="line">    [ a    0   -d   -e  ]</span><br><span class="line">    [ b    d    0   -f  ]</span><br><span class="line">    [ c    e    f    0  ]</span><br><span class="line"></span><br><span class="line">+ causal_decay_mask (-inf 在上三角):</span><br><span class="line">    [ -inf -inf -inf -inf]</span><br><span class="line">    [ 0    -inf -inf -inf]</span><br><span class="line">    [ 0    0    -inf -inf]</span><br><span class="line">    [ 0    0    0    -inf]</span><br><span class="line"></span><br><span class="line">= 相加后:</span><br><span class="line">    [ -inf -inf -inf -inf]</span><br><span class="line">    [ a    -inf -inf -inf]</span><br><span class="line">    [ b    d    -inf -inf]</span><br><span class="line">    [ c    e    f    -inf]</span><br><span class="line"></span><br><span class="line">经过 exp 后:</span><br><span class="line">    [ 0    0    0    0  ]  &lt;- 对角线</span><br><span class="line">    [e^a   0    0    0  ]  &lt;- 严格下三角保留，上三角变 0</span><br><span class="line">    [e^b  e^d   0    0  ]</span><br><span class="line">    [e^c  e^e  e^f   0  ]</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h3><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>并行性</th>
+<th>Tensor Core 友好</th>
+<th>内存访问模式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>masked_fill</code></td>
+<td>❌ 低</td>
+<td>❌ 否</td>
+<td>不规则</td>
+</tr>
+<tr>
+<td><code>exp() + 乘法</code></td>
+<td>✅ 高</td>
+<td>✅ 是</td>
+<td>规则&#x2F;连续</td>
+</tr>
+</tbody></table>
+<h2 id="问题二：Attn-循环的并行化优化"><a href="#问题二：Attn-循环的并行化优化" class="headerlink" title="问题二：Attn 循环的并行化优化"></a>问题二：Attn 循环的并行化优化</h2><h3 id="问题分析-1"><a href="#问题分析-1" class="headerlink" title="问题分析"></a>问题分析</h3><p>第二个性能瓶颈是 Neumann 迭代计算：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, chunk_size):</span><br><span class="line">    row = attn[..., i, :i].clone()</span><br><span class="line">    sub = attn[..., :i, :i].clone()</span><br><span class="line">    attn[..., i, :i] = row + (row.unsqueeze(-<span class="number">1</span>) * sub).<span class="built_in">sum</span>(-<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这个循环计算的是 <code>(I - A)^(-1)</code> 的近似，其中 <code>A</code> 是严格下三角矩阵。原始实现：</p>
+<ol>
+<li><strong>串行依赖</strong>：第 i 行的计算依赖于前 i-1 行的结果</li>
+<li><strong>频繁的内存拷贝</strong>：<code>.clone()</code> 操作增加内存开销</li>
+<li><strong>无法利用批处理矩阵运算</strong>：每次只计算一行</li>
+</ol>
+<h3 id="优化方案一：标准-Neumann-级数展开"><a href="#优化方案一：标准-Neumann-级数展开" class="headerlink" title="优化方案一：标准 Neumann 级数展开"></a>优化方案一：标准 Neumann 级数展开</h3><p>Neumann 级数公式：$(I - A)^{-1} &#x3D; I + A + A^2 + A^3 + \cdots$</p>
+<p>由于 A 是严格下三角矩阵，$A^n$ 在 $n \geq$ chunk_size 时变为零矩阵，因此级数有限。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">neumann_iteration</span>(<span class="params">A, max_iter=<span class="literal">None</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    计算 (I - A)^(-1) 使用 Neumann 级数</span></span><br><span class="line"><span class="string">    A: [B, H, chunk, chunk] 严格下三角矩阵</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    chunk_size = A.shape[-<span class="number">1</span>]</span><br><span class="line">    max_iter = max_iter <span class="keyword">or</span> chunk_size</span><br><span class="line">    </span><br><span class="line">    I = torch.eye(chunk_size, dtype=A.dtype, device=A.device)</span><br><span class="line">    result = I.clone()</span><br><span class="line">    power = A.clone()</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, max_iter):</span><br><span class="line">        result = result + power</span><br><span class="line">        power = power @ A  <span class="comment"># 矩阵幂</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 提前终止：如果 power 全为零则停止</span></span><br><span class="line">        <span class="keyword">if</span> power.<span class="built_in">abs</span>().<span class="built_in">max</span>() &lt; <span class="number">1e-10</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> result</span><br></pre></td></tr></table></figure>
+
+<h3 id="优化方案二：O-log-n-并行迭代（推荐）"><a href="#优化方案二：O-log-n-并行迭代（推荐）" class="headerlink" title="优化方案二：O(log n) 并行迭代（推荐）"></a>优化方案二：O(log n) 并行迭代（推荐）</h3><p>利用矩阵乘法的结合律，可以通过倍增法在 $O(\log n)$ 步内完成：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">parallel_neumann</span>(<span class="params">A, max_iter=<span class="literal">None</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    O(log n) 复杂度的 Neumann 迭代</span></span><br><span class="line"><span class="string">    使用倍增思想：同时计算 I + A + A^2 + A^4 + A^8 + ...</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    chunk_size = A.shape[-<span class="number">1</span>]</span><br><span class="line">    max_iter = max_iter <span class="keyword">or</span> (chunk_size.bit_length())</span><br><span class="line">    </span><br><span class="line">    I = torch.eye(chunk_size, dtype=A.dtype, device=A.device)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 当前累加结果: I + A + A^2 + ... + A^(2^k - 1)</span></span><br><span class="line">    current_sum = I + A</span><br><span class="line">    <span class="comment"># 当前幂次: A^(2^k)</span></span><br><span class="line">    current_power = A @ A</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, max_iter):</span><br><span class="line">        <span class="comment"># I + A + ... + A^(2^(k+1) - 1) = current_sum + current_power @ current_sum</span></span><br><span class="line">        current_sum = current_sum + current_power @ current_sum</span><br><span class="line">        current_power = current_power @ current_power</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> current_power.<span class="built_in">abs</span>().<span class="built_in">max</span>() &lt; <span class="number">1e-10</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> current_sum</span><br></pre></td></tr></table></figure>
+
+<h3 id="方案对比"><a href="#方案对比" class="headerlink" title="方案对比"></a>方案对比</h3><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>时间复杂度</th>
+<th>并行度</th>
+<th>内存开销</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>原始循环</td>
+<td>O(n²)</td>
+<td>❌ 低</td>
+<td>高（频繁clone）</td>
+<td>-</td>
+</tr>
+<tr>
+<td>标准 Neumann</td>
+<td>O(n)</td>
+<td>⚠️ 中</td>
+<td>中</td>
+<td>精度要求高</td>
+</tr>
+<tr>
+<td>O(log n) 并行</td>
+<td>O(log n)</td>
+<td>✅ 高</td>
+<td>低</td>
+<td><strong>推荐</strong></td>
+</tr>
+</tbody></table>
+<h2 id="完整优化代码"><a href="#完整优化代码" class="headerlink" title="完整优化代码"></a>完整优化代码</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">l2norm</span>(<span class="params">x: torch.FloatTensor, dim: <span class="built_in">int</span> = -<span class="number">1</span>, eps: <span class="built_in">float</span> = <span class="number">1e-6</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Align with FLA library&#x27;s l2norm implementation.&quot;&quot;&quot;</span></span><br><span class="line">    inv_norm = torch.rsqrt((x * x).<span class="built_in">sum</span>(dim=dim, keepdim=<span class="literal">True</span>) + eps)</span><br><span class="line">    <span class="keyword">return</span> x * inv_norm</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">parallel_neumann</span>(<span class="params">A, max_iter=<span class="literal">None</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;O(log n) parallel Neumann iteration for (I - A)^(-1).&quot;&quot;&quot;</span></span><br><span class="line">    chunk_size = A.shape[-<span class="number">1</span>]</span><br><span class="line">    max_iter = max_iter <span class="keyword">or</span> chunk_size.bit_length()</span><br><span class="line">    </span><br><span class="line">    I = torch.eye(chunk_size, dtype=A.dtype, device=A.device)</span><br><span class="line">    current_sum = I + A</span><br><span class="line">    current_power = A @ A</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, max_iter):</span><br><span class="line">        current_sum = current_sum + current_power @ current_sum</span><br><span class="line">        current_power = current_power @ current_power</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> current_sum</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">optimized_chunk_gated_delta_rule</span>(<span class="params"></span></span><br><span class="line"><span class="params">    query, key, value, g, beta,</span></span><br><span class="line"><span class="params">    chunk_size=<span class="number">64</span>, initial_state=<span class="literal">None</span>,</span></span><br><span class="line"><span class="params">    output_final_state=<span class="literal">False</span>, use_qk_l2norm_in_kernel=<span class="literal">False</span>,</span></span><br><span class="line"><span class="params"></span>):</span><br><span class="line">    initial_dtype = query.dtype</span><br><span class="line">    <span class="keyword">if</span> use_qk_l2norm_in_kernel:</span><br><span class="line">        query = l2norm(query, dim=-<span class="number">1</span>, eps=<span class="number">1e-6</span>)</span><br><span class="line">        key = l2norm(key, dim=-<span class="number">1</span>, eps=<span class="number">1e-6</span>)</span><br><span class="line">    </span><br><span class="line">    query, key, value, beta, g = [</span><br><span class="line">        x.transpose(<span class="number">1</span>, <span class="number">2</span>).contiguous().to(torch.float32)</span><br><span class="line">        <span class="keyword">for</span> x <span class="keyword">in</span> (query, key, value, beta, g)</span><br><span class="line">    ]</span><br><span class="line"></span><br><span class="line">    batch_size, num_heads, sequence_length, k_head_dim = key.shape</span><br><span class="line">    v_head_dim = value.shape[-<span class="number">1</span>]</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># Padding</span></span><br><span class="line">    pad_size = (chunk_size - sequence_length % chunk_size) % chunk_size</span><br><span class="line">    query = F.pad(query, (<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, pad_size))</span><br><span class="line">    key = F.pad(key, (<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, pad_size))</span><br><span class="line">    value = F.pad(value, (<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, pad_size))</span><br><span class="line">    beta = F.pad(beta, (<span class="number">0</span>, pad_size))</span><br><span class="line">    g = F.pad(g, (<span class="number">0</span>, pad_size))</span><br><span class="line">    total_sequence_length = sequence_length + pad_size</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># Scale and prepare</span></span><br><span class="line">    scale = <span class="number">1</span> / (query.shape[-<span class="number">1</span>] ** <span class="number">0.5</span>)</span><br><span class="line">    query = query * scale</span><br><span class="line">    v_beta = value * beta.unsqueeze(-<span class="number">1</span>)</span><br><span class="line">    k_beta = key * beta.unsqueeze(-<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># Reshape to chunks</span></span><br><span class="line">    query, key, value, k_beta, v_beta = [</span><br><span class="line">        x.reshape(x.shape[<span class="number">0</span>], x.shape[<span class="number">1</span>], -<span class="number">1</span>, chunk_size, x.shape[-<span class="number">1</span>])</span><br><span class="line">        <span class="keyword">for</span> x <span class="keyword">in</span> (query, key, value, k_beta, v_beta)</span><br><span class="line">    ]</span><br><span class="line">    g = g.reshape(g.shape[<span class="number">0</span>], g.shape[<span class="number">1</span>], -<span class="number">1</span>, chunk_size)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># === 优化 1: 构造可并行的因果掩码 ===</span></span><br><span class="line">    g = g.cumsum(dim=-<span class="number">1</span>)</span><br><span class="line">    g_diff = g.unsqueeze(-<span class="number">1</span>) - g.unsqueeze(-<span class="number">2</span>)  <span class="comment"># [B, H, num_chunks, chunk, chunk]</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 构造 causal mask: 下三角=0, 上三角=-inf</span></span><br><span class="line">    causal_mask_decay = torch.triu(torch.full((chunk_size, chunk_size), -torch.inf, device=query.device))</span><br><span class="line">    identity = torch.eye(chunk_size, device=query.device)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 合并 decay 和 causal mask，exp 后下三角=1, 上三角=0</span></span><br><span class="line">    attn_mask = (g_diff + causal_mask_decay).exp()</span><br><span class="line">    attn_mask_qk = attn_mask + identity</span><br><span class="line">    attn = -(k_beta @ key.transpose(-<span class="number">1</span>, -<span class="number">2</span>)) * attn_mask</span><br><span class="line"></span><br><span class="line">    <span class="comment"># === 优化 2: O(log n) 并行 Neumann 迭代 ===</span></span><br><span class="line">    <span class="comment"># attn 已经是严格下三角，对角线为 0</span></span><br><span class="line">    attn = parallel_neumann(attn, max_iter=chunk_size.bit_length())</span><br><span class="line">    value = attn @ v_beta</span><br><span class="line">    k_cumdecay = attn @ (k_beta * g.exp().unsqueeze(-<span class="number">1</span>))</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># Recurrent state</span></span><br><span class="line">    last_recurrent_state = (</span><br><span class="line">        torch.zeros(batch_size, num_heads, k_head_dim, v_head_dim).to(value)</span><br><span class="line">        <span class="keyword">if</span> initial_state <span class="keyword">is</span> <span class="literal">None</span></span><br><span class="line">        <span class="keyword">else</span> initial_state.to(value)</span><br><span class="line">    )</span><br><span class="line">    core_attn_out = torch.zeros_like(value)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 外层 chunk 循环（无法避免，但内部已全并行）</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, total_sequence_length // chunk_size):</span><br><span class="line">        q_i, k_i, v_i = query[:, :, i], key[:, :, i], value[:, :, i]</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 复用 attn_mask，无需再次 masked_fill</span></span><br><span class="line">        attn_i = (q_i @ k_i.transpose(-<span class="number">1</span>, -<span class="number">2</span>)) * attn_mask_qk[:, :, i]</span><br><span class="line">        </span><br><span class="line">        v_prime = k_cumdecay[:, :, i] @ last_recurrent_state</span><br><span class="line">        v_new = v_i - v_prime</span><br><span class="line">        attn_inter = (q_i * g[:, :, i, :, <span class="literal">None</span>].exp()) @ last_recurrent_state</span><br><span class="line">        core_attn_out[:, :, i] = attn_inter + attn_i @ v_new</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 更新 recurrent state</span></span><br><span class="line">        last_recurrent_state = (</span><br><span class="line">            last_recurrent_state * g[:, :, i, -<span class="number">1</span>, <span class="literal">None</span>, <span class="literal">None</span>].exp()</span><br><span class="line">            + (k_i * (g[:, :, i, -<span class="number">1</span>, <span class="literal">None</span>] - g[:, :, i]).exp()[..., <span class="literal">None</span>]).transpose(-<span class="number">1</span>, -<span class="number">2</span>) @ v_new</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> output_final_state:</span><br><span class="line">        last_recurrent_state = <span class="literal">None</span></span><br><span class="line">    </span><br><span class="line">    core_attn_out = core_attn_out.reshape(</span><br><span class="line">        core_attn_out.shape[<span class="number">0</span>], core_attn_out.shape[<span class="number">1</span>], -<span class="number">1</span>, core_attn_out.shape[-<span class="number">1</span>]</span><br><span class="line">    )</span><br><span class="line">    core_attn_out = core_attn_out[:, :, :sequence_length]</span><br><span class="line">    core_attn_out = core_attn_out.transpose(<span class="number">1</span>, <span class="number">2</span>).contiguous().to(initial_dtype)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> core_attn_out, last_recurrent_state</span><br></pre></td></tr></table></figure>
+
+<h2 id="性能测试结果"><a href="#性能测试结果" class="headerlink" title="性能测试结果"></a>性能测试结果</h2><p>在 <strong>Mac mini (Apple Silicon M4)</strong> 上使用 PyTorch 2.7.0 进行了基准测试：</p>
+<h3 id="测试环境"><a href="#测试环境" class="headerlink" title="测试环境"></a>测试环境</h3><ul>
+<li><strong>设备</strong>: Mac mini (Apple Silicon)</li>
+<li><strong>后端</strong>: MPS (Metal Performance Shaders)</li>
+<li><strong>PyTorch 版本</strong>: 2.7.0</li>
+<li><strong>测试次数</strong>: 每个配置运行 50 次取平均</li>
+</ul>
+<h3 id="测试结果"><a href="#测试结果" class="headerlink" title="测试结果"></a>测试结果</h3><table>
+<thead>
+<tr>
+<th align="left">配置 (B, H, N, D)</th>
+<th align="center">原始实现</th>
+<th align="center">优化实现</th>
+<th align="center">加速比</th>
+<th align="center">数值差异</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">B&#x3D;1, H&#x3D;32, N&#x3D;512</td>
+<td align="center">23.58 ms</td>
+<td align="center">19.10 ms</td>
+<td align="center"><strong>1.23</strong></td>
+<td align="center">2.33e-10</td>
+</tr>
+<tr>
+<td align="left">B&#x3D;2, H&#x3D;32, N&#x3D;1024</td>
+<td align="center">93.85 ms</td>
+<td align="center">74.84 ms</td>
+<td align="center"><strong>1.25</strong></td>
+<td align="center">4.66e-10</td>
+</tr>
+<tr>
+<td align="left">B&#x3D;2, H&#x3D;32, N&#x3D;2048</td>
+<td align="center">185.26 ms</td>
+<td align="center">149.42 ms</td>
+<td align="center"><strong>1.24</strong></td>
+<td align="center">4.66e-10</td>
+</tr>
+<tr>
+<td align="left">B&#x3D;4, H&#x3D;32, N&#x3D;1024</td>
+<td align="center">188.13 ms</td>
+<td align="center">152.19 ms</td>
+<td align="center"><strong>1.24</strong></td>
+<td align="center">4.66e-10</td>
+</tr>
+</tbody></table>
+<p><strong>平均加速比: 1.24</strong></p>
+<blockquote>
+<p>测试代码已开源: <a target="_blank" rel="noopener" href="https://github.com/hebangwen/blog-demo-codes/blob/main/benchmark_delta_rule.py">benchmark_delta_rule.py</a></p>
+</blockquote>
+<h3 id="关键发现"><a href="#关键发现" class="headerlink" title="关键发现"></a>关键发现</h3><ol>
+<li><strong>稳定的加速比</strong>: 在不同序列长度（512 ~ 2048）和 batch 配置下，加速比稳定在 <strong>1.23 ~ 1.25x</strong></li>
+<li><strong>扩展性良好</strong>: 当 batch size 和 head 数翻倍时（B&#x3D;4, H&#x3D;32），加速比保持在 1.25x</li>
+<li><strong>MPS 后端优化</strong>: 在 Apple Silicon 上，矩阵乘法优化显著提升了性能</li>
+</ol>
+<div class="note info flat"><ol>
+<li>recurrent 代码非常需要 <code>l2norm</code>，否则由于不断平方，输入很容易出现 <code>NaN</code>，所以取 <code>use_qk_l2norm = True</code></li>
+<li><code>query = query / math.sqrt(d)</code> 也是尽可能降低 activation 大小，避免浮点溢出</li>
+</ol>
+</div>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文针对 Torch Chunked Gated Delta Rule 的两个关键性能瓶颈提出了优化方案：</p>
+<ol>
+<li><strong>Masked Fill 优化</strong>：通过数学变换将条件掩码转换为可并行的矩阵乘法，利用 GPU Tensor Core 加速</li>
+<li><strong>Attn 循环优化</strong>：采用 $O(\log n)$ 的并行 Neumann 迭代替代原始的 $O(n^2)$ 串行循环</li>
+</ol>
+<p>这些优化在保持数值精度的同时，显著提升了计算效率，特别适合长序列场景。</p>
+<hr>
+<p><strong>参考链接</strong>:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/fla-org/flash-linear-attention">FLA (Flash Linear Attention) 库</a></li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Neumann_series">Neumann Series Wiki</a></li>
+<li><a target="_blank" rel="noopener" href="https://pytorch.org/docs/stable/notes/cuda.html">PyTorch CUDA Best Practices</a></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io/2026/03/19/torch-chunked-gated-delta-rule-optimization/">http://hebangwen.github.io/2026/03/19/torch-chunked-gated-delta-rule-optimization/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://hebangwen.github.io" target="_blank">Yet Another 何榜文's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/CUDA/">CUDA</a><a class="post-meta__tags" href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化</a><a class="post-meta__tags" href="/tags/PyTorch/">PyTorch</a><a class="post-meta__tags" href="/tags/Delta-Rule/">Delta Rule</a><a class="post-meta__tags" href="/tags/%E5%B9%B6%E8%A1%8C%E8%AE%A1%E7%AE%97/">并行计算</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/03/26/ld-loader-glibc-version-compatibility/" title="ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析</div></div><div class="info-2"><div class="info-item-1">问题背景在 Linux 交叉编译场景中，开发者经常遇到这样的困境： 12$ ./myapp./myapp: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.34&#x27; not found  这是因为编译环境的 glibc 版本（如 2.34）高于运行环境的 glibc 版本（如 2.31）。但奇怪的是，作为负责加载所有动态库的 ld 加载器（/lib64/ld-linux-x86-64.so.2），它自己却从不受 glibc 版本问题的困扰。本文将深入解析这一现象背后的技术原理。   一、符号版本化的双刃剑1.1 glibc 的符号版本机制glibc 使用符号版本化（Symbol Versioning）来保持向后兼容。以 memcpy 为例： 123// glibc 内部定义__asm__(&quot;.symver memcpy, memcpy@GLIBC_2.2.5&quot;);__asm__(&quot;.symver memcpy, memcpy@@GLIBC_2.14&quot;);  // 默认版本  当程序...</div></div></div></a><a class="pagination-related" href="/2026/03/18/SonicMoE-Accelerating-MoE/" title="SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化</div></div><div class="info-2"><div class="info-item-1">SonicMoE: 加速 MoE 模型的 IO 与 Tile 感知优化 论文地址: https://arxiv.org/abs/2512.14080代码开源: https://github.com/Dao-AILab/sonic-moe作者: Wentao Guo, Mayank Mishra, Xinle Cheng, Ion Stoica, Tri Dao  背景：MoE 模型的趋势与挑战近年来，混合专家模型 (Mixture of Experts, MoE) 已成为扩展大语言模型的主流架构。与 Dense 模型相比，MoE 可以在不显著增加计算成本的前提下大幅提升参数量。 MoE 的两个核心趋势从最新的开源模型（如 DeepSeek-V3、Qwen3 MoE、Kimi K2）可以看出两个明显的趋势：  细粒度 (Fine-grained): 专家的中间维度越来越小  Mixtral 8x22B: d&#x2F;n &#x3D; 0.38 DeepSeek-V3: d&#x2F;n &#x3D; 3.50 Qwen3-Next: d&#x2F;n &#x3D; 4.00   ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/03/18/SonicMoE-Accelerating-MoE/" title="SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-18</div><div class="info-item-2">SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化</div></div><div class="info-2"><div class="info-item-1">SonicMoE: 加速 MoE 模型的 IO 与 Tile 感知优化 论文地址: https://arxiv.org/abs/2512.14080代码开源: https://github.com/Dao-AILab/sonic-moe作者: Wentao Guo, Mayank Mishra, Xinle Cheng, Ion Stoica, Tri Dao  背景：MoE 模型的趋势与挑战近年来，混合专家模型 (Mixture of Experts, MoE) 已成为扩展大语言模型的主流架构。与 Dense 模型相比，MoE 可以在不显著增加计算成本的前提下大幅提升参数量。 MoE 的两个核心趋势从最新的开源模型（如 DeepSeek-V3、Qwen3 MoE、Kimi K2）可以看出两个明显的趋势：  细粒度 (Fine-grained): 专家的中间维度越来越小  Mixtral 8x22B: d&#x2F;n &#x3D; 0.38 DeepSeek-V3: d&#x2F;n &#x3D; 3.50 Qwen3-Next: d&#x2F;n &#x3D; 4.00   ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">43</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">63</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%95%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">引言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E5%A7%8B%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">原始代码分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E4%B8%80%EF%BC%9AMasked-Fill-%E7%9A%84%E5%B9%B6%E8%A1%8C%E5%8C%96%E4%BC%98%E5%8C%96"><span class="toc-number">3.</span> <span class="toc-text">问题一：Masked Fill 的并行化优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90"><span class="toc-number">3.1.</span> <span class="toc-text">问题分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88"><span class="toc-number">3.2.</span> <span class="toc-text">优化方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94"><span class="toc-number">3.3.</span> <span class="toc-text">性能对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E4%BA%8C%EF%BC%9AAttn-%E5%BE%AA%E7%8E%AF%E7%9A%84%E5%B9%B6%E8%A1%8C%E5%8C%96%E4%BC%98%E5%8C%96"><span class="toc-number">4.</span> <span class="toc-text">问题二：Attn 循环的并行化优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90-1"><span class="toc-number">4.1.</span> <span class="toc-text">问题分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88%E4%B8%80%EF%BC%9A%E6%A0%87%E5%87%86-Neumann-%E7%BA%A7%E6%95%B0%E5%B1%95%E5%BC%80"><span class="toc-number">4.2.</span> <span class="toc-text">优化方案一：标准 Neumann 级数展开</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88%E4%BA%8C%EF%BC%9AO-log-n-%E5%B9%B6%E8%A1%8C%E8%BF%AD%E4%BB%A3%EF%BC%88%E6%8E%A8%E8%8D%90%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">优化方案二：O(log n) 并行迭代（推荐）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94"><span class="toc-number">4.4.</span> <span class="toc-text">方案对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E4%BC%98%E5%8C%96%E4%BB%A3%E7%A0%81"><span class="toc-number">5.</span> <span class="toc-text">完整优化代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95%E7%BB%93%E6%9E%9C"><span class="toc-number">6.</span> <span class="toc-text">性能测试结果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83"><span class="toc-number">6.1.</span> <span class="toc-text">测试环境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E7%BB%93%E6%9E%9C"><span class="toc-number">6.2.</span> <span class="toc-text">测试结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E5%8F%91%E7%8E%B0"><span class="toc-number">6.3.</span> <span class="toc-text">关键发现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">7.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/26/ld-loader-glibc-version-compatibility/" title="ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析">ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析</a><time datetime="2026-03-26T11:30:00.000Z" title="发表于 2026-03-26 19:30:00">2026-03-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/19/torch-chunked-gated-delta-rule-optimization/" title="Torch Chunked Gated Delta Rule 并行优化指南">Torch Chunked Gated Delta Rule 并行优化指南</a><time datetime="2026-03-19T01:15:00.000Z" title="发表于 2026-03-19 09:15:00">2026-03-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/18/SonicMoE-Accelerating-MoE/" title="SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化">SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化</a><time datetime="2026-03-17T16:12:00.000Z" title="发表于 2026-03-18 00:12:00">2026-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/13/arm-intrinsics/" title="ARM 架构深度学习推理指令集的演进与技术范式分析报告">ARM 架构深度学习推理指令集的演进与技术范式分析报告</a><time datetime="2026-03-13T01:06:06.000Z" title="发表于 2026-03-13 09:06:06">2026-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/12/solid-principle/" title="软件工程中的 SOLID 原则">软件工程中的 SOLID 原则</a><time datetime="2026-03-12T15:58:04.000Z" title="发表于 2026-03-12 23:58:04">2026-03-12</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
