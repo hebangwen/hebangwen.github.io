@@ -1,0 +1,9 @@
+graph TD
+    A["<b>1. 内核加载 ld-linux-x86-64.so.2</b><br/>静态链接，无依赖"] --> B["<b>2. ld 加载程序的可执行文件</b><br/>解析其 NEEDED 和版本需求"]
+    B --> C["<b>3. ld 递归加载依赖的动态库</b><br/>检查每个符号版本是否满足"]
+    C --> D["<b>4. 完成重定位，跳转到程序入口</b>"]
+    
+    style A fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style B fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style C fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    style D fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
