@@ -1,0 +1,13 @@
+graph TD
+    A[程序需要 GLIBC_2.34 的 memcpy] --> B{运行时 glibc 版本?}
+    B -->|>= 2.34| C[加载成功]
+    B -->|< 2.34| D{是否有 GLIBC_2.2.5?}
+    D -->|是| E[使用旧版本]
+    D -->|否| F[报错退出]
+    
+    style A fill:#e3f2fd,stroke:#1565c0
+    style B fill:#fff3e0,stroke:#e65100
+    style C fill:#e8f5e9,stroke:#2e7d32
+    style D fill:#fff3e0,stroke:#e65100
+    style E fill:#e8f5e9,stroke:#2e7d32
+    style F fill:#ffebee,stroke:#c62828
