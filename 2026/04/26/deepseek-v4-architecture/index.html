@@ -1,0 +1,518 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>DeepSeek-V4 架构全解：百万token时代的效率革命 | Yet Another 何榜文's Blog</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="2026年4月24日，DeepSeek正式开源了第四代旗舰模型 DeepSeek-V4，距离上一代DeepSeek-V3发布整整过去了484天。V4带来的核心命题不是去争夺SOTA王座，而是将百万token上下文从一个炫技参数变成可日常使用的工程能力。 一、模型规格速览V4系列分为两个版本：    规格 V4-Flash V4-Pro    总参数 284B 1.6T   激活参数 13B 49B">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DeepSeek-V4 架构全解：百万token时代的效率革命">
+<meta property="og:url" content="http://hebangwen.github.io/2026/04/26/deepseek-v4-architecture/index.html">
+<meta property="og:site_name" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:description" content="2026年4月24日，DeepSeek正式开源了第四代旗舰模型 DeepSeek-V4，距离上一代DeepSeek-V3发布整整过去了484天。V4带来的核心命题不是去争夺SOTA王座，而是将百万token上下文从一个炫技参数变成可日常使用的工程能力。 一、模型规格速览V4系列分为两个版本：    规格 V4-Flash V4-Pro    总参数 284B 1.6T   激活参数 13B 49B">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2026-04-26T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-26T01:12:39.393Z">
+<meta property="article:author" content="何榜文">
+<meta property="article:tag" content="MoE">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="Transformer">
+<meta property="article:tag" content="DeepSeek">
+<meta property="article:tag" content="Attention">
+<meta property="article:tag" content="大模型">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "DeepSeek-V4 架构全解：百万token时代的效率革命",
+  "url": "http://hebangwen.github.io/2026/04/26/deepseek-v4-architecture/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2026-04-26T02:00:00.000Z",
+  "dateModified": "2026-04-26T01:12:39.393Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "http://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="http://hebangwen.github.io/2026/04/26/deepseek-v4-architecture/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'DeepSeek-V4 架构全解：百万token时代的效率革命',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">Yet Another 何榜文's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">DeepSeek-V4 架构全解：百万token时代的效率革命</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">DeepSeek-V4 架构全解：百万token时代的效率革命</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-04-26T02:00:00.000Z" title="发表于 2026-04-26 10:00:00">2026-04-26</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-04-26T01:12:39.393Z" title="更新于 2026-04-26 09:12:39">2026-04-26</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI/">AI</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI/Deep-Learning/">Deep Learning</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><p>2026年4月24日，DeepSeek正式开源了第四代旗舰模型 DeepSeek-V4，距离上一代DeepSeek-V3发布整整过去了484天。V4带来的核心命题不是去争夺SOTA王座，而是<strong>将百万token上下文从一个炫技参数变成可日常使用的工程能力</strong>。</p>
+<h2 id="一、模型规格速览"><a href="#一、模型规格速览" class="headerlink" title="一、模型规格速览"></a>一、模型规格速览</h2><p>V4系列分为两个版本：</p>
+<table>
+<thead>
+<tr>
+<th>规格</th>
+<th>V4-Flash</th>
+<th>V4-Pro</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>总参数</td>
+<td>284B</td>
+<td>1.6T</td>
+</tr>
+<tr>
+<td>激活参数</td>
+<td>13B</td>
+<td>49B</td>
+</tr>
+<tr>
+<td>层数</td>
+<td>43</td>
+<td>61</td>
+</tr>
+<tr>
+<td>Hidden Dim</td>
+<td>4096</td>
+<td>7168</td>
+</tr>
+<tr>
+<td>Routed Experts</td>
+<td>256</td>
+<td>384</td>
+</tr>
+<tr>
+<td>Shared Expert</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>每token激活专家</td>
+<td>6</td>
+<td>6</td>
+</tr>
+<tr>
+<td>预训练Tokens</td>
+<td>32T</td>
+<td>33T</td>
+</tr>
+<tr>
+<td>模型权重</td>
+<td>160GB (FP4+FP8混合)</td>
+<td>861GB (FP4+FP8混合)</td>
+</tr>
+</tbody></table>
+<p>V4-Pro 成为当下公开权重最大的开源模型，全面支持 <strong>1M token 原生上下文</strong>。</p>
+<p>在1M上下文场景下，效率对比达到惊人水平：</p>
+<ul>
+<li><strong>V4-Pro</strong>：单token FLOPs 仅为 V3.2 的 **27%**，KV cache 仅为 <strong>10%</strong></li>
+<li><strong>V4-Flash</strong>：单token FLOPs 仅为 V3.2 的 **10%**，KV cache 仅为 <strong>7%</strong></li>
+</ul>
+<p>这意味着，百万token长上下文终于从奢侈品变成了日用品。</p>
+<hr>
+<h2 id="二、架构全景：三大核心升级"><a href="#二、架构全景：三大核心升级" class="headerlink" title="二、架构全景：三大核心升级"></a>二、架构全景：三大核心升级</h2><p>相比V3，V4在三个维度动了架构手术：</p>
+<ol>
+<li><strong>mHC</strong>（Manifold-Constrained Hyper-Connections）：残差连接的革命</li>
+<li><strong>Hybrid Attention</strong>（CSA + HCA 交替架构）：注意力机制的根源改造</li>
+<li><strong>Muon 优化器</strong>：训练方式的换血</li>
+</ol>
+<p>MoE部分沿用 DeepSeekMoE，MTP（Multi-Token Prediction）模块与V3保持一致。细节微调包括：affinity score 激活函数从 Sigmoid 换成 <code>Sqrt(Softplus(·))</code>，取消 routing target nodes 数量约束，前几层 dense FFN 换用 Hash routing 的 MoE 层。</p>
+<hr>
+<h2 id="三、mHC：给残差连接加上”数学安全带”"><a href="#三、mHC：给残差连接加上”数学安全带”" class="headerlink" title="三、mHC：给残差连接加上”数学安全带”"></a>三、mHC：给残差连接加上”数学安全带”</h2><p>残差连接自何恺明2016年在 ResNet 中提出以来，十年间几乎没变过。模型越来越深、参数越来越多，传统残差开始力不从心——信号传递不稳，训练容易崩溃。</p>
+<p>Kimi 团队此前提出 **Hyper-Connections (HC)**：将残差流从一维扩展为 $n_{hc}$ 条并行通道，每层之间通过矩阵 $B$ 进行混合。想法优雅，但 DeepSeek 在堆叠多层时发现 HC 经常数值不稳定。</p>
+<p>V4 的做法叫 <strong>mHC</strong>（Manifold-Constrained Hyper-Connections），核心是在 HC 基础上加了一个数学约束：</p>
+<blockquote>
+<p>将混合矩阵 $B$ 约束到 <strong>双随机矩阵流形</strong>（Birkhoff polytope）上，行和与列和均归一化为1。</p>
+</blockquote>
+<p>这个约束带来两层保护：</p>
+<ul>
+<li>矩阵的谱范数天然 $\le 1$，残差传播有了硬上限，不会爆炸</li>
+<li>双随机矩阵在乘法下封闭，堆再多层也保持稳定</li>
+</ul>
+<p>输入映射 $A$ 和输出映射 $C$ 通过 Sigmoid 函数确保非负有界，避免信号相互抵消。</p>
+<p>实现上使用 <strong>Sinkhorn-Knopp 迭代</strong>，交替做行归一化和列归一化，20次迭代收敛，配合 fused kernel 和选择性 recomputation，mHC 带来的 wall-time 开销控制在 overlapped pipeline 的 6.7% 以内。</p>
+<p>mHC 不是一个惊艳的架构创新，但它是一个**”大模型能稳住训练”的工程基石**——随着模型继续变大变深，这种补丁将变成刚需。</p>
+<hr>
+<h2 id="四、Hybrid-Attention：百万token效率的魔法"><a href="#四、Hybrid-Attention：百万token效率的魔法" class="headerlink" title="四、Hybrid Attention：百万token效率的魔法"></a>四、Hybrid Attention：百万token效率的魔法</h2><p>这是整篇技术报告最厚、也最核心的部分。V4 的注意力层不再是单一类型，而是两种结构交替配置：</p>
+<h3 id="4-1-CSA（Compressed-Sparse-Attention）：压缩-稀疏"><a href="#4-1-CSA（Compressed-Sparse-Attention）：压缩-稀疏" class="headerlink" title="4.1 CSA（Compressed Sparse Attention）：压缩 + 稀疏"></a>4.1 CSA（Compressed Sparse Attention）：压缩 + 稀疏</h3><p>CSA 做两件事——先压缩，再稀疏选择：</p>
+<p><strong>第一步：KV 压缩。</strong> 每 $m$ 个 token 的 KV entries，通过带可学习权重的 attention-like 机制压成1个压缩块。</p>
+<p><strong>第二步：Lightning Indexer + Top-K 选择。</strong> 对每个 query token，用轻量 indexer 计算它与每个压缩 KV 块的相关性分数，只取 top-k。</p>
+<p><strong>第三步：Core Attention。</strong> 在选中的 top-k 压缩 KV 块上做 Multi-Query Attention。</p>
+<p><strong>第四步：Grouped Output Projection。</strong> V4 的 head dimension 设为 512（远超 V3.2 的 128），如果直接投影所有 head 输出会很贵。于是做了分组投影——将 $n_h$ 个 head 分 $g$ 组，每组先投到中间维度 $d_g$，最后合并。</p>
+<p>整个 CSA 相当于做了<strong>两层压缩</strong>：</p>
+<ul>
+<li>第一层：序列长度从 $n$ 压缩到 $n&#x2F;m$</li>
+<li>第二层：稀疏选择从 $n&#x2F;m$ 压到 top-k</li>
+</ul>
+<p>对1M token序列，原本需要 attend 1M 个 token，现在只需 attend 1024 个压缩块。</p>
+<h3 id="4-2-HCA（Heavily-Compressed-Attention）：极限压缩-Dense"><a href="#4-2-HCA（Heavily-Compressed-Attention）：极限压缩-Dense" class="headerlink" title="4.2 HCA（Heavily Compressed Attention）：极限压缩 + Dense"></a>4.2 HCA（Heavily Compressed Attention）：极限压缩 + Dense</h3><p>HCA 的思路更直接——<strong>拼命压，但不做稀疏</strong>：</p>
+<ul>
+<li>压缩率 $m’ &#x3D; 128$，每128个 token 压成一个 KV entry</li>
+<li>不含重叠，直接分组压缩</li>
+<li>对所有压缩后的 KV 做 dense attention</li>
+</ul>
+<h3 id="4-3-CSA-与-HCA-的分工"><a href="#4-3-CSA-与-HCA-的分工" class="headerlink" title="4.3 CSA 与 HCA 的分工"></a>4.3 CSA 与 HCA 的分工</h3><p>读完整篇报告，二者的分工逐渐清晰：</p>
+<ul>
+<li><strong>CSA</strong>：压缩温和、稀疏把关，适合做 token 级别的精细检索</li>
+<li><strong>HCA</strong>：压缩凶猛、保持 dense，适合做长距离全局信号汇总</li>
+</ul>
+<p>V4 将二者层层交替——Pro 有 61 层，Flash 有 43 层，CSA 和 HCA 一层一层往上叠。<strong>既不漏细节，也不被细节拖住</strong>。</p>
+<h3 id="4-4-配套优化"><a href="#4-4-配套优化" class="headerlink" title="4.4 配套优化"></a>4.4 配套优化</h3><p>论文还披露了若干工程 tricks：</p>
+<ul>
+<li><strong>Q&#x2F;KV Normalization</strong>：在 core attention 之前对 query 和 KV entries 做 RMSNorm，防止 attention logits 爆炸</li>
+<li><strong>Partial RoPE</strong>：只对 query 和 KV entries 的最后64维施加旋转位置编码，在 output 端对应抵消，只保留相对位置信息</li>
+<li><strong>Sliding Window Attention</strong>：额外增加辅助分支，每个 query 除了看压缩 KV，还看最近128个 token 的未压缩 KV，补偿近距离依赖</li>
+<li><strong>Attention Sink</strong>：在 attention 分母上加 learnable sink logit，允许 attention score 总和不等于1，避免长序列中注意力被强制均摊</li>
+</ul>
+<hr>
+<h2 id="五、Muon-优化器：从-AdamW-换血"><a href="#五、Muon-优化器：从-AdamW-换血" class="headerlink" title="五、Muon 优化器：从 AdamW 换血"></a>五、Muon 优化器：从 AdamW 换血</h2><p>V4 训练中绝大多数参数优化不再使用 AdamW，而是 <strong>Muon</strong>——基于矩阵正交化的优化器。</p>
+<p>Muon 最初由 Keller Jordan 等人在小模型上验证，在 LLM 规模的首次大规模验证是 Kimi K2（2025年）。但现在 DeepSeek 也全面用上，并做了自己的版本：</p>
+<ul>
+<li>采用 <strong>Hybrid Newton-Schulz 迭代</strong>，10步分两段<ul>
+<li>前8步用激进系数，快速将奇异值推向1附近</li>
+<li>后2步用温和系数，精确将奇异值稳定在1</li>
+</ul>
+</li>
+<li>Muon 只优化 <strong>2D 参数矩阵</strong>，其他参数（embedding、prediction head、RMSNorm 权重、mHC 静态偏置等）仍用 AdamW</li>
+<li>与 Kimi 不同，DeepSeek 没有使用 QK-Clip 来防止 attention logits 爆炸——因为 V4 的注意力架构 <strong>直接在源头对 query 和 KV 做 RMSNorm</strong>，从根本上压住了爆炸的可能</li>
+</ul>
+<p>同一个优化器，两家公司走了两条不同的稳定化路线——这是2026年开源社区最有意思的一幕。</p>
+<hr>
+<h2 id="六、模型训练"><a href="#六、模型训练" class="headerlink" title="六、模型训练"></a>六、模型训练</h2><h3 id="6-1-预训练"><a href="#6-1-预训练" class="headerlink" title="6.1 预训练"></a>6.1 预训练</h3><p>V4 系列数据量翻倍：V3 仅用 14.8T token，V4-Flash 和 V4-Pro 分别达到 32T 和 33T。</p>
+<ul>
+<li>数据构成上，长文档单独 curate，优先收录科学论文和技术报告等有学术价值的长材料</li>
+<li>Tokenizer 沿用 V3 的 128K 词表</li>
+<li>序列长度走四阶段：4K → 16K → 64K → 1M</li>
+<li>Sparse attention 不是从头打开，前 1T token 用 dense attention 做 warmup，扩展到 64K 时才引入稀疏性</li>
+</ul>
+<p>训练中出过一次严重的 loss spike。DeepSeek 摸到两个”土办法”：</p>
+<ul>
+<li><strong>Anticipatory Routing</strong></li>
+<li><strong>SwiGLU Clamping</strong></li>
+</ul>
+<p>论文原话极为诚实：*”这两个 trick 管用，但底层机理仍是 open question。”* 一个训了两个万亿参数 MoE 的团队公开承认”不知道为什么管用”，在2026年实属稀罕。</p>
+<h3 id="6-2-后训练：On-Policy-Distillation"><a href="#6-2-后训练：On-Policy-Distillation" class="headerlink" title="6.2 后训练：On-Policy Distillation"></a>6.2 后训练：On-Policy Distillation</h3><p>V4 后训练阶段做了一次方法论替换——传统 mixed RL 阶段被 <strong>On-Policy Distillation (OPD)</strong> 完全替代：</p>
+<p><strong>第一步：训练领域专家。</strong> 数学、代码、Agent、指令跟随四个领域，各自独立训一个 expert。先 SFT 打底，再用 GRPO 做 domain-specific RL。引入三档推理模式——Non-think、Think High、Think Max，每档输出长度不同。</p>
+<p><strong>第二步：OPD 合并。</strong> 十几个 expert 通过 on-policy distillation 合并进一个 student。student 自己 rollout，最小化 reverse KL 向对应领域 expert 对齐。</p>
+<p>工程上，十几个 teacher 每个都是万亿级，vocab size 超 10 万。V4 的做法是：teacher 权重 offload 到分布式存储按需加载，只缓存 hidden states 不 materialize logits，按 teacher 排序样本保证每个 mini-batch 只加载一个 teacher head。</p>
+<p>一套看似优雅的后训练方法论，背后是一堆”不这样就装不下”的工程妥协。</p>
+<hr>
+<h2 id="七、基础设施：从NVIDIA到华为昇腾"><a href="#七、基础设施：从NVIDIA到华为昇腾" class="headerlink" title="七、基础设施：从NVIDIA到华为昇腾"></a>七、基础设施：从NVIDIA到华为昇腾</h2><p>V4 另一个引起广泛关注的信号是<strong>首次将华为昇腾与 NVIDIA 并列写入技术报告</strong>的验证平台。</p>
+<h3 id="MegaMoE-大核"><a href="#MegaMoE-大核" class="headerlink" title="MegaMoE 大核"></a>MegaMoE 大核</h3><p>自研 <strong>MegaMoE</strong> 单 fused kernel，将路由判断和专家矩阵乘法合二为一，直接砍掉中间 kernel 启动和显存搬运的开销。EP 通信完全藏在计算后面。</p>
+<h3 id="低精度量化"><a href="#低精度量化" class="headerlink" title="低精度量化"></a>低精度量化</h3><ul>
+<li>MoE 路由专家权重采用 <strong>FP4 量化感知训练</strong></li>
+<li>报告特别指出：现有硬件上 FP4 和 FP8 峰值算力相同，但<strong>未来硬件上 FP4 可以再高出三分之一效率</strong></li>
+<li>等昇腾950等新硬件到位，还有一波红利可挖</li>
+</ul>
+<h3 id="国产芯片适配上路"><a href="#国产芯片适配上路" class="headerlink" title="国产芯片适配上路"></a>国产芯片适配上路</h3><p>DeepSeek 已在华为 Ascend NPU 上验证了细粒度专家并行（EP）方案，推理路径具备跨算力平台适配能力。但当前开源释放的主要仍是基于 CUDA 的 MegaMoE 和 DeepGEMM，底层实现深度绑定 NVIDIA 工具链。</p>
+<p>官方 API 页面有一行小字意味深长：</p>
+<blockquote>
+<p>“受限于高端算力，目前 Pro 的服务吞吐十分有限，预计<strong>下半年昇腾950超节点批量上市后，Pro 价格会大幅下调。</strong>“</p>
+</blockquote>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><ul>
+<li><strong>TileLang DSL + Z3 SMT</strong> 用于内核开发</li>
+<li>KV cache 上盘存储，用于吃掉 shared prefix 的预填充</li>
+</ul>
+<hr>
+<h2 id="八、性能表现：不拼天花板，但抬高了地板"><a href="#八、性能表现：不拼天花板，但抬高了地板" class="headerlink" title="八、性能表现：不拼天花板，但抬高了地板"></a>八、性能表现：不拼天花板，但抬高了地板</h2><h3 id="开源领先"><a href="#开源领先" class="headerlink" title="开源领先"></a>开源领先</h3><table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>V4-Pro-Max</th>
+<th>Kimi K2.6</th>
+<th>GLM-5.1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SimpleQA-Verified</td>
+<td><strong>57.9</strong></td>
+<td>36.9</td>
+<td>38.1</td>
+</tr>
+<tr>
+<td>Codeforces Rating</td>
+<td><strong>3206</strong></td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p>SimpleQA 领先所有开源模型 20 个百分点。Codeforces rating 3206 不仅击败 GPT-5.4（3168）和 Gemini-3.1-Pro（3052），还在人类选手榜单上排名第23。</p>
+<h3 id="与闭源旗舰的差距"><a href="#与闭源旗舰的差距" class="headerlink" title="与闭源旗舰的差距"></a>与闭源旗舰的差距</h3><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>V4-Pro-Max</th>
+<th>顶尖闭源</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HLE</td>
+<td>37.7</td>
+<td>Gemini-3.1-Pro: 44.4</td>
+</tr>
+<tr>
+<td>1M MRCR</td>
+<td>优于 Gemini</td>
+<td>不如 Claude</td>
+</tr>
+<tr>
+<td>知识&#x2F;前沿推理</td>
+<td>—</td>
+<td>约落后3-6个月</td>
+</tr>
+</tbody></table>
+<p>论文坦诚地写道：</p>
+<blockquote>
+<p>“DeepSeek-V4-Pro-Max 在标准推理 benchmark 上优于 GPT-5.2 和 Gemini-3.0-Pro，但<strong>略落后于 GPT-5.4 和 Gemini-3.1-Pro</strong>，发展轨迹大约落后最前沿闭源模型 <strong>3到6个月</strong>。”</p>
+</blockquote>
+<h3 id="Agent-与开发者体验"><a href="#Agent-与开发者体验" class="headerlink" title="Agent 与开发者体验"></a>Agent 与开发者体验</h3><p>在内部 R&amp;D 代码 benchmark 中，V4-Pro-Max 拿到 67%，接近 Claude Opus 4.5 的 70%。85 人的内部开发者调研显示，<strong>91% 表示 V4-Pro 可以作为主力 coding 模型</strong>。</p>
+<p>官方推文也印证了这点：</p>
+<blockquote>
+<p>“目前 DeepSeek-V4 已成为公司内部员工使用的 Agentic Coding 模型，据评测反馈使用体验 <strong>优于 Sonnet 4.5</strong>，交付质量<strong>接近 Opus 4.6 非思考模式</strong>，但仍与 Opus 4.6 思考模式存在一定差距。”</p>
+</blockquote>
+<hr>
+<h2 id="九、四个预期，三个落地，一个留给下一代"><a href="#九、四个预期，三个落地，一个留给下一代" class="headerlink" title="九、四个预期，三个落地，一个留给下一代"></a>九、四个预期，三个落地，一个留给下一代</h2><p>V4 发布前，业界有四个”应该会进V4”的预期：</p>
+<table>
+<thead>
+<tr>
+<th>技术</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>mHC</strong>（流形约束超连接，梁文锋署名，2025.12.31 arXiv）</td>
+<td>✅ 进了V4</td>
+</tr>
+<tr>
+<td><strong>Engram</strong>（条件记忆模块，1月联合北大发布）</td>
+<td>❌ 没进V4，点名留给V5</td>
+</tr>
+<tr>
+<td><strong>DualPipe</strong>（V3老伙计，针对mHC调整）</td>
+<td>✅ 继续用</td>
+</tr>
+<tr>
+<td><strong>Muon 优化器</strong>（从Kimi那边借鉴）</td>
+<td>✅ 替换AdamW</td>
+</tr>
+</tbody></table>
+<p>Engram（条件记忆）虽未入局，但论文在未来方向中被明确点名——它的思路是将”记忆”从”计算”中剥离，给大模型挂载可扩展的外部记忆检索系统。这条线将在下一代继续探索。</p>
+<hr>
+<h2 id="十、未来方向与总结"><a href="#十、未来方向与总结" class="headerlink" title="十、未来方向与总结"></a>十、未来方向与总结</h2><p><strong>未来方向：</strong></p>
+<ul>
+<li>探索新维度的稀疏性（点名 Engram 线）</li>
+<li>低延迟架构</li>
+<li>长时程多轮 Agentic 任务</li>
+<li>多模态</li>
+<li>更好的数据 curation</li>
+<li>在架构上做”减法”，精简到最本质的部分</li>
+</ul>
+<p><strong>核心定位：</strong></p>
+<p>把 V4 放回 DeepSeek 的完整路径里看，它不是在追赶前沿，而是在<strong>持续抬高能用的下限</strong>。</p>
+<p>从 V2 的 MLA 开始，DeepSeek 每一代都在做同一件事——删。删 KV cache、删激活参数、删注意力计算量。删到 V4，单 token 推理 FLOPs 砍到四分之一，KV cache 砍到十分之一。</p>
+<p>V4 的真正价值不在 benchmark 数字上，而在于：<strong>把百万上下文、Agent原生能力、可接受的价格这三件事第一次绑在了一起。</strong> 它不是冲天花板的 SOTA 模型，但它是让普通开发者第一次能放心用上100万 token 上下文 Agent 的发布。</p>
+<p>闭源模型卷能力天花板，开源模型卷地板——地板抬高多少，决定 AI 应用爆发的规模。在这一代，V4 实打实地把地板往上抬了一截。</p>
+<hr>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ol>
+<li>DeepSeek-V4 技术报告：<a target="_blank" rel="noopener" href="https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro/blob/main/DeepSeek_V4.pdf">https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro/blob/main/DeepSeek_V4.pdf</a></li>
+<li>DeepSeek-V4 模型权重：<a target="_blank" rel="noopener" href="https://huggingface.co/collections/deepseek-ai/deepseek-v4">https://huggingface.co/collections/deepseek-ai/deepseek-v4</a></li>
+<li>mHC 论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2512.24880">https://arxiv.org/abs/2512.24880</a></li>
+<li>魔搭社区 V4 合集：<a target="_blank" rel="noopener" href="https://modelscope.cn/collections/deepseek-ai/DeepSeek-V4">https://modelscope.cn/collections/deepseek-ai/DeepSeek-V4</a></li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io/2026/04/26/deepseek-v4-architecture/">http://hebangwen.github.io/2026/04/26/deepseek-v4-architecture/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://hebangwen.github.io" target="_blank">Yet Another 何榜文's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/MoE/">MoE</a><a class="post-meta__tags" href="/tags/LLM/">LLM</a><a class="post-meta__tags" href="/tags/Transformer/">Transformer</a><a class="post-meta__tags" href="/tags/DeepSeek/">DeepSeek</a><a class="post-meta__tags" href="/tags/Attention/">Attention</a><a class="post-meta__tags" href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/03/26/ld-loader-glibc-version-compatibility/" title="ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析</div></div><div class="info-2"><div class="info-item-1">问题背景在 Linux 交叉编译场景中，开发者经常遇到这样的困境： 12$ ./myapp./myapp: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.34&#x27; not found  这是因为编译环境的 glibc 版本（如 2.34）高于运行环境的 glibc 版本（如 2.31）。但奇怪的是，作为负责加载所有动态库的 ld 加载器（/lib64/ld-linux-x86-64.so.2），它自己却从不受 glibc 版本问题的困扰。本文将深入解析这一现象背后的技术原理。   一、符号版本化的双刃剑1.1 glibc 的符号版本机制glibc 使用符号版本化（Symbol Versioning）来保持向后兼容。以 memcpy 为例： 123// glibc 内部定义__asm__(&quot;.symver memcpy, memcpy@GLIBC_2.2.5&quot;);__asm__(&quot;.symver memcpy, memcpy@@GLIBC_2.14&quot;);  // 默认版本  当程序...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/03/18/SonicMoE-Accelerating-MoE/" title="SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-18</div><div class="info-item-2">SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化</div></div><div class="info-2"><div class="info-item-1">SonicMoE: 加速 MoE 模型的 IO 与 Tile 感知优化 论文地址: https://arxiv.org/abs/2512.14080代码开源: https://github.com/Dao-AILab/sonic-moe作者: Wentao Guo, Mayank Mishra, Xinle Cheng, Ion Stoica, Tri Dao  背景：MoE 模型的趋势与挑战近年来，混合专家模型 (Mixture of Experts, MoE) 已成为扩展大语言模型的主流架构。与 Dense 模型相比，MoE 可以在不显著增加计算成本的前提下大幅提升参数量。 MoE 的两个核心趋势从最新的开源模型（如 DeepSeek-V3、Qwen3 MoE、Kimi K2）可以看出两个明显的趋势：  细粒度 (Fine-grained): 专家的中间维度越来越小  Mixtral 8x22B: d&#x2F;n &#x3D; 0.38 DeepSeek-V3: d&#x2F;n &#x3D; 3.50 Qwen3-Next: d&#x2F;n &#x3D; 4.00   ...</div></div></div></a><a class="pagination-related" href="/2025/02/20/minicpm-o-2-6/" title="MiniCPM-O-2_6 模型结构介绍"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-20</div><div class="info-item-2">MiniCPM-O-2_6 模型结构介绍</div></div><div class="info-2"><div class="info-item-1">目的介绍一下有关 VLM&#x2F;MLLM 的模型结构，从模型结构上指导模型部署，了解各个模块的作用。 MiniCPM-O-2_6 简介O 代表了 Omni，含义是全能。MiniCPM-O-2_6 是一个基于 MiniCPM-2 的多模态模型，在之前的 MiniCPM-V-2_6 的基础上增加了额外的多模态能力，包括【语音识别】、【语音生成】的功能。由于语音作为文本嵌入到了 LLM 的输入之中，还可以实现【语音提问图片内容，语音回复】的功能。OpenBMB 官方博客见 MiniCPM-o 2.6: A GPT-4o Level MLLM for Vision, Speech, and Multimodal Live Streaming on Your Phone。 为了实现上面的功能，MiniCPM-O-2_6 一共有四个模块：  SigLip-400M 视觉编码器：用于提取视觉特征，并映射到 LLM 嵌入空间 Whisper-medium-300M 语音编码器：用于提取语音特征，也映射到 LLM 嵌入空间 LLM：基于 Qwen2.5-7B 模型，能够支持多模态输入，但是受限...</div></div></div></a><a class="pagination-related" href="/2026/03/05/gated-delta-net/" title="Gated Delta Net"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-05</div><div class="info-item-2">Gated Delta Net</div></div><div class="info-2"><div class="info-item-1">门控增量网络（Gated Delta Network）的技术原理、性能优势与工业应用综述随着大语言模型（LLM）在长文本处理、多轮对话以及复杂指令遵循等任务中的广泛应用，传统 Transformer 架构所面临的计算挑战日益凸显。自注意力机制（Self-Attention）的计算复杂度与内存占用随序列长度 $L$ 呈二次方增长（$O(L^2)$），这一“效率之墙”严重制约了模型处理超长上下文的能力 。为了突破这一瓶颈，研究界探索了多种亚线性复杂度的替代方案，其中门控增量网络（Gated Delta Network，简称 GDN 或 Gated DeltaNet）作为线性 Transformer 的演进版本，凭借其在记忆精确度与硬件效率之间的卓越平衡，正逐渐成为新一代长文本模型的核心技术 。 第一部分：Gated Delta Network 的核心原理与理论演进GDN 的设计灵感源于对现有线性递归模型局限性的深度审视。在线性 Transformer 的语境下，模型通常被视为一种基于外积的键值关联记忆（Outer-product-based key-value associative...</div></div></div></a><a class="pagination-related" href="/2025/02/12/transformers-high-memory-usage/" title="关于 DeepSeek-R1-Distill-Qwen-1.5B 显存占用比下载权重高非常多的现象分析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-12</div><div class="info-item-2">关于 DeepSeek-R1-Distill-Qwen-1.5B 显存占用比下载权重高非常多的现象分析</div></div><div class="info-2"><div class="info-item-1">现象从 huggingface 上下载下来的 DeepSeek-R1-Distill-Qwen-1.5B 模型权重大小只有 3.5GB，但是加载到 GPU 上之后，占用显存达到 5.4GB，多了 1.9GB。 排查显存占用比权重多 1.9GB 的原因应该是模型在创建的时候申请了权重以外的内存，这部分内存没有体现在权重的大小中。 使用 pytorch 查看显存占用pytorch 博客 Understanding GPU Memory 1: Visualizing All Allocations over Time 中给出了 pytorch 内部的显存统计方法，函数都定义在 torch.cuda.memory 中。具体代码可以参考官方博客，下面展示显存统计结果。  可以看到从程序开始到结束，显存一直都是 5.4GB 左右，最上方有一小部分激活占用的显存，但是由于我们输入非常短，所以占用很小。从这个结果我们可以想象到，模型总显存占用比权重多的那部分显存在模型一开始就创建了，后续的应用层是无法操作的。 使用 transformers 查看显存占用transformers 的 AutoMo...</div></div></div></a><a class="pagination-related" href="/2024/03/13/llama2/" title="llama2"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-13</div><div class="info-item-2">llama2</div></div><div class="info-2"><div class="info-item-1">LLaMa2Transformer IntroductionArchitecturetransformer 最主要的结构就是这张图：   在纯 Encoder 或者纯 Decoder 的架构中，会变成只有左边的 transformer block 的结构，但是区别在于 Multi-Head Attention 是否存在 mask。Encoder-only 架构为了获取每一个 token 的完整上下文，因此没有对应的 mask；Decoder-only 架构为了让每一个 token 只能注意到它前面的 token，因此会存在一个从前往后的 mask，即生成的 $QK^T$ 矩阵（shape 为 $n_{tokens} \times n_{tokens}$）是一个下三角阵。  llama2 的 QK^T 矩阵注意力输出，Decoder 架构，因此是一个下三角阵 Encoder-DecoderTransformer-based Encoder-Decoder Models Transformer 是 Encoder-Decoder 结构的一种，这是为了解决在 NLP 中输入和输出长度不...</div></div></div></a><a class="pagination-related" href="/2026/03/06/chunkwise-parallel-algo/" title="Chunkwise 并行算法 —— 线性注意力"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-06</div><div class="info-item-2">Chunkwise 并行算法 —— 线性注意力</div></div><div class="info-2"><div class="info-item-1">为了在现代硬件上实现高效训练，Mamba2 和 DeltaNet 都通过分块并行（Chunkwise Parallel）策略将 $O(L)$ 的线性递归改写为矩阵迭代形式。这种变换的核心思想是将长序列划分为大小为 $C$ 的块，利用矩阵乘法（Matmul）处理块内计算，通过隐藏状态传递块间信息。 1. Mamba2：状态空间二元性（SSD）的矩阵迭代推导Mamba2 的核心贡献在于证明了选择性 SSM 实际上等价于一种带有特殊掩码的线性注意力机制。 1.1 从递归到块内状态展开Mamba2 的状态更新公式（矩阵形式）为： $$S_t &#x3D; \alpha_t S_{t-1} + v_t k_t^T \in \mathbb{R}^{d_v \times d_k}, \quad o_t &#x3D; S_t q_t \in \mathbb{R}^{d_v}$$ 其中 $\alpha_t \in (0,1)$ 是数据相关的衰减因子。定义 $\gamma_j &#x3D; \prod_{i&#x3D;1}^j \alpha_i$ 为全局累积衰减，是一个标量因子。 如果只考虑端侧 C...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">41</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">66</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%A8%A1%E5%9E%8B%E8%A7%84%E6%A0%BC%E9%80%9F%E8%A7%88"><span class="toc-number">1.</span> <span class="toc-text">一、模型规格速览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%9E%B6%E6%9E%84%E5%85%A8%E6%99%AF%EF%BC%9A%E4%B8%89%E5%A4%A7%E6%A0%B8%E5%BF%83%E5%8D%87%E7%BA%A7"><span class="toc-number">2.</span> <span class="toc-text">二、架构全景：三大核心升级</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81mHC%EF%BC%9A%E7%BB%99%E6%AE%8B%E5%B7%AE%E8%BF%9E%E6%8E%A5%E5%8A%A0%E4%B8%8A%E2%80%9D%E6%95%B0%E5%AD%A6%E5%AE%89%E5%85%A8%E5%B8%A6%E2%80%9D"><span class="toc-number">3.</span> <span class="toc-text">三、mHC：给残差连接加上”数学安全带”</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Hybrid-Attention%EF%BC%9A%E7%99%BE%E4%B8%87token%E6%95%88%E7%8E%87%E7%9A%84%E9%AD%94%E6%B3%95"><span class="toc-number">4.</span> <span class="toc-text">四、Hybrid Attention：百万token效率的魔法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-CSA%EF%BC%88Compressed-Sparse-Attention%EF%BC%89%EF%BC%9A%E5%8E%8B%E7%BC%A9-%E7%A8%80%E7%96%8F"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 CSA（Compressed Sparse Attention）：压缩 + 稀疏</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-HCA%EF%BC%88Heavily-Compressed-Attention%EF%BC%89%EF%BC%9A%E6%9E%81%E9%99%90%E5%8E%8B%E7%BC%A9-Dense"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 HCA（Heavily Compressed Attention）：极限压缩 + Dense</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-CSA-%E4%B8%8E-HCA-%E7%9A%84%E5%88%86%E5%B7%A5"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 CSA 与 HCA 的分工</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E9%85%8D%E5%A5%97%E4%BC%98%E5%8C%96"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 配套优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Muon-%E4%BC%98%E5%8C%96%E5%99%A8%EF%BC%9A%E4%BB%8E-AdamW-%E6%8D%A2%E8%A1%80"><span class="toc-number">5.</span> <span class="toc-text">五、Muon 优化器：从 AdamW 换血</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83"><span class="toc-number">6.</span> <span class="toc-text">六、模型训练</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E9%A2%84%E8%AE%AD%E7%BB%83"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 预训练</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%90%8E%E8%AE%AD%E7%BB%83%EF%BC%9AOn-Policy-Distillation"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 后训练：On-Policy Distillation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%EF%BC%9A%E4%BB%8ENVIDIA%E5%88%B0%E5%8D%8E%E4%B8%BA%E6%98%87%E8%85%BE"><span class="toc-number">7.</span> <span class="toc-text">七、基础设施：从NVIDIA到华为昇腾</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MegaMoE-%E5%A4%A7%E6%A0%B8"><span class="toc-number">7.1.</span> <span class="toc-text">MegaMoE 大核</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%8E%E7%B2%BE%E5%BA%A6%E9%87%8F%E5%8C%96"><span class="toc-number">7.2.</span> <span class="toc-text">低精度量化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%BD%E4%BA%A7%E8%8A%AF%E7%89%87%E9%80%82%E9%85%8D%E4%B8%8A%E8%B7%AF"><span class="toc-number">7.3.</span> <span class="toc-text">国产芯片适配上路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-number">7.4.</span> <span class="toc-text">其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E6%80%A7%E8%83%BD%E8%A1%A8%E7%8E%B0%EF%BC%9A%E4%B8%8D%E6%8B%BC%E5%A4%A9%E8%8A%B1%E6%9D%BF%EF%BC%8C%E4%BD%86%E6%8A%AC%E9%AB%98%E4%BA%86%E5%9C%B0%E6%9D%BF"><span class="toc-number">8.</span> <span class="toc-text">八、性能表现：不拼天花板，但抬高了地板</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%80%E6%BA%90%E9%A2%86%E5%85%88"><span class="toc-number">8.1.</span> <span class="toc-text">开源领先</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8E%E9%97%AD%E6%BA%90%E6%97%97%E8%88%B0%E7%9A%84%E5%B7%AE%E8%B7%9D"><span class="toc-number">8.2.</span> <span class="toc-text">与闭源旗舰的差距</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Agent-%E4%B8%8E%E5%BC%80%E5%8F%91%E8%80%85%E4%BD%93%E9%AA%8C"><span class="toc-number">8.3.</span> <span class="toc-text">Agent 与开发者体验</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%9B%9B%E4%B8%AA%E9%A2%84%E6%9C%9F%EF%BC%8C%E4%B8%89%E4%B8%AA%E8%90%BD%E5%9C%B0%EF%BC%8C%E4%B8%80%E4%B8%AA%E7%95%99%E7%BB%99%E4%B8%8B%E4%B8%80%E4%BB%A3"><span class="toc-number">9.</span> <span class="toc-text">九、四个预期，三个落地，一个留给下一代</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E6%9C%AA%E6%9D%A5%E6%96%B9%E5%90%91%E4%B8%8E%E6%80%BB%E7%BB%93"><span class="toc-number">10.</span> <span class="toc-text">十、未来方向与总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-number">11.</span> <span class="toc-text">参考链接</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/26/deepseek-v4-architecture/" title="DeepSeek-V4 架构全解：百万token时代的效率革命">DeepSeek-V4 架构全解：百万token时代的效率革命</a><time datetime="2026-04-26T02:00:00.000Z" title="发表于 2026-04-26 10:00:00">2026-04-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/26/ld-loader-glibc-version-compatibility/" title="ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析">ld 加载器如何规避 glibc 版本冲突：交叉编译的底层机制解析</a><time datetime="2026-03-26T11:30:00.000Z" title="发表于 2026-03-26 19:30:00">2026-03-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/19/torch-chunked-gated-delta-rule-optimization/" title="Torch Chunked Gated Delta Rule 并行优化指南">Torch Chunked Gated Delta Rule 并行优化指南</a><time datetime="2026-03-19T01:15:00.000Z" title="发表于 2026-03-19 09:15:00">2026-03-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/18/SonicMoE-Accelerating-MoE/" title="SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化">SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化</a><time datetime="2026-03-17T16:12:00.000Z" title="发表于 2026-03-18 00:12:00">2026-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/13/arm-intrinsics/" title="ARM 架构深度学习推理指令集的演进与技术范式分析报告">ARM 架构深度学习推理指令集的演进与技术范式分析报告</a><time datetime="2026-03-13T01:06:06.000Z" title="发表于 2026-03-13 09:06:06">2026-03-13</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
