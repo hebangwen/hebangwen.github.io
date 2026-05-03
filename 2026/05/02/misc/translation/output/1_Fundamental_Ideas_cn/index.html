@@ -1,0 +1,316 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Yet Another 何榜文's Blog | Yet Another 何榜文's Blog</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="1_Fundamental_Ideas1基本思想1.1变分原理我们日常生活中的许多活动都旨在优化某个量。我们经常尝试以最小的努力或尽可能快地完成任务。举一个简单的例子：我们可能会规划一次驾车旅行以最小化旅行时间，选择一条较长的路线以便在高速公路上行驶得更快。图1.1是城镇A和B之间的示意道路图。普通道路上的速度是50 mph，而经过F、G和H的高速公路上的速度是70 mph。最短旅行时间是沿路线A">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:url" content="http://hebangwen.github.io/2026/05/02/misc/translation/output/1_Fundamental_Ideas_cn/index.html">
+<meta property="og:site_name" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:description" content="1_Fundamental_Ideas1基本思想1.1变分原理我们日常生活中的许多活动都旨在优化某个量。我们经常尝试以最小的努力或尽可能快地完成任务。举一个简单的例子：我们可能会规划一次驾车旅行以最小化旅行时间，选择一条较长的路线以便在高速公路上行驶得更快。图1.1是城镇A和B之间的示意道路图。普通道路上的速度是50 mph，而经过F、G和H的高速公路上的速度是70 mph。最短旅行时间是沿路线A">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2026-05-02T06:43:26.622Z">
+<meta property="article:modified_time" content="2026-05-02T09:57:33.420Z">
+<meta property="article:author" content="何榜文">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "",
+  "url": "http://hebangwen.github.io/2026/05/02/misc/translation/output/1_Fundamental_Ideas_cn/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2026-05-02T06:43:26.622Z",
+  "dateModified": "2026-05-02T09:57:33.420Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "http://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="http://hebangwen.github.io/2026/05/02/misc/translation/output/1_Fundamental_Ideas_cn/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Yet Another 何榜文\'s Blog',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">Yet Another 何榜文's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Yet Another 何榜文's Blog</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">无标题</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-05-02T06:43:26.622Z" title="发表于 2026-05-02 14:43:26">2026-05-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-05-02T09:57:33.420Z" title="更新于 2026-05-02 17:57:33">2026-05-02</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><h1 id="1-Fundamental-Ideas"><a href="#1-Fundamental-Ideas" class="headerlink" title="1_Fundamental_Ideas"></a>1_Fundamental_Ideas</h1><p>1<br>基本思想<br>1.1<br>变分原理<br>我们日常生活中的许多活动都旨在优化某个量。我们经常尝试以最小的努力或尽可能快地完成任务。举一个简单的例子：我们可能会规划一次驾车旅行以最小化旅行时间，选择一条较长的路线以便在高速公路上行驶得更快。图1.1是城镇A和B之间的示意道路图。普通道路上的速度是50 mph，而经过F、G和H的高速公路上的速度是70 mph。最短旅行时间是沿路线AFGB的1 hr 24 mins，尽管这不是最短的路线。</p>
+<p>A<br>5<br>F<br>75<br>B<br>10<br>15<br>G<br>70<br>14<br>H<br>图1.1 道路图，距离以英里计。普通道路上的速度是50 mph，高速公路上是70 mph。</p>
+<p>值得注意的是，许多自然过程也可以类似地看作是在优化某个量。我们说它们满足一个变分原理。一根在两个点之间拉伸的弹性带沿着一条直线；这是最短路径，也最小化了弹性带的能量。我们可以如下理解为什么直线是最短路径。首先我们需要假设最短路径确实存在。在当前情况下这是显然的，但还有更复杂的优化问题不存在最优解。现在假设最短路径上某处有一段弯曲。任何弯曲段都可以近似为一个圆的一部分，如图1.2所示，并且利用一点三角学知识，我们可以验证直线段CD比圆弧CD短。实际上，圆弧的长度是2Rα，而直线段的长度是2R sin α，更短。因此，最短路径在某处是弯曲的这一假设是矛盾的。所以最短路径是直的。</p>
+<p>《物理世界》(The Physical World)。尼古拉斯·曼顿 (Nicholas Manton) 和尼古拉斯·米 (Nicholas Mee)，牛津大学出版社 (2017)。<br>© 尼古拉斯·曼顿和尼古拉斯·米。DOI 10.1093&#x2F;acprof:oso&#x2F;9780198795933.001.0001</p>
+<p>变分原理<br>5<br>R<br>C<br>2α<br>D<br>图1.2 路径的任何弯曲部分都可以用圆的一部分来近似。穿过该圆的直弦比弯曲路径短。</p>
+<p>肥皂膜是另一个熟悉的、能量优化的物理例子。尽管它最初可能在振动，但肥皂膜最终会静止下来，处于静止状态。此时它的能量是其恒定的表面张力与面积的乘积，因此当面积最小时能量最小。对于三维空间中的任何光滑曲面，有两个主曲率半径，r1和r2；对于最小面积曲面，两个曲率半径相等，但指向相反的方向。曲面的每个区域都呈马鞍形，如图1.3所示。我们可以从物理上理解为什么表面张力会产生这种效果。在曲面的每个小面元上，两个曲率产生力。如果它们大小相等方向相反，则它们抵消，面元处于平衡。因此，物理中的能量和力的概念与几何中的最小面积概念之间有着密切的联系。我们将在第5章进一步讨论曲面的几何。<br>图1.3 肥皂膜是最小面积曲面。两个曲率半径相等，但曲率方向相反。一个方向的曲率产生的力与另一个方向的曲率产生的力平衡。</p>
+<p>6<br>基本思想<br>1.1.1<br>几何光学——反射与折射<br>费马原理 (Fermat’s principle) 在光学领域是物理学中最早发现的最优化原理。它由皮埃尔·德·费马 (Pierre de Fermat) 于1662年提出。几何光学研究的是理想化的、无限细的光束，即光线。在现实世界中，使用抛物面镜或让光通过带有窄缝的屏幕，可以获得接近理想光线的狭窄光束。即使光不受这种物理限制，它仍然可以被视为沿不同方向传播的光线的集合。</p>
+<p>费马原理指出，光线在给定两点A和B之间所取的路径，是使总传播时间最小的路径。这条路径可能是直线，也可能在穿过不同介质时发生弯折甚至弯曲。一个基本假设是，在给定介质中，光线具有确定的、有限的速度。在均匀介质中，例如空气、水或真空，传播时间等于路径长度除以光速。由于速度恒定，时间最小的路径也就是最短路径，即从A到B的直线路径。因此，光线在均匀介质中沿直线传播，这一点很容易验证。从位于A的光源以正确方向出发的光线将到达B；尽管光源可能向四面八方发光，但A和B之间连线上的任何一处小障碍物都会阻挡光线到达B，并在那里投下阴影。</p>
+<p>费马原理可以用来理解光学的两个基本定律——反射定律和折射定律。首先考虑反射。假设在均匀介质中有一面长的平面镜，光源位于A点，光接收点B与A在镜子的同侧，如图1.4所示。考虑所有从A到B且只经镜面反射一次的可能光线。若要使光从A到B的传播时间最小，反射前后的路径段必须是直线。我们需要知道的是反射点X的位置。</p>
+<p>A<br>a<br>b<br>x<br>B<br>X<br>0<br>X<br>(L -X )<br>镜子<br>L<br>ϑ<br>ϕ<br>图1.4 光线在镜面上的反射。<br>图中的坐标将x轴沿镜面设置，反射点X位于x &#x3D; X处。考虑图中的各个长度，暂时忽略角度ϑ和ϕ。利用毕达哥拉斯定理确定路径长度，我们发现光经X点从A到B的时间为</p>
+<p>变分原理</p>
+<p>7</p>
+<p>T &#x3D; 1<br>c<br>p<br>a² + X² +<br>p<br>b² + (L −X)²<br>,<br>(1.1)</p>
+<p>其中 c 是光沿两段直线路径的速度。T 对 X 的导数为</p>
+<p>dT<br>dX &#x3D; 1<br>c</p>
+<p>X<br>√a² + X² −<br>L −X<br>p<br>b² + (L −X)²<br>!<br>,<br>(1.2)</p>
+<p>当此导数为零时，旅行时间取极小值，从而得到关于 X 的方程：</p>
+<p>X<br>√a² + X² &#x3D;<br>L −X<br>p<br>b² + (L −X)² .<br>(1.3)</p>
+<p>此时角度的概念就派上用场了，因为方程 (1.3) 等价于</p>
+<p>cos ϑ &#x3D; cos ϕ ,<br>(1.4)</p>
+<p>这可以从图 1.4 中看出。因此 ϑ 和 ϕ 相等。我们并未明确求出 X，但这并不重要。重要的结果是：入射光线与反射光线在镜面处与法线的夹角相等。这就是反射的基本定律。事实上，通过化简方程 (1.3) 或考虑 cot ϑ &#x3D; cot ϕ，我们得到 X&#x2F;a &#x3D; (L−X)&#x2F;b，从而很容易解出 X。</p>
+<p>折射现象与此大同小异。在折射中，光线从光速为 c₁ 的介质进入光速为 c₂ 的另一个质。折射的几何关系与反射有所不同，但差异并不显著，我们采用类似的坐标（见图 1.5）。根据费马原理 (Fermat’s principle)，从 A 到 B（或从 B 到 A）的实际光线的路径是使传播时间取极小值的路径。注意，除非 c₁ &#x3D; c₂，否则这条路径绝非从 A 到 B 的最短路径（即两点间的直线）。最小时间路径存在一个弯折，正如我们之前考虑的高速公路旁路线一样。从 A 到 X 和从 X 到 B 的光线必须是直线，因为每段路径完全处于单一介质内且以单一速度传播。因此，光从 A 行至 B 的总时间为</p>
+<p>T &#x3D; 1<br>c₁<br>p<br>a² + X² + 1<br>c₂<br>p<br>b² + (L −X)² .<br>(1.5)</p>
+<p>同样，当 T 对 X 的导数为零时，时间 T 取极小值，即</p>
+<p>dT<br>dX &#x3D; 1<br>c₁<br>X<br>√a² + X² − 1<br>c₂<br>L −X<br>p<br>b² + (L −X)² &#x3D; 0 .<br>(1.6)</p>
+<p>由此得到关于 X 的方程：</p>
+<p>1<br>c₁<br>X<br>√a² + X² &#x3D; 1<br>c₂<br>L −X<br>p<br>b² + (L −X)² .<br>(1.7)</p>
+<p>我们并非真正想解出此方程，而是希望用更几何化的方式表达它。借助图 1.5 中的角度 ϑ 和 ϕ，该方程变为</p>
+<p>1<br>c₁<br>cos ϑ &#x3D; 1<br>c₂<br>cos ϕ ,<br>(1.8)</p>
+<p>8<br>基本概念<br>X<br>0<br>介质2<br>光速 c2<br>介质1<br>光速 c1<br>X<br>ϕ<br>ϑ<br>(L - X)<br>L<br>x<br>b<br>a<br>A<br>B<br>图1.5 光线的折射。c2（介质2中的光速）小于c1（介质1中的光速）。<br>或更实用的形式<br>cos ϕ &#x3D; c2<br>c1<br>cos ϑ 。<br>(1.9)<br>这就是威里布罗德·斯涅尔(Willebrord Snell)折射定律。¹ 它将光线的角度与光速之比 c2 和 c1 联系起来。即使光速未知，斯涅尔定律也可以通过实验检验。为此，必须改变光束击中表面的角度，使 A 点和 B 点不再固定。当 cos ϕ 相对于 cos ϑ 绘图时，得到的图形是一条过原点的直线。</p>
+<p>假设光线从空气进入水中。水中的光速小于空气中的光速，因此 c2 小于 c1，且 cos ϕ 小于 cos ϑ。所以 ϕ 大于 ϑ。如图1.5所示，容易验证，结果是光线向水面法线方向弯折进入水中。</p>
+<p>斯涅尔定律有许多有趣的推论。它是诸如光聚焦和透镜系统等应用的关键。它也解释了全内反射现象。当一束源自 B 点（位于光速较慢的介质中）的光线以较小的角度 ϕ 射向表面，使得 cos ϕ 接近 1，从而导致 cos ϑ &gt; 1 时，全内反射就会发生。此时角度 ϑ 无解，因此光线无法穿越表面进入介质1，整束光都被内部反射回来。全内反射的临界入射角 ϕc 取决于两种介质中的光速之比。方程(1.9)表明</p>
+<p>¹ 斯涅尔定律用光线与表面法线（垂直线）之间的夹角 ϕ′ &#x3D; π&#x2F;2 − ϕ 和 ϑ′ &#x3D; π&#x2F;2 − ϑ 表示可能更常见，此时其形式为 sin ϕ′ &#x3D; (c₂&#x2F;c₁) sin ϑ′。</p>
+<p>变分原理<br>9<br>即 cos ϕc &#x3D; c2 c1。这一结果对光纤中光信号传输等应用至关重要。</p>
+<p>最初，折射定律是用方程(1.9)右端的折射率之比来表达的。正是通过考察费马原理(Fermat’s principle)，物理学家意识到该比值可以理解为光速之比。后来，当可以直接测量光在各种介质中的速度时，人们发现光在真空中传播速度最快，在空气中仅略慢一点。然而，在水或玻璃等密度更大的材料中，光速要慢得多，大约慢20%–40%。真空中的光速是一个绝对常数，为299,792,458 m s⁻¹，通常近似为3×10⁸ m s⁻¹。在稠密介质中，光速可能依赖于波长，因此当光线从空气进入玻璃或水时，不同颜色的光会偏折出不同的角度，这就是为何折射后的白光光束进入玻璃棱镜或水滴时会分解。</p>
+<h3 id="1-1-2-变分原理的适用范围"><a href="#1-1-2-变分原理的适用范围" class="headerlink" title="1.1.2 变分原理的适用范围"></a>1.1.2 变分原理的适用范围</h3><p>我们已经简要领略了如何将某些数学形式的自然定律用变分原理来表述。这些原理实际上要普适得多，在整个物理学中随处可见。无论是粒子的运动、场的波形、量子态，还是时空本身的形状，我们都发现自然过程总是在优化某个物理量。通常这意味着该量取极大值或极小值，但也可能是鞍点。²最重要的这类量被称为作用量(action)，许多物理定律都可以表述为最小作用量原理(principle of least action)。分析这些原理的恰当数学工具称为变分法(calculus of variations)。它是普通微积分的推广，带有自己额外的工具，我们将在后文介绍。</p>
+<p>早在18世纪，让·勒朗·达朗贝尔(Jean le Rond D’Alembert)、莱昂哈德·欧拉(Leonhard Euler)和约瑟夫-路易·拉格朗日(Joseph-Louis Lagrange)就意识到牛顿运动定律可以从最小作用量原理推导出来。19世纪30年代，威廉·罗文·哈密顿(William Rowan Hamilton)完善了这一方法。我们现在知道，关于电场和磁场的麦克斯韦方程组也来自电磁作用量原理，1915年大卫·希尔伯特(David Hilbert)证明了爱因斯坦新发现的、用弯曲时空描述引力的方程也源于一个作用量原理。甚至经典物理与量子力学之间的关系，也是通过作用量原理才能最好地理解。这一思想由保罗·狄拉克(Paul Dirac)首创，并由费曼(Feynman)完善。如今，作用量原理被视为概括粒子与场行为的最佳方法。</p>
+<p>以这种方式表述物理理论的一个优点是，最小作用量原理简洁且易于记忆。例如，在麦克斯韦对电磁学的原始表述中，关于电磁场的方程有20个。在由约西亚·威拉德·吉布斯(Josiah Willard Gibbs)提出的现代矢量记法下，麦克斯韦方程组为四个，再补充以带电粒子的洛伦兹力定律(Lorentz force law)。而作用量则不同，它是从电磁场和带电粒子轨迹构造出的单一量，我们将在第3章中加以描述。在建立更复杂的基本粒子规范理论(gauge theories)（见第12章）乃至弦理论(string theory)等更高深的理论时，这种简洁性至关重要。</p>
+<p>² 地形中的鞍点是指高度的驻点，类似于山口，但既非极大值也非极小值。</p>
+<p>10<br>基本思想<br>在第2章中，我们将回到这些思想，并展示如何从最小作用量原理(principle of least action)出发来理解牛顿力学。通过考虑物理物体在空间中运动的所有可能的无穷小变化，我们将推导出牛顿运动定律。不过，我们首先必须用数学来描述这种运动发生的舞台。</p>
+<p>1.2<br>欧几里得空间与时间<br>我们熟悉的3维欧几里得空间(Euclidean space)，简称3-space，常记为R³，是物理世界戏剧上演的舞台。这出戏剧在时间中展开，但在非相对论物理学中，时间与空间并未统一，因此我们暂时不需要对时间进行几何描述。3-space具有欧几里得对称性，包括旋转和平移，其中平移是不带旋转的刚性移动。最基本的几何概念是两点之间的距离，并且这个距离在平移和旋转下保持不变。以不依赖于位置和方向的方式来表述物理定律是很自然的。这样，当整个物理系统被平移或旋转时，定律的形式不会改变。这赋予了这些定律一种几何意义。</p>
+<p>P<br>x<br>O<br>A<br>B<br>x₁<br>x₂<br>x₃<br>1-轴<br>2-轴<br>3-轴<br>图1.6 用矢量x表示点P。</p>
+<p>空间中的一个点最容易用笛卡尔坐标(Cartesian coordinates)来描述。为此需要选取一个原点O，以及一组相互正交（即成直角）的坐标轴。每个点P唯一地由三个实数表示，合起来写成一个矢量x &#x3D; (x₁, x₂, x₃)。通常，我们不区分一个点和代表它的矢量。如图1.6所示，要从O到达P，先沿1-轴移动距离x₁到A，然后平行于2-轴移动距离x₂到B，最后平行于3-轴移动距离x₃到P。O本身用矢量(0, 0, 0)表示。</p>
+<p>x的长度或大小是从O到P的距离，记为|x|。这个距离可以利用毕达哥拉斯(Pythagoras)定理计算。OAB是一个直角三角形，所以从O到B的距离是√(x₁² + x₂²)，又因为OBP也是一个直角三角形，所以距离</p>
+<p>欧几里得空间与时间<br>11<br>从 O 到 P 的距离是<br>p<br>(x2<br>1 + x2<br>2) + x2<br>3。因此距离的平方为<br>|x|2 &#x3D; x2<br>1 + x2<br>2 + x2<br>3 ,<br>(1.10)<br>这是毕达哥拉斯(Pythagoras)定理的三维形式。如果绕 O 作旋转，距离 |x| 保持不变。</p>
+<p>将 x 变到 x′ 的旋转可以是<strong>主动</strong>的，使得 x′ 与 x 是真正不同的点。或者，旋转可以是<strong>被动</strong>的，即坐标轴旋转，但点 x 实际上没有改变。所发生的一切只是 x 相对于旋转后的轴获得一组新的坐标 x′ &#x3D; (x′<br>1, x′<br>2, x′<br>3)。在两种情况下 |x′| &#x3D; |x|。</p>
+<p>点 x 和 y 之间距离的平方为<br>|x −y|2 &#x3D; (x1 −y1)2 + (x2 −y2)2 + (x3 −y3)2 .<br>(1.11)<br>这个距离不受旋转和平移的影响。平移将所有点平移一个固定矢量 c，因此 x 和 y 被平移到 x + c 和 y + c。差值 x −y 不变，因此 |x −y| 也不变。</p>
+<p>y<br>x<br>O<br>ϑ<br>图 1.7 两个矢量的点积为 x · y &#x3D; |x||y| cos ϑ。</p>
+<p>当考虑一对矢量 x 和 y 时，引入它们的点积是很有用的<br>x · y &#x3D; x1y1 + x2y2 + x3y3 .<br>(1.12)<br>一个特例是 x · x &#x3D; x2<br>1 + x2<br>2 + x2<br>3 &#x3D; |x|2，将 x 的长度的平方表示为 x 与其自身的点积。x · y 是否受旋转影响并不是显而易见的。然而，如果我们展开方程 (1.11) 右边的项，我们得到<br>|x −y|2 &#x3D; |x|2 + |y|2 −2x · y ,<br>(1.13)<br>由于 |x|、|y| 和 |x −y| 都不受旋转影响，x · y 也必定不受影响。我们可以利用这个结果得到 x 和 y 点积的一个更方便的表达式。将其应用于边长分别为 |x|、|y| 和 |x −y| 的三角形，如图 1.7 所示，我们可以重新整理表达式 (1.13)，然后利用余弦定理得到<br>x · y &#x3D; 1<br>2(|x|2 + |y|2 −|x −y|2) &#x3D; |x||y| cos ϑ ,<br>(1.14)<br>其中 ϑ 是矢量 x 和 y 之间的夹角。</p>
+<p>由此可知，如果 x · y &#x3D; 0，并且矢量 x 和 y 的长度不为零，那么 cos ϑ &#x3D; 0，因此 x 与 y 之间的夹角为 ϑ &#x3D; ± π<br>2，这两个矢量是正交的。</p>
+<p>12<br>基本思想<br>例如，笛卡尔坐标轴的基向量 (1, 0, 0)、(0, 1, 0) 和 (0, 0, 1) 全都是单位长度，且它们中任意两个的点积都为零，因此它们是正交的。<br>关键的是，在欧几里得三维空间中，向量的长度以及它们之间的夹角在任何所有向量一同旋转的变换下都是不变的，这就是为什么点积是一个有用的构造。像 x · y 这样不受旋转影响的量被称为标量（scalars）。</p>
+<p>还有一个进一步的、同样有用的构造。从两个向量 x 和 y 可以构造出第三个向量，即它们的叉积（cross product）x × y，如图 1.8 所示。其分量为<br>x × y &#x3D; (x₂y₃ −x₃y₂, x₃y₁ −x₁y₃, x₁y₂ −x₂y₁) 。<br>(1.15)<br>叉积之所以有用，是因为如果 x 和 y 都绕任意轴旋转，那么 x × y 也会随之一起旋转。（如果有人发明了 x 和 y 的另一种向量积，其分量为 (x₂y₃, x₃y₁, x₁y₂)，那么它就不会具有这种旋转性质，也就几乎没有什么几何意义。）与点积 x · y 不同，叉积 x × y 在旋转下并非不变。我们称它在旋转下与 x 和 y 协变（covariantly）。“协变”的意思是“随之而变”或“以相同方式变换”，这是一个在物理学中经常出现的概念。</p>
+<p>O<br>x<br>y<br>x×y<br>ϑ<br>图 1.8 叉积 x × y 是一个长度为 |x||y| sin ϑ 的向量。</p>
+<p>我们可以通过考虑 x × y 与第三个向量 z 的点积来验证 x × y 的这种旋转协变性。利用方程 (1.15) 和 (1.12)，我们得到<br>(x × y) · z &#x3D; x₂y₃z₁ −x₃y₂z₁ + x₃y₁z₂ −x₁y₃z₂ + x₁y₂z₃ −x₂y₁z₃ 。<br>(1.16)<br>这个结果一般不为零，但如果 z &#x3D; x 或 z &#x3D; y，则容易看出上述六项两两抵消，结果为零。这意味着 x × y 与 x 正交，也与 y 正交，如图 1.8 所示。因此，当受到旋转作用时，x × y、x 和 y 的方向必然全部一起转动。现在我们只需检验的是</p>
+<p>欧几里得空间与时间<br>13<br>x × y 的长度在旋转下是不变的。用分量表示，x × y 的平方长度为<br>|x × y|² &#x3D; (x₂y₃ − x₃y₂)² + (x₃y₁ − x₁y₃)² + (x₁y₂ − x₂y₁)² ,<br>(1.17)<br>经过一点代数运算，它可以重新表达为<br>|x × y|² &#x3D; (x · x)(y · y) − (x · y)² .<br>(1.18)<br>右边只包含旋转不变的量，因此 |x × y| 同样是不变的。右边可以用长度和角度表示为 |x|²|y|² − |x|²|y|² cos² ϑ，这简化为 |x|²|y|² sin² ϑ。因此向量 x × y 的长度为 |x||y| sin ϑ。<br>当交换 x 和 y 时，两个量 x·y 和 x×y 具有相反的对称性。x·y &#x3D; y·x，但 x×y &#x3D; −(y×x)，这从方程 (1.12) 和 (1.15) 可以清楚地看出。后一个关系意味着对于任意 x，有 x×x &#x3D; 0。<br>由三个向量 x、y 和 z，可以构造出两个有用的几何量。一个是标量 (x×y)·z。它具有一些良好的对称性，可以利用方程 (1.16) 来验证，特别地<br>(x × y) · z &#x3D; x · (y × z) .<br>(1.19)<br>另一个几何量是双重叉乘 (x × y) × z，它是一个向量。它可以通过一个重要恒等式用点乘来表示：<br>(x × y) × z &#x3D; (x · z)y − (y · z)x .<br>(1.20)<br>这个恒等式在旋转下是协变的，利用叉乘定义 (1.15) 很容易检验。为了对其形式获得一些直观理解，注意到 x × y 正交于 x 和 y 张成的平面，再与 z 取叉乘得到的是一个正交于 x×y 的向量，因此回到该平面内。所以 (x×y)×z 必须是 x 和 y 的线性组合。这个向量也必须正交于 z，而恒等式右边显然满足这一点，因为<br>((x·z)y − (y·z)x)·z &#x3D; (x·z)(y·z) − (y·z)(x·z) &#x3D; 0 .<br>(1.21)<br>我们之所以较为详细地讨论了 x·y 和 x×y 的这些性质，是因为物理定律需要以一种当整个物理系统被旋转或平移时不会改变的方式来表达。更为重要的是，如果被动地旋转坐标轴或平移原点，物理定律也不应改变。因此点乘和叉乘在物理情境中频繁出现，例如在能量和角动量的公式中。在下一节，我们将遇到一个用 ∇ 表示的偏导数向量，当我们看到它出现在电磁理论中的 ∇·E 和 ∇×E 这样的表达式中时（其中 E 是电场向量），不应感到惊讶。我们将在第 3 章定义并使用这些量。<br>从几何学上讲，在我们于第 4 章讨论相对论之前，关于时间没有太多需要补充。在非相对论物理中，我们使用另一个笛卡儿坐标 t 来表示时间。给定时间 t₁ 和 t₂，有物理意义的是它们之间的间隔 t₂ − t₁。</p>
+<p>14<br>基本思想<br>物理上具有意义。物理现象不受时间平移的影响。如果一个过程可以从t₁开始并在t₂结束，那么它同样可以从t₁ + c开始并在t₂ + c结束。假设某个系统在t &#x3D; 0时开始，并在t &#x3D; T时回到相同状态。那么它将重复，并在t &#x3D; 2T、t &#x3D; 3T等时刻再次回到相同状态。这一特性有着我们非常熟悉的实际应用，那就是时钟。</p>
+<p>1.3<br>偏导数<br>三维空间中的物理学常常涉及多元函数。当一个函数依赖于多个变量时，我们需要考虑它对所有这些变量的导数。假设φ(x₁, x₂, x₃)是定义在欧几里得三维空间(Euclidean 3-space)中的一个光滑函数。偏导数<br>∂φ&#x2F;∂x₁正是对x₁的普通导数，而将x₂和x₃视为固定或常量。它可以在任意点x &#x3D; (x₁, x₂, x₃)处求值。通过固定x₂和x₃，本质上就是将φ视为沿通过x点且平行于1-轴的直线上关于x₁的函数，而偏导数∂φ&#x2F;∂x₁正是沿这条直线的普通导数。偏导数∂φ&#x2F;∂x₂和∂φ&#x2F;∂x₃在x点处的定义类似，分别沿通过x点且平行于2-轴和3-轴的直线求导。</p>
+<p>对于显式已知的函数，求其偏导数很容易。例如，若φ(x₁, x₂, x₃) &#x3D; x₁³x₂⁴x₃，那么∂φ&#x2F;∂x₁可通过求x₁³的导数并将x₂⁴x₃视为常数得到，对∂φ&#x2F;∂x₂和∂φ&#x2F;∂x₃也类似处理。因此<br>∂φ&#x2F;∂x₁ &#x3D; 3x₁²x₂⁴x₃,   ∂φ&#x2F;∂x₂ &#x3D; 4x₁³x₂³x₃,   ∂φ&#x2F;∂x₃ &#x3D; x₁³x₂⁴.   (1.22)</p>
+<p>回顾一下，通过使用函数f(x)的普通导数，记作f’(x)，我们可以在δx很小时求得f(x + δx)的近似值：<br>f(x + δx) ≃ f(x) + f’(x)δx.   (1.23)<br>类似地，通过使用偏导数∂φ&#x2F;∂x₁，我们得到<br>φ(x₁ + δx₁, x₂, x₃) ≃ φ(x₁, x₂, x₃) + (∂φ&#x2F;∂x₁)δx₁.   (1.24)<br>通过组合φ在x点的三个偏导数，我们得到更强的结果<br>φ(x₁ + δx₁, x₂ + δx₂, x₃ + δx₃)<br>≃ φ(x₁, x₂, x₃) + (∂φ&#x2F;∂x₁)δx₁ + (∂φ&#x2F;∂x₂)δx₂ + (∂φ&#x2F;∂x₃)δx₃.   (1.25)<br>这给出了φ在靠近x的任意点x + δx处的近似值。</p>
+<p>这里有一个隐含的假设，即∂φ&#x2F;∂x₂在点(x₁ + δx₁, x₂, x₃)处的值与其在点(x₁, x₂, x₃)处基本相同，对∂φ&#x2F;∂x₃也类似。这正是我们之前假设φ是光滑函数的原因。</p>
+<p>φ的偏导数集合构成一个矢量(vector)，记作∇φ：<br>∇φ &#x3D; { ∂φ&#x2F;∂x₁, ∂φ&#x2F;∂x₂, ∂φ&#x2F;∂x₃ }.   (1.26)</p>
+<p>偏导数<br>15<br>类似地，δx &#x3D; (δx1, δx2, δx3) 是一个矢量。方程(1.25)可以更简洁地写为<br>φ(x + δx) ≃ φ(x) + ∇φ · δx ,<br>(1.27)<br>这个结果我们将反复使用。右边是一个真正的点积，当坐标轴旋转时它保持不变。∇φ 被称为 φ 的梯度(gradient)。<br>理解函数的一个好方法是通过它的等值面。对于三维空间中的函数 φ，等值面就是 φ 为常数的曲面。如果 δx 是穿过点 x 的等值面的任意切向量，那么 φ(x + δx) − φ(x) 在 δx 的一阶近似下 ≃ 0，因此 ∇φ · δx &#x3D; 0。所以 ∇φ 与 δx 正交，这意味着 ∇φ 是一个垂直于等值面的矢量，如图 1.9 所示。事实上，∇φ 指向 φ 最陡上升的方向，其大小就是沿该方向 φ 随距离增加的速率。这印证了“梯度”这个名称。<br>∇φ<br>图 1.9  曲线代表 φ 的等值线。箭头表示梯度 ∇φ。<br>可能存在某些点 x，使得三个偏导数都为零，即 ∇φ &#x3D; 0。此时 x 是 φ 的一个驻点(stationary point)。该驻点究竟是极小值、极大值还是鞍点，取决于 φ 在 x 处的二阶偏导数。<br>φ 有九个可能的二阶偏导数；它们包括 ∂²φ&#x2F;∂x²₁、∂²φ&#x2F;∂x₁∂x₂、∂²φ&#x2F;∂x₂∂x₁ 和 ∂²φ&#x2F;∂x²₂。混合偏导数 ∂²φ&#x2F;∂x₁∂x₂ 是先对 x₂ 求导，然后再将结果对 x₁ 求导得到的；而 ∂²φ&#x2F;∂x₂∂x₁ 的求导顺序则相反。<br>例如，对于函数 φ(x1, x2, x3) &#x3D; x3_1x4_2x3，我们有<br>∂²φ&#x2F;∂x²₁ &#x3D; 6x1x4_2x3 ,  ∂²φ&#x2F;∂x₁∂x₂ &#x3D; 12x2_1x3_2x3 ,<br>∂²φ&#x2F;∂x₂∂x₁ &#x3D; 12x2_1x3_2x3 ,  ∂²φ&#x2F;∂x²₂ &#x3D; 12x3_1x2_2x3 .<br>(1.28)<br>注意，这两个混合偏导数实际上是相等的。这是一个重要而且普遍成立的结果。</p>
+<p>16<br>基本概念<br>1-轴<br>2-轴<br>(x1, x2)<br>(x1, x2+δx2)<br>(x1+δx1, x2)<br>(x1+δx1, x2+δx2)<br>图 1.10  一个无穷小矩形，显示了可以在其上计算函数 φ 的四个位置。<br>要证明这个结果，我们需要考虑图 1.10 所示的 φ 取值矩形，并用两种方法估计下式：<br>φ(x1 + δx1, x2 + δx2, x3) − φ(x1 + δx1, x2, x3) − φ(x1, x2 + δx2, x3) + φ(x1, x2, x3) . (1.29)<br>一种估计是沿垂直边作差的差：<br>{φ(x1 + δx1, x2 + δx2, x3) − φ(x1 + δx1, x2, x3)} − {φ(x1, x2 + δx2, x3) − φ(x1, x2, x3)}<br>≃ ∂φ&#x2F;∂x₂ (x1 + δx1, x2, x3) δx2 − ∂φ&#x2F;∂x₂ (x1, x2, x3) δx2<br>≃ ∂²φ&#x2F;∂x₁∂x₂ (x1, x2, x3) δx1δx2 .<br>(1.30)<br>另一种估计，通过重新组合括号，是沿水平边作差的差：<br>{φ(x1 + δx1, x2 + δx2, x3) − φ(x1, x2 + δx2, x3)} − {φ(x1 + δx1, x2, x3) − φ(x1, x2, x3)}<br>≃ ∂φ&#x2F;∂x₁ (x1, x2 + δx2, x3) δx1 − ∂φ&#x2F;∂x₁ (x1, x2, x3) δx1<br>≃ ∂²φ&#x2F;∂x₂∂x₁ (x1, x2, x3) δx1δx2 .<br>(1.31)<br>由于这两式 (1.30) 和 (1.31) 的左边是相同的，因此混合偏导数必定相等。这个结果称为混合（二阶）偏导数的对称性，因为在交换求导次序时存在对称性。我们以后将利用这一点，例如，在研究麦克斯韦(Maxwell)方程组和推导各种热力学关系时。<br>φ 的二阶偏导数有一个特别重要的组合，称为 φ 的拉普拉斯算子(Laplacian)，记作 ∇²φ。它是<br>∇²φ &#x3D; ∂²φ&#x2F;∂x²₁ + ∂²φ&#x2F;∂x²₂ + ∂²φ&#x2F;∂x²₃ ,<br>(1.32)</p>
+<p>偏导数<br>17<br>它是一个标量，在坐标轴旋转时保持不变。如果把<br>[<br>\left( \frac{\partial}{\partial x_1}, \frac{\partial}{\partial x_2}, \frac{\partial}{\partial x_3} \right)<br>]<br>视为一个导数向量，并写成<br>[<br>\nabla^2 \phi &#x3D; \left( \frac{\partial}{\partial x_1}, \frac{\partial}{\partial x_2}, \frac{\partial}{\partial x_3} \right) \cdot \left( \frac{\partial \phi}{\partial x_1}, \frac{\partial \phi}{\partial x_2}, \frac{\partial \phi}{\partial x_3} \right),<br>\tag{1.33}<br>]<br>或者更紧凑地写成 (\nabla^2 \phi &#x3D; \nabla \cdot \nabla \phi)，其标量性质就很明显了。更正式地，(\nabla^2 &#x3D; \nabla \cdot \nabla)。对于我们熟悉的例子 (\phi &#x3D; x_1^3 x_2^4 x_3)，<br>[<br>\nabla^2 (x_1^3 x_2^4 x_3) &#x3D; \frac{\partial^2}{\partial x_1^2}(x_1^3 x_2^4 x_3) + \frac{\partial^2}{\partial x_2^2}(x_1^3 x_2^4 x_3) + \frac{\partial^2}{\partial x_3^2}(x_1^3 x_2^4 x_3) &#x3D; 6x_1 x_2^4 x_3 + 12 x_1^3 x_2^4 x_3,<br>\tag{1.34}<br>]<br>这是一个典型的非零结果。然而，有许多函数的拉普拉斯量是零，例如 (x_1^2 - x_2^2) 和 (x_1 x_2 x_3)。</p>
+<p>在三维空间中，我们经常需要求一个仅依赖于到原点 (O) 的径向距离 (r) 的函数 (f(r)) 的梯度或拉普拉斯量。这里 (r^2 &#x3D; x_1^2 + x_2^2 + x_3^2)。这些计算可能有点繁琐，因为 (r) 涉及平方根，但如果使用 (r^2) 来计算会简单些。我们先求梯度。根据链式法则，<br>[<br>\nabla (r^2) &#x3D; 2r \left( \frac{\partial r}{\partial x_1}, \frac{\partial r}{\partial x_2}, \frac{\partial r}{\partial x_3} \right) &#x3D; 2r \nabla r.<br>\tag{1.35}<br>]<br>另一方面，直接对 (x_1^2 + x_2^2 + x_3^2) 求偏导数可得<br>[<br>\nabla (r^2) &#x3D; (2x_1, 2x_2, 2x_3) &#x3D; 2\mathbf{x}.<br>\tag{1.36}<br>]<br>比较这两个表达式，我们得到<br>[<br>\nabla r &#x3D; \frac{\mathbf{x}}{r} &#x3D; \hat{\mathbf{x}}.<br>\tag{1.37}<br>]<br>(\mathbf{x}) 是大小为 (r) 的矢量，(\hat{\mathbf{x}}) 是在每一点（除 (O) 外）都沿径向向外的单位矢量。我们也可以通过注意到 (r) 的等值面是以 (O) 为中心的球面，且 (r) 随到 (O) 距离的增加率处处为 1 来理解方程 (1.37)。方程 (1.35) 很容易推广。对于一般的函数 (f(r))，链式法则给出<br>[<br>\nabla (f(r)) &#x3D; f’(r) \nabla r &#x3D; f’(r) \frac{\mathbf{x}}{r} &#x3D; f’(r) \hat{\mathbf{x}}.<br>\tag{1.38}<br>]<br>这个结果最重要的例子是<br>[<br>\nabla \left( \frac{1}{r} \right) &#x3D; -\frac{1}{r^2} \hat{\mathbf{x}},<br>\tag{1.39}<br>]<br>在考虑静电学和引力的平方反比律力时这个结果很有用。</p>
+<p>18<br>基本概念<br>接下来，我们来求 (f(r)) 的拉普拉斯量。我们有 (\nabla (f(r)) &#x3D; \frac{1}{r} f’(r) \mathbf{x})，所以<br>[<br>\nabla^2 (f(r)) &#x3D; \nabla \cdot \nabla (f(r)) &#x3D; \nabla \cdot \left( \frac{1}{r} f’(r) \mathbf{x} \right).<br>\tag{1.40}<br>]<br>根据通常的莱布尼茨(Leibniz)法则，最后一个表达式有两项贡献。其中一项是 (\nabla) 作用在函数 (\frac{1}{r} f’(r)) 上，给出贡献<br>[<br>\left( \frac{1}{r} f’’(r) - \frac{1}{r^2} f’(r) \right) \frac{\mathbf{x}}{r} \cdot \mathbf{x} &#x3D; f’’(r) - \frac{1}{r} f’(r),<br>\tag{1.41}<br>]<br>这里我们再次应用了结果 (1.38)。另一项是点积，其中 (\nabla) 的分量 (\left( \frac{\partial}{\partial x_1}, \frac{\partial}{\partial x_2}, \frac{\partial}{\partial x_3} \right)) 分别作用在 (\mathbf{x}) 的三个分量 ((x_1, x_2, x_3)) 上，给出数字 3，因此第二项贡献是 (\frac{3}{r} f’(r))。把这两项相加，结果是<br>[<br>\nabla^2 (f(r)) &#x3D; f’’(r) + \frac{2}{r} f’(r).<br>\tag{1.42}<br>]<br>最重要的例子是<br>[<br>\nabla^2 \left( \frac{1}{r} \right) &#x3D; \frac{2}{r^3} + \frac{2}{r} \left( -\frac{1}{r^2} \right) &#x3D; 0.<br>\tag{1.43}<br>]<br>这个方程在除 (O) 以外的所有点都成立。(\frac{1}{r}) 在 (O) 处无穷大，因此它在 (O) 的梯度没有定义，其拉普拉斯量也没有定义。我们说 (\frac{1}{r}) 在 (O) 点奇异。仅依赖于变量 (r) 且拉普拉斯量（除可能在 (O) 点外）为零的最一般的函数是 (\frac{C}{r} + D)，其中 (C) 和 (D) 是常数。</p>
+<p>1.4 (\mathrm{e})、(\pi) 与高斯积分<br>超越数 (\mathrm{e}) 和 (\pi) 在整个数学和物理学中出现，在下文中也将频繁使用。指数函数 (\mathrm{e}^x)（常写作 (\exp x)）及其复数对应 (\mathrm{e}^{\mathrm{i}x}) 也将经常出现。(\mathrm{e}) 和 (\pi) 之间有两个引人注目的关系。一个是著名的欧拉(Euler)关系<br>[<br>\mathrm{e}^{\mathrm{i} \pi} &#x3D; -1,<br>\tag{1.44}<br>]<br>另一个是高斯积分公式<br>[<br>\int_{-\infty}^{\infty} \mathrm{e}^{-x^2} ,dx &#x3D; \sqrt{\pi}.<br>\tag{1.45}<br>]<br>我们将在本节解释这些关系，并描述实指数函数和复指数函数的两个基本物理应用。</p>
+<p>指数函数由以下级数定义<br>[<br>\mathrm{e}^x &#x3D; 1 + x + \frac{1}{2} x^2 + \frac{1}{6} x^3 + \cdots + \frac{1}{n!} x^n + \cdots,<br>\tag{1.46}<br>]<br>对所有 (x) 都是正的。显然 (\mathrm{e}^0 &#x3D; 1)。欧拉常数 (\mathrm{e}) 定义为 (\mathrm{e}^1)，即级数在 (x&#x3D;1) 时的和。它的数值是 (\mathrm{e} &#x3D; 2.718\dots)。通过逐项展开，可以验证<br>[<br>\mathrm{e}^{x+y} &#x3D; \mathrm{e}^x \mathrm{e}^y,<br>\tag{1.47}<br>]<br>这是指数函数的关键性质。这个性质使得将 (\mathrm{e}^x)（作为级数）与 (\mathrm{e}) 的 (x) 次幂等同起来是自洽的。举例来说，(\mathrm{e}^2)（作为级数）等于…</p>
+<p>e, π 与高斯积分<br>19<br>（两个级数的乘积）所以 e² &#x3D; e × e。对级数(1.46)逐项求导，很容易看出<br>d<br>dx(eˣ) &#x3D; eˣ 。<br>(1.48)<br>这个简单公式的重要性将在第1.4.1节中阐述。<br>指数函数向虚数宗量的推广使用同样的级数展开来定义：<br>eⁱˣ &#x3D; 1 + ix − ½ x² − ⅙ i x³ + ··· + iⁿ&#x2F;n! xⁿ + ··· ，<br>(1.49)<br>其中 i² &#x3D; −1。该展开的实部和虚部正是众所周知的 cos x 和 sin x 的级数展开：<br>cos x &#x3D; 1 − ½ x² + 1&#x2F;24 x⁴ + ··· ，<br>(1.50)<br>sin x &#x3D; x − ⅙ x³ + ··· ，<br>(1.51)<br>因此<br>eⁱˣ &#x3D; cos x + i sin x 。<br>(1.52)<br>现在，cos π &#x3D; −1 而 sin π &#x3D; 0，所以若将值 x &#x3D; π 代入该表达式，我们就得到了欧拉关系式 eⁱᵖ &#x3D; −1。将其升至 2n 次幂，我们看到一个推论是对任意整数 n 都有 e²ⁿⁱᵖ &#x3D; 1。</p>
+<p>1.4.1 放射性衰变<br>2<br>1<br>0<br>放射性原子核<br>数目<br>N₀<br>0<br>3<br>4<br>5<br>6<br>7<br>8<br>样品年龄 (τ½)<br>½ N₀<br>图1.11 放射性衰变。</p>
+<p>20<br>基本思想<br>放射性于1896年由亨利·贝克勒尔(Henri Becquerel)发现。当放射性原子核衰变时，它会变成另一种原子核。放射性原子核数目 N 的变化率由以下定律描述：<br>dN&#x2F;dt &#x3D; −λ N ，<br>(1.53)<br>其中 λ 称为衰变常量。放射性呈指数衰减，因为微分方程(1.53)的解为<br>N &#x3D; N₀ e^(−λ t) ，<br>(1.54)<br>其中 N₀ 是 t &#x3D; 0 时放射性原子核的初始数目。该解如图1.11所示。取对数，我们得到<br>ln(N&#x2F;N₀) &#x3D; −λ t 。<br>(1.55)<br>半数原子核衰变所需的时间 τ_½ 被称为放射性物质的半衰期。它由 ln(½) &#x3D; −λ τ_½ 给出，因而<br>τ_½ &#x3D; ln 2 &#x2F; λ 。<br>(1.56)<br>我们也可以算出放射性原子核的平均寿命 t̄。所有 N₀ 个原子核最终都会衰变，因此我们可以对衰变时刻求平均，得到<br>t̄ &#x3D; 1&#x2F;N₀ ∫₀^(N₀) t dN<br>   &#x3D; −1&#x2F;(λ N₀) ∫₀^(N₀) ln(N&#x2F;N₀) dN<br>   &#x3D; −1&#x2F;(λ N₀) [N ln N − N − N ln N₀]₀^(N₀)<br>   &#x3D; 1&#x2F;λ ，<br>(1.57)<br>其中第二行我们用方程(1.55)替换了 t。<br>放射性为文物年代测定提供了极为有用的工具。如果我们知道某样品物质最初含有 N₀ 个放射性原子核，而现在含有 N 个，那么我们就可以确定从该物质形成以来所经过的时间 t：<br>t &#x3D; 1&#x2F;λ ln(N₀&#x2F;N) &#x3D; (τ_½ &#x2F; ln 2) ln(N₀&#x2F;N) 。<br>(1.58)<br>根据不同的时间尺度，可以使用不同的放射性原子核。例如，铀-238的半衰期约为45亿年，已被用于测定陨石年代，从而确定太阳系的年龄；碳-14的半衰期为5730年，被用于测定考古遗迹的年代。</p>
+<p>e, π 和高斯积分<br>21<br>x<br>图 1.12  平面波 ei(kx−ωt) 以速度 ω&#x2F;k 沿 x 方向传播。随着时间的推移，固定位置处的波振幅保持不变，而波的相位则绕圆周旋转。图中展示了该波分解为其实部和虚部，它们是两个相互垂直的正弦波，相对相位差为 π&#x2F;2。<br>1.4.2  波与周期函数<br>我们可以将随位置 x 和时间 t 变化、向 x 正方向传播的波表示为 ei(kx−ωt)，其中 k 和 ω 为正，如图 1.12 所示。根据欧拉关系，在 kx 相差 2π 整数倍的位置，波是相同的，因此波长为 2π&#x2F;k。类似地，在 ωt 相差 2π 整数倍的时间，波也是相同的，因此周期为 2π&#x2F;ω。k 和 ω 分别称为波的波数和角频率。<br>波的相位在 kx−ωt 等于常数的位置保持不变。因此，相位在一个以速度 ω&#x2F;k 移动的点 x 处保持恒定，这就是波的速度。如果 k 为负而 ω 仍为正，则波向相反方向传播。<br>波的实部和虚部分别是 cos(kx −ωt) 和 sin(kx −ωt)。它们被称为正弦波，但其中一个是相对于另一个有 π&#x2F;2 的相移。许多类型的波，例如电磁波和流体表面的波，都是实数的，但在量子力学中，自由运动粒子的波函数是一个复波。<br>1.4.3  高斯积分<br>高斯函数 e−x2 的积分（如图 1.13 所示）不能用标准函数表示，因此从 −∞ 到 X 的不定积分不是初等的。另一方面，从 −∞ 到 ∞ 的定积分的值为<br>I &#x3D; ∫_{-∞}^{∞} e^{-x^2} dx &#x3D; √π 。   (1.59)<br>这是最简单的高斯积分。它在物理学中经常出现，我们稍后会用到它。</p>
+<p>22<br>基本思想<br>0<br>0.2<br>0.4<br>0.6<br>0.8<br>e –x^2<br>1.0<br>–1<br>–2<br>–3<br>1<br>2<br>3<br>图 1.13  高斯函数。<br>I 可以通过一个相当巧妙的技巧来计算。我们首先考虑它的平方，<br>I^2 &#x3D; ∫_{-∞}^{∞} e^{-x_1^2} dx_1 ∫_{-∞}^{∞} e^{-x_2^2} dx_2 。   (1.60)<br>这可以表示为二维积分<br>I^2 &#x3D; ∫_{R^2} e^{-x_1^2 - x_2^2} d^2x ，   (1.61)<br>其中积分区域是整个平面 R^2。现在转换到极坐标。令 r 为径向坐标，ϑ 为角坐标。那么，根据毕达哥拉斯定理 r^2 &#x3D; x_1^2 + x_2^2，积分测度为 d^2x &#x3D; r dr dϑ。于是<br>I^2 &#x3D; ∫_{0}^{2π} ∫_{0}^{∞} e^{-r^2} r dr dϑ &#x3D; 2π ∫_{0}^{∞} e^{-r^2} r dr 。   (1.62)<br>ϑ 的范围是 2π，因为从几何上看，2π 是单位圆的周长。额外的因子 r 使得对 r 的积分成为初等积分，结果为<br>I^2 &#x3D; 2π [ -½ e^{-r^2} ]<em>{0}^{∞} &#x3D; π ，   (1.63)<br>因此 I &#x3D; √π，如所断言。<br>更一般的高斯积分是<br>I(α) &#x3D; ∫</em>{-∞}^{∞} e^{-αx^2} dx &#x3D; 1&#x2F;√α ∫_{-∞}^{∞} e^{-y^2} dy &#x3D; √(π&#x2F;α) ，   (1.64)<br>其中我们使用了代换 y &#x3D; √α x。另一个有用的技巧允许我们计算高斯函数乘以 x 的偶次幂的积分序列。对积分 I(α) 关于 α 求导会带下一个因子 −x^2，因此<br>∫_{-∞}^{∞} x^2 e^{-αx^2} dx &#x3D; - dI(α)&#x2F;dα &#x3D; - d&#x2F;dα √(π&#x2F;α) &#x3D; 1&#x2F;(2α) √(π&#x2F;α) 。   (1.65)</p>
+<p>e、π与高斯积分<br>23<br>再一次对α求导，我们得到<br>∫ ∞<br>−∞<br>x⁴e^{-αx²} dx &#x3D; −d&#x2F;dα ( √π &#x2F; (2α^{3&#x2F;2}) ) &#x3D; (3&#x2F;(4α²)) √(π&#x2F;α) .   (1.66)<br>我们可以继续对α求导，以计算所有形如 ∫ ∞_{−∞} x^{2n} e^{-αx²} dx 的积分。<br>如果高斯函数乘以x的奇次幂，被积函数是奇函数，在 x → −x 变换下是反对称的，因此 ∫ ∞_{−∞} x^{2n+1} e^{-αx²} dx &#x3D; 0。当下限为0时，这些积分可以通过代换 y &#x3D; x²，然后分部积分来计算，得到<br>∫ ∞<em>0 x^{2n+1} e^{-x²} dx &#x3D; 1&#x2F;2 ∫ ∞_0 y^n e^{-y} dy &#x3D; [ −1&#x2F;2 y^n e^{-y} ]<em>0^∞ + (1&#x2F;2)n ∫ ∞_0 y^{n-1} e^{-y} dy &#x3D; (1&#x2F;2)n ∫ ∞_0 y^{n-1} e^{-y} dy .   (1.67)<br>重复这一步骤n次，我们得到 ∫ ∞_0 y^n e^{-y} dy &#x3D; n! ∫ ∞_0 e^{-y} dy &#x3D; n!，因此<br>∫ ∞_0 x^{2n+1} e^{-x²} dx &#x3D; 1&#x2F;2 n! .   (1.68)<br>基本的高斯积分和这些变形在物理学的许多领域中都很有用，尤其是在量子力学和量子场论中。<br>通过考虑I的n次幂，我们还可以得到一些有趣的几何结果，<br>I^n &#x3D; ∫ ∞</em>{−∞} e^{-x_1^2} dx_1 ∫ ∞</em>{−∞} e^{-x_2^2} dx_2 ··· ∫ ∞_{−∞} e^{-x_n^2} dx_n ,   (1.69)<br>它可以重新表示为一个n维积分<br>I^n &#x3D; ∫_{R^n} e^{-x_1^2 - x_2^2 - \cdots - x_n^2} d^n x .   (1.70)<br>现在转换到n维球极坐标 r, Ω，其中Ω共同表示n−1个角坐标。根据n维空间中的勾股定理(Pythagoras’ theorem)，r² &#x3D; x_1² + x_2² + ··· + x_n²，积分测度 d^n x 变为 r^{n-1} dr dΩ，其中dΩ表示n维空间中单位球面的体积元，即单位 (n−1)-球面。于是<br>I^n &#x3D; ∫ ∫ ∞_0 e^{-r²} r^{n-1} dr dΩ .   (1.71)<br>对dΩ的积分是单位 (n−1)-球面的总体积，而剩下的径向积分是上面考虑过的高斯积分之一。<br>例如，在 I³ 的情形中，径向积分与积分(1.65)形式相同，但下限为0（且α&#x3D;1）。其值为 1&#x2F;4 √π，是整个高斯积分的一半，因此<br>I³ &#x3D; 1&#x2F;4 √π A   (1.72)<br>其中A是单位2-球面的面积，即我们熟悉的球面。我们知道 I &#x3D; √π，所以 I³ &#x3D; π√π，因此 A &#x3D; 4π，这就是我们熟知的球面面积的结果。</p>
+<p>24<br>基本思想<br>球面。注意，在这个计算中，使用高斯积分，我们无需显式选择角坐标即可求出A。</p>
+<h1 id="通过类似的计算，我们可以得到一个不太为人所知的结果，即四维空间中单位球面的体积，即3-球面。正如2-球面是包围三维球体的二维曲面，3-球面则是包围四维空间球体的三维体积。方程-1-71-变为I4-VZ-∞0e−r2-r3-dr-1-73-其中V是单位3-球面的体积。利用I4-π2以及n-1时的积分-1-68-，即R-∞0e−r2-r3-dr-12，我们求出V-2π2。1-4-4最陡下降法在许多物理应用中，我们会遇到无法精确计算的积分，其中被积函数是某种高斯函数变体与另一个函数的乘积。我们将在第11章考虑核聚变时看到这样的例子。在这种情况下，基本的高斯积分可以用来估计这些更复杂的积分。假设g-x-在α和β之间于x0处有一个最大值；那么，由于g′-x0-0且g′′-x0-0，我们可以在x0附近使用展开g-x-≃g-x0-−12-g′′-x0-x-−x0-²。这意味着积分I-Z-βαF-x-exp-g-x-dx-1-74-可以近似为I-≃exp-g-x0-Z-βαF-x-exp−12-g′′-x0-x-−x0-2dx-1-75-进一步，如果F-x-在x0附近变化缓慢，那么它可以被视为常数F-x0-并从积分中提出，得到I-≃F-x0-exp-g-x0-Z-βαexp−12-g′′-x0-x-−x0-2dx-1-76-由于被积函数集中在x0点附近，我们可以将积分限扩展到±∞，而不会显著影响积分值，所以I≃F-x0-exp-g-x0-Z-∞−∞exp−12-g′′-x0-x-−x0-2dx"><a href="#通过类似的计算，我们可以得到一个不太为人所知的结果，即四维空间中单位球面的体积，即3-球面。正如2-球面是包围三维球体的二维曲面，3-球面则是包围四维空间球体的三维体积。方程-1-71-变为I4-VZ-∞0e−r2-r3-dr-1-73-其中V是单位3-球面的体积。利用I4-π2以及n-1时的积分-1-68-，即R-∞0e−r2-r3-dr-12，我们求出V-2π2。1-4-4最陡下降法在许多物理应用中，我们会遇到无法精确计算的积分，其中被积函数是某种高斯函数变体与另一个函数的乘积。我们将在第11章考虑核聚变时看到这样的例子。在这种情况下，基本的高斯积分可以用来估计这些更复杂的积分。假设g-x-在α和β之间于x0处有一个最大值；那么，由于g′-x0-0且g′′-x0-0，我们可以在x0附近使用展开g-x-≃g-x0-−12-g′′-x0-x-−x0-²。这意味着积分I-Z-βαF-x-exp-g-x-dx-1-74-可以近似为I-≃exp-g-x0-Z-βαF-x-exp−12-g′′-x0-x-−x0-2dx-1-75-进一步，如果F-x-在x0附近变化缓慢，那么它可以被视为常数F-x0-并从积分中提出，得到I-≃F-x0-exp-g-x0-Z-βαexp−12-g′′-x0-x-−x0-2dx-1-76-由于被积函数集中在x0点附近，我们可以将积分限扩展到±∞，而不会显著影响积分值，所以I≃F-x0-exp-g-x0-Z-∞−∞exp−12-g′′-x0-x-−x0-2dx" class="headerlink" title="通过类似的计算，我们可以得到一个不太为人所知的结果，即四维空间中单位球面的体积，即3-球面。正如2-球面是包围三维球体的二维曲面，3-球面则是包围四维空间球体的三维体积。方程(1.71)变为I4 &#x3D; VZ ∞0e−r2 r3 dr ,(1.73)其中V是单位3-球面的体积。利用I4 &#x3D; π2以及n&#x3D;1时的积分(1.68)，即R ∞0e−r2 r3 dr &#x3D; 12，我们求出V &#x3D; 2π2。1.4.4最陡下降法在许多物理应用中，我们会遇到无法精确计算的积分，其中被积函数是某种高斯函数变体与另一个函数的乘积。我们将在第11章考虑核聚变时看到这样的例子。在这种情况下，基本的高斯积分可以用来估计这些更复杂的积分。假设g(x)在α和β之间于x0处有一个最大值；那么，由于g′(x0) &#x3D; 0且g′′(x0) &lt; 0，我们可以在x0附近使用展开g(x) ≃g(x0) −12|g′′(x0)|(x −x0)²。这意味着积分I &#x3D;Z βαF(x) exp(g(x)) dx(1.74)可以近似为I ≃exp(g(x0))Z βαF(x) exp−12|g′′(x0)|(x −x0)2dx .(1.75)进一步，如果F(x)在x0附近变化缓慢，那么它可以被视为常数F(x0)并从积分中提出，得到I ≃F(x0) exp(g(x0))Z βαexp−12|g′′(x0)|(x −x0)2dx .(1.76)由于被积函数集中在x0点附近，我们可以将积分限扩展到±∞，而不会显著影响积分值，所以I≃F(x0) exp(g(x0))Z ∞−∞exp−12|g′′(x0)|(x −x0)2dx"></a>通过类似的计算，我们可以得到一个不太为人所知的结果，即四维空间中单位球面的体积，即3-球面。正如2-球面是包围三维球体的二维曲面，3-球面则是包围四维空间球体的三维体积。方程(1.71)变为<br>I4 &#x3D; V<br>Z ∞<br>0<br>e−r2 r3 dr ,<br>(1.73)<br>其中V是单位3-球面的体积。利用I4 &#x3D; π2以及n&#x3D;1时的积分(1.68)，即R ∞<br>0<br>e−r2 r3 dr &#x3D; 1<br>2，我们求出V &#x3D; 2π2。<br>1.4.4<br>最陡下降法<br>在许多物理应用中，我们会遇到无法精确计算的积分，其中被积函数是某种高斯函数变体与另一个函数的乘积。我们将在第11章考虑核聚变时看到这样的例子。在这种情况下，基本的高斯积分可以用来估计这些更复杂的积分。假设g(x)在α和β之间于x0处有一个最大值；那么，由于g′(x0) &#x3D; 0且g′′(x0) &lt; 0，我们可以在x0附近使用展开g(x) ≃g(x0) −1<br>2|g′′(x0)|(x −x0)²。这意味着积分<br>I &#x3D;<br>Z β<br>α<br>F(x) exp(g(x)) dx<br>(1.74)<br>可以近似为<br>I ≃exp(g(x0))<br>Z β<br>α<br>F(x) exp<br><br>−1<br>2|g′′(x0)|(x −x0)2<br><br>dx .<br>(1.75)<br>进一步，如果F(x)在x0附近变化缓慢，那么它可以被视为常数F(x0)并从积分中提出，得到<br>I ≃F(x0) exp(g(x0))<br>Z β<br>α<br>exp<br><br>−1<br>2|g′′(x0)|(x −x0)2<br><br>dx .<br>(1.76)<br>由于被积函数集中在x0点附近，我们可以将积分限扩展到±∞，而不会显著影响积分值，所以<br>I<br>≃<br>F(x0) exp(g(x0))<br>Z ∞<br>−∞<br>exp<br><br>−1<br>2|g′′(x0)|(x −x0)2<br><br>dx</h1><p>F(x0) exp(g(x0))<br>s<br>2π<br>|g′′(x0)| ,<br>(1.77)<br>其中最后一步我们用到了高斯积分(1.64)。<br>这被称为最陡下降近似。只要二阶导数g′′(x0)的绝对值很大，并且g和F在x0附近的泰勒展开中的高阶项可以被忽略，这个近似就是准确的。</p>
+<p>进一步阅读<br>25<br>1.5<br>进一步阅读<br>关于变分原理及其历史的概述，参见<br>D.S. 莱蒙斯(D.S. Lemons)，《完美形式：变分原理、方法及其在基础物理学中的应用》(Perfect Form: Variational Principles, Methods, and Applications in Elementary Physics)，普林斯顿：普林斯顿大学出版社(PUP)，1997年。<br>H.H. 戈尔茨坦(H.H. Goldstine)，《变分法史：从十七世纪到十九世纪》(A History of the Calculus of Variations: from the 17th through the 19th Century)，纽约：施普林格(Springer)，1980年。<br>关于本书所用数学的全面概览，请查阅<br>K.F. 赖利(K.F. Riley)、M.P. 霍布森(M.P. Hobson)和S.J. 本斯(S.J. Bence)，《物理与工程数学方法》(Mathematical Methods for Physics and Engineering)（第3版），剑桥：剑桥大学出版社(CUP)，2006年。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io/2026/05/02/misc/translation/output/1_Fundamental_Ideas_cn/">http://hebangwen.github.io/2026/05/02/misc/translation/output/1_Fundamental_Ideas_cn/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://hebangwen.github.io" target="_blank">Yet Another 何榜文's Blog</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/05/02/misc/translation/output/3_Fields-Maxwell's_Equations_cn/" title=""><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2"></div></div><div class="info-2"><div class="info-item-1">3_Fields-Maxwell’s_Equations3场——麦克斯韦方程组3.1场前一章的基本物理要素是空间和时间，以及一组运动的物体。这些物体被当作粒子来处理，位于有限个点上，它们之间的空间中不存在任何物理的东西。空间是完全空虚的，但尽管如此，粒子之间仍存在相互作用。这被称为超距作用(action at a distance)。然而，从早期开始，人们就认为粒子之间没有任何物理介质就能相互作用是相当难以置信的。勒内·笛卡尔(René Descartes)等人提出，唯一合理的假设是力通过直接接触或通过占据粒子之间空间的流体来传递。现代的观点是，空间中充斥着各种不同类型的场，而这些场正是粒子所受势能和力的原因。起初，力的场描述被看作是牛顿超距作用的一种数学重构，或许只是一种物理虚构——但后来人们意识到，场遵循其自身的动力学方程，而且有可能在某些大范围的空间中，即便没有任何粒子，动力学场也可以存在。这一方法的重大突破来自詹姆斯·克拉克·麦克斯韦(James Clerk Maxwell)对电场和磁场的处理。在此之前，这些场一直仅与电荷和电流联系在一起，但麦克斯韦方程组还允许在没有源的...</div></div></div></a><a class="pagination-related" href="/2026/05/02/misc/translation/output/0_Introduction_cn/" title=""><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2"></div></div><div class="info-2"><div class="info-item-1">0_Introduction0引言我们生活在一个迷人世界中，各个尺度上都充满着引人注目的现象。我们正在膨胀的宇宙中充满了数以万亿计的星系，每个星系中心都栖息着一个超大质量黑洞。爆炸的恒星用生命的尘埃播撒星系，而八分钟路程外，一个炽烈的核熔炉释放出能量，使地球保持绿色、生机勃勃、充满生命。我们这颗大理石纹般的、多水的地球可能是独一无二的，也可能是众多演化出智慧生命的天体之一。在更小的尺度上，所有可见物质仅由少数几种基本粒子类型构成，但这些粒子组合成一百多种不同的原子，这些原子又以无数种方式键合在一起。也许最令人惊讶的是，我们对这些能了解到如此之多，以及如今理解的精确程度。利用天然和人造材料，我们可以制造出令人惊叹的设备，这些设备改变了我们的生活，帮助我们更深入地探究宇宙的奥秘。一些重要的物理现象处于我们可观测的极限。偶尔发生的黑洞碰撞在时空结构中产生微小的涟漪，我们用最灵敏的仪器探测到它们。基本粒子中包括难以捉摸的中微子，它们每天大量穿过我们身体，但只在巨大的地下探测器中被偶尔捕捉到。在人类历史的大部分时间里，人们在日常生活中对物理世界知之甚少。我们确实有幸生活在这样一个时代，它的...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">61</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">75</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-Fundamental-Ideas"><span class="toc-number">1.</span> <span class="toc-text">1_Fundamental_Ideas</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-2-%E5%8F%98%E5%88%86%E5%8E%9F%E7%90%86%E7%9A%84%E9%80%82%E7%94%A8%E8%8C%83%E5%9B%B4"><span class="toc-number">1.0.1.</span> <span class="toc-text">1.1.2 变分原理的适用范围</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%80%9A%E8%BF%87%E7%B1%BB%E4%BC%BC%E7%9A%84%E8%AE%A1%E7%AE%97%EF%BC%8C%E6%88%91%E4%BB%AC%E5%8F%AF%E4%BB%A5%E5%BE%97%E5%88%B0%E4%B8%80%E4%B8%AA%E4%B8%8D%E5%A4%AA%E4%B8%BA%E4%BA%BA%E6%89%80%E7%9F%A5%E7%9A%84%E7%BB%93%E6%9E%9C%EF%BC%8C%E5%8D%B3%E5%9B%9B%E7%BB%B4%E7%A9%BA%E9%97%B4%E4%B8%AD%E5%8D%95%E4%BD%8D%E7%90%83%E9%9D%A2%E7%9A%84%E4%BD%93%E7%A7%AF%EF%BC%8C%E5%8D%B33-%E7%90%83%E9%9D%A2%E3%80%82%E6%AD%A3%E5%A6%822-%E7%90%83%E9%9D%A2%E6%98%AF%E5%8C%85%E5%9B%B4%E4%B8%89%E7%BB%B4%E7%90%83%E4%BD%93%E7%9A%84%E4%BA%8C%E7%BB%B4%E6%9B%B2%E9%9D%A2%EF%BC%8C3-%E7%90%83%E9%9D%A2%E5%88%99%E6%98%AF%E5%8C%85%E5%9B%B4%E5%9B%9B%E7%BB%B4%E7%A9%BA%E9%97%B4%E7%90%83%E4%BD%93%E7%9A%84%E4%B8%89%E7%BB%B4%E4%BD%93%E7%A7%AF%E3%80%82%E6%96%B9%E7%A8%8B-1-71-%E5%8F%98%E4%B8%BAI4-VZ-%E2%88%9E0e%E2%88%92r2-r3-dr-1-73-%E5%85%B6%E4%B8%ADV%E6%98%AF%E5%8D%95%E4%BD%8D3-%E7%90%83%E9%9D%A2%E7%9A%84%E4%BD%93%E7%A7%AF%E3%80%82%E5%88%A9%E7%94%A8I4-%CF%802%E4%BB%A5%E5%8F%8An-1%E6%97%B6%E7%9A%84%E7%A7%AF%E5%88%86-1-68-%EF%BC%8C%E5%8D%B3R-%E2%88%9E0e%E2%88%92r2-r3-dr-12%EF%BC%8C%E6%88%91%E4%BB%AC%E6%B1%82%E5%87%BAV-2%CF%802%E3%80%821-4-4%E6%9C%80%E9%99%A1%E4%B8%8B%E9%99%8D%E6%B3%95%E5%9C%A8%E8%AE%B8%E5%A4%9A%E7%89%A9%E7%90%86%E5%BA%94%E7%94%A8%E4%B8%AD%EF%BC%8C%E6%88%91%E4%BB%AC%E4%BC%9A%E9%81%87%E5%88%B0%E6%97%A0%E6%B3%95%E7%B2%BE%E7%A1%AE%E8%AE%A1%E7%AE%97%E7%9A%84%E7%A7%AF%E5%88%86%EF%BC%8C%E5%85%B6%E4%B8%AD%E8%A2%AB%E7%A7%AF%E5%87%BD%E6%95%B0%E6%98%AF%E6%9F%90%E7%A7%8D%E9%AB%98%E6%96%AF%E5%87%BD%E6%95%B0%E5%8F%98%E4%BD%93%E4%B8%8E%E5%8F%A6%E4%B8%80%E4%B8%AA%E5%87%BD%E6%95%B0%E7%9A%84%E4%B9%98%E7%A7%AF%E3%80%82%E6%88%91%E4%BB%AC%E5%B0%86%E5%9C%A8%E7%AC%AC11%E7%AB%A0%E8%80%83%E8%99%91%E6%A0%B8%E8%81%9A%E5%8F%98%E6%97%B6%E7%9C%8B%E5%88%B0%E8%BF%99%E6%A0%B7%E7%9A%84%E4%BE%8B%E5%AD%90%E3%80%82%E5%9C%A8%E8%BF%99%E7%A7%8D%E6%83%85%E5%86%B5%E4%B8%8B%EF%BC%8C%E5%9F%BA%E6%9C%AC%E7%9A%84%E9%AB%98%E6%96%AF%E7%A7%AF%E5%88%86%E5%8F%AF%E4%BB%A5%E7%94%A8%E6%9D%A5%E4%BC%B0%E8%AE%A1%E8%BF%99%E4%BA%9B%E6%9B%B4%E5%A4%8D%E6%9D%82%E7%9A%84%E7%A7%AF%E5%88%86%E3%80%82%E5%81%87%E8%AE%BEg-x-%E5%9C%A8%CE%B1%E5%92%8C%CE%B2%E4%B9%8B%E9%97%B4%E4%BA%8Ex0%E5%A4%84%E6%9C%89%E4%B8%80%E4%B8%AA%E6%9C%80%E5%A4%A7%E5%80%BC%EF%BC%9B%E9%82%A3%E4%B9%88%EF%BC%8C%E7%94%B1%E4%BA%8Eg%E2%80%B2-x0-0%E4%B8%94g%E2%80%B2%E2%80%B2-x0-0%EF%BC%8C%E6%88%91%E4%BB%AC%E5%8F%AF%E4%BB%A5%E5%9C%A8x0%E9%99%84%E8%BF%91%E4%BD%BF%E7%94%A8%E5%B1%95%E5%BC%80g-x-%E2%89%83g-x0-%E2%88%9212-g%E2%80%B2%E2%80%B2-x0-x-%E2%88%92x0-%C2%B2%E3%80%82%E8%BF%99%E6%84%8F%E5%91%B3%E7%9D%80%E7%A7%AF%E5%88%86I-Z-%CE%B2%CE%B1F-x-exp-g-x-dx-1-74-%E5%8F%AF%E4%BB%A5%E8%BF%91%E4%BC%BC%E4%B8%BAI-%E2%89%83exp-g-x0-Z-%CE%B2%CE%B1F-x-exp%E2%88%9212-g%E2%80%B2%E2%80%B2-x0-x-%E2%88%92x0-2dx-1-75-%E8%BF%9B%E4%B8%80%E6%AD%A5%EF%BC%8C%E5%A6%82%E6%9E%9CF-x-%E5%9C%A8x0%E9%99%84%E8%BF%91%E5%8F%98%E5%8C%96%E7%BC%93%E6%85%A2%EF%BC%8C%E9%82%A3%E4%B9%88%E5%AE%83%E5%8F%AF%E4%BB%A5%E8%A2%AB%E8%A7%86%E4%B8%BA%E5%B8%B8%E6%95%B0F-x0-%E5%B9%B6%E4%BB%8E%E7%A7%AF%E5%88%86%E4%B8%AD%E6%8F%90%E5%87%BA%EF%BC%8C%E5%BE%97%E5%88%B0I-%E2%89%83F-x0-exp-g-x0-Z-%CE%B2%CE%B1exp%E2%88%9212-g%E2%80%B2%E2%80%B2-x0-x-%E2%88%92x0-2dx-1-76-%E7%94%B1%E4%BA%8E%E8%A2%AB%E7%A7%AF%E5%87%BD%E6%95%B0%E9%9B%86%E4%B8%AD%E5%9C%A8x0%E7%82%B9%E9%99%84%E8%BF%91%EF%BC%8C%E6%88%91%E4%BB%AC%E5%8F%AF%E4%BB%A5%E5%B0%86%E7%A7%AF%E5%88%86%E9%99%90%E6%89%A9%E5%B1%95%E5%88%B0%C2%B1%E2%88%9E%EF%BC%8C%E8%80%8C%E4%B8%8D%E4%BC%9A%E6%98%BE%E8%91%97%E5%BD%B1%E5%93%8D%E7%A7%AF%E5%88%86%E5%80%BC%EF%BC%8C%E6%89%80%E4%BB%A5I%E2%89%83F-x0-exp-g-x0-Z-%E2%88%9E%E2%88%92%E2%88%9Eexp%E2%88%9212-g%E2%80%B2%E2%80%B2-x0-x-%E2%88%92x0-2dx"><span class="toc-number">2.</span> <span class="toc-text">通过类似的计算，我们可以得到一个不太为人所知的结果，即四维空间中单位球面的体积，即3-球面。正如2-球面是包围三维球体的二维曲面，3-球面则是包围四维空间球体的三维体积。方程(1.71)变为I4 &#x3D; VZ ∞0e−r2 r3 dr ,(1.73)其中V是单位3-球面的体积。利用I4 &#x3D; π2以及n&#x3D;1时的积分(1.68)，即R ∞0e−r2 r3 dr &#x3D; 12，我们求出V &#x3D; 2π2。1.4.4最陡下降法在许多物理应用中，我们会遇到无法精确计算的积分，其中被积函数是某种高斯函数变体与另一个函数的乘积。我们将在第11章考虑核聚变时看到这样的例子。在这种情况下，基本的高斯积分可以用来估计这些更复杂的积分。假设g(x)在α和β之间于x0处有一个最大值；那么，由于g′(x0) &#x3D; 0且g′′(x0) &lt; 0，我们可以在x0附近使用展开g(x) ≃g(x0) −12|g′′(x0)|(x −x0)²。这意味着积分I &#x3D;Z βαF(x) exp(g(x)) dx(1.74)可以近似为I ≃exp(g(x0))Z βαF(x) exp−12|g′′(x0)|(x −x0)2dx .(1.75)进一步，如果F(x)在x0附近变化缓慢，那么它可以被视为常数F(x0)并从积分中提出，得到I ≃F(x0) exp(g(x0))Z βαexp−12|g′′(x0)|(x −x0)2dx .(1.76)由于被积函数集中在x0点附近，我们可以将积分限扩展到±∞，而不会显著影响积分值，所以I≃F(x0) exp(g(x0))Z ∞−∞exp−12|g′′(x0)|(x −x0)2dx</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/03/misc/translation/output/2_Motions_of_Bodies-Newton's_Laws_cn/" title="无标题">无标题</a><time datetime="2026-05-03T01:02:34.931Z" title="发表于 2026-05-03 09:02:34">2026-05-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/03/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-04-26-2026-05-03/" title="端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）">端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）</a><time datetime="2026-05-03T01:00:00.000Z" title="发表于 2026-05-03 09:00:00">2026-05-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/02/misc/translation/output/book_with_images/" title="无标题">无标题</a><time datetime="2026-05-02T14:38:54.961Z" title="发表于 2026-05-02 22:38:54">2026-05-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/02/misc/translation/output/book_wrapper/" title="无标题">无标题</a><time datetime="2026-05-02T14:34:11.812Z" title="发表于 2026-05-02 22:34:11">2026-05-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/02/misc/translation/output/metadata/" title="无标题">无标题</a><time datetime="2026-05-02T14:33:54.395Z" title="发表于 2026-05-02 22:33:54">2026-05-02</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

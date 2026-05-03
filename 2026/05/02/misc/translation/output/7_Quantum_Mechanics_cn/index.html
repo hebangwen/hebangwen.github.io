@@ -1,0 +1,369 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Yet Another 何榜文's Blog | Yet Another 何榜文's Blog</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="7_Quantum_Mechanics7量子力学7.1引言19世纪末，有些物理学家认为他们的学科已基本完备，进一步的进展只不过是对已知内容的精炼罢了。实际上，一场即将撼动物理学根基的危机正在迫近，其影响至今仍能感受到。正如我们所见，要理解最大尺度上的空间和时间，需要革命性的思想；但要理解极小的原子和亚原子尺度上的能量与物质，则需要一场更为重大的革命。一个新的时代始于1900年。马克斯·普朗克(Ma">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:url" content="http://hebangwen.github.io/2026/05/02/misc/translation/output/7_Quantum_Mechanics_cn/index.html">
+<meta property="og:site_name" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:description" content="7_Quantum_Mechanics7量子力学7.1引言19世纪末，有些物理学家认为他们的学科已基本完备，进一步的进展只不过是对已知内容的精炼罢了。实际上，一场即将撼动物理学根基的危机正在迫近，其影响至今仍能感受到。正如我们所见，要理解最大尺度上的空间和时间，需要革命性的思想；但要理解极小的原子和亚原子尺度上的能量与物质，则需要一场更为重大的革命。一个新的时代始于1900年。马克斯·普朗克(Ma">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2026-05-02T09:18:06.018Z">
+<meta property="article:modified_time" content="2026-05-02T09:57:33.456Z">
+<meta property="article:author" content="何榜文">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "",
+  "url": "http://hebangwen.github.io/2026/05/02/misc/translation/output/7_Quantum_Mechanics_cn/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2026-05-02T09:18:06.018Z",
+  "dateModified": "2026-05-02T09:57:33.456Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "http://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="http://hebangwen.github.io/2026/05/02/misc/translation/output/7_Quantum_Mechanics_cn/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Yet Another 何榜文\'s Blog',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">Yet Another 何榜文's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Yet Another 何榜文's Blog</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">无标题</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-05-02T09:18:06.018Z" title="发表于 2026-05-02 17:18:06">2026-05-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-05-02T09:57:33.456Z" title="更新于 2026-05-02 17:57:33">2026-05-02</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><h1 id="7-Quantum-Mechanics"><a href="#7-Quantum-Mechanics" class="headerlink" title="7_Quantum_Mechanics"></a>7_Quantum_Mechanics</h1><p>7<br>量子力学<br>7.1<br>引言<br>19世纪末，有些物理学家认为他们的学科已基本完备，进一步的进展只不过是对已知内容的精炼罢了。实际上，一场即将撼动物理学根基的危机正在迫近，其影响至今仍能感受到。正如我们所见，要理解最大尺度上的空间和时间，需要革命性的思想；但要理解极小的原子和亚原子尺度上的能量与物质，则需要一场更为重大的革命。<br>一个新的时代始于1900年。马克斯·普朗克(Max Planck)当时已为解释观测到的黑体辐射波长与强度之间的关系苦苦思索了一段时间。1900年，他发表了一个精确描述该辐射的公式。（我们将在第10章推导此公式。）在此过程中，他将一个新的基本常数引入物理学。这个常数ħ，即普朗克常量(Planck’s constant)，是迈向量子力学的第一步。它出现在所有用到量子力学思想的地方，并统一了这一学科。普朗克最初引入的常数是h &#x3D; 2πħ，但使用ħ几乎总是更方便。ħ的数值约为1.055 × 10⁻³⁴ J s。<br>当光照射到许多金属上时，金属会发射出电子。这被称为光电效应(photoelectric effect)。根据实验，每个出射电子的能量取决于光的频率而非其强度，这一观察结果很难用经典物理学解释。1905年，爱因斯坦(Einstein)发表了一篇论文，他意识到这篇论文比同年发表的关于狭义相对论的论文更具革命性。在这篇论文中，爱因斯坦提出，电磁辐射并非连续的波，而是由我们现在所知的称为光子(photons)的粒子组成，并且这些光子的能量由一个包含普朗克常量的简单公式给出：E &#x3D; ħω，其中ω是光的（角）频率。凭借这个影响深远的思想，爱因斯坦解释了光电效应。从金属中发射出的每个光电子，都源于与一个光子的单次碰撞，该光子的能量由爱因斯坦公式给出。<br>几年后，爱因斯坦将类似的思想应用于固体中的热振动。基于这些振动是量子化的并且同样遵循方程E &#x3D; ħω的假设，爱因斯坦推导出了一个固体热容量的公式。<br>量子理论发展的下一步，是在欧内斯特·卢瑟福(Ernest Rutherford)发现原子核之后，尼尔斯·玻尔(Niels Bohr)试图解释原子结构时迈出的。玻尔假设电子绕原子核运行，但仅当每个电子的角动量被量子化为普朗克常量的整数倍时，这些轨道才是可能存在的。这一假设意味着电子的能级是分立的，并且被有限的能隙隔开。许多材料当其原子被置于<br>物理世界. 尼古拉斯·曼顿(Nicholas Manton) 和 尼古拉斯·米(Nicholas Mee), 牛津大学出版社 (2017).<br>©尼古拉斯·曼顿和尼古拉斯·米. DOI 10.1093&#x2F;acprof:oso&#x2F;9780198795933.001.0001</p>
+<p>204<br>量子力学<br>火焰的光谱颜色非常纯正，对应着精确的波长。玻尔(Bohr)意识到，这些锐利的线光谱是原子电子从一个分立能级跃迁到另一个较低能级时发射单个光子(photon)所致，他用他的模型极其精确地解释了这些光谱。我们将在本章不再进一步讨论光子，因为要理解它们的行为需要结合量子力学思想和相对论。本章将重点讨论非相对论性粒子的量子理论，这也是适用于原子和分子物理学的理论。</p>
+<p>图7.1 沿十重对称轴拍摄的Al72Ni20Co8十重准晶体的电子衍射图样。</p>
+<p>在二十年间，量子理论被应用于一系列物理问题，但其发展是拼凑式的。这种方法现在被称为旧量子理论。一切都随着1924年路易·德布罗意(Louis de Broglie)思想的发表而改变。他有一个非凡的洞察：如果一个波可以具有类似粒子的特性，那么或许一个粒子也可以具有类似波的特性。他提出，动量为p的粒子应该具有波长<br>2π¯h<br>|p| 。三年后，当电子束穿过金属薄膜中的晶体原子网格观察到电子干涉图样时，这一预言得到了实验证实。一幅电子衍射图样如图7.1所示。</p>
+<p>从1925年起，旧量子理论被一个全新的理论——量子力学——所取代，它融合了许多旧思想，但更加一致和完整。它对原子结构和动力学性质（包括原子光谱）给出了极其精确的预言。这个新理论的应用比最初预期的还要广泛。1929年，保罗·狄拉克(Paul Dirac)说它是“物理学一大部分和整个化学的数学理论”。量子力学迅速应用于物理学的众多分支，其中许多我们将在后面章节中讨论。它被用来解释原子的性质、物质的结构……</p>
+<p>量子力学中的位置和动量<br>205<br>周期表并理解化学键，这是整个化学学科的关键。它被应用于原子核物理学，从而理解了核能和恒星的动力来源。量子理论也被应用于基本粒子及其之间的力，以及寻找物质的基本组成成分。在更大的尺度上，它被用来解释固体的结构和性质。量子力学还促进了许多具有广泛应用的现象的发现，其中包括世界各地使用的常见设备中的组件。这些包括激光器、晶体管、发光二极管(LED)、超导性、超流性和超强磁体。</p>
+<p>毫无疑问，量子力学比经典动力学更为基本，但经典物理学当然并未被完全抛弃。在¯h可以忽略的情况下，它仍然有许多应用。经典力学仍然是理解从台球到汽车、行星和恒星等宏观物体运动的最佳方法。大多数流体也可以由经典物理学很好地描述。即使在电力和通信工程中如此重要的电磁场，也可以由麦克斯韦方程组很好地描述，人们无需调用单个光子来模拟它们的行为。大致说来，量子力学提供最有用的物理学描述的领域与经典力学领域之间的边界，是原子长度尺度与更长长度尺度之间的边界，但这个边界并非截然分明。事实上，由于¯h不是长度单位，有一些较大尺度的现象，其解释需要考虑量子效应。</p>
+<p>7.2 量子力学中的位置和动量</p>
+<p>在经典牛顿动力学中，一个点粒子具有随时间变化的位置x(t)，通过对其求时间导数，我们得到速度v &#x3D; dx&#x2F;dt和加速度a &#x3D; d²x&#x2F;dt²。我们可以在任何瞬间自由指定x和v，但a由作用的力决定。实际上，有许多理由倾向于将x和p作为动力学变量，其中p &#x3D; mv是粒子的动量：(i) 牛顿第二定律将力等同于p的变化率；(ii) 当两个物体相互作用时，总和p₁ + p₂是守恒的；(iii) 角动量有一个简单的表达式，l &#x3D; x × p。量子力学是用位置x和动量p来表述的，速度不那么重要——但x和p的特性在量子力学中与经典动力学中有着根本的不同。</p>
+<p>在本章中，我们仅限于一维粒子运动，因此动力学变量是x和p。在经典动力学中，x和p是普通的实数，可取−∞到∞之间的任何值。在量子力学中，沃纳·海森堡(Werner Heisenberg)提出，x和p不仅仅是数，而是作用于表征粒子物理状态的算符。这些算符的代数关系被假定为</p>
+<p>xp − px &#x3D; i¯h 1 . (7.1)</p>
+<p>在右边，i是√−1，¯h是普朗克常数，而1是单位算符，当它作用时，状态保持不变。xp − px被称为x和p的对易子，并用记号[x, p]表示。方程(7.1)是一维量子力学中基本的位置-动量对易关系。</p>
+<p>我们还没有说明算符x和p是什么，或者它们取什么值，但我们将坚持它们遵守对易关系(7.1)。经典极限对应于¯h &#x3D; 0，这意味着xp &#x3D; px，如果x和p是普通的数，这就得到满足。</p>
+<h2 id="206量子力学海森堡-Heisenberg-通过给出算符x和p如何随时间演化的规则，构建了一个动力学理论，同时它们在每一时刻仍满足方程-7-1-。他还设法从x和p以及能量等导出量中提取物理意义。然而，这种量子力学方法相当抽象和严苛。矩阵相乘时一般不对易。例如，-begin-pmatrix-0-a-0-0-end-pmatrix-begin-pmatrix-0-0-b-0-end-pmatrix"><a href="#206量子力学海森堡-Heisenberg-通过给出算符x和p如何随时间演化的规则，构建了一个动力学理论，同时它们在每一时刻仍满足方程-7-1-。他还设法从x和p以及能量等导出量中提取物理意义。然而，这种量子力学方法相当抽象和严苛。矩阵相乘时一般不对易。例如，-begin-pmatrix-0-a-0-0-end-pmatrix-begin-pmatrix-0-0-b-0-end-pmatrix" class="headerlink" title="206量子力学海森堡(Heisenberg)通过给出算符x和p如何随时间演化的规则，构建了一个动力学理论，同时它们在每一时刻仍满足方程(7.1)。他还设法从x和p以及能量等导出量中提取物理意义。然而，这种量子力学方法相当抽象和严苛。矩阵相乘时一般不对易。例如，[\begin{pmatrix}0 &amp; a \0 &amp; 0\end{pmatrix}\begin{pmatrix}0 &amp; 0 \b &amp; 0\end{pmatrix}"></a>206<br>量子力学<br>海森堡(Heisenberg)通过给出算符x和p如何随时间演化的规则，构建了一个动力学理论，同时它们在每一时刻仍满足方程(7.1)。他还设法从x和p以及能量等导出量中提取物理意义。然而，这种量子力学方法相当抽象和严苛。<br>矩阵相乘时一般不对易。例如，<br>[<br>\begin{pmatrix}<br>0 &amp; a \<br>0 &amp; 0<br>\end{pmatrix}<br>\begin{pmatrix}<br>0 &amp; 0 \<br>b &amp; 0<br>\end{pmatrix}</h2><h1 id="begin-pmatrix-0-0-b-0-end-pmatrix-begin-pmatrix-0-a-0-0-end-pmatrix"><a href="#begin-pmatrix-0-0-b-0-end-pmatrix-begin-pmatrix-0-a-0-0-end-pmatrix" class="headerlink" title="\begin{pmatrix}0 &amp; 0 \b &amp; 0\end{pmatrix}\begin{pmatrix}0 &amp; a \0 &amp; 0\end{pmatrix}"></a>\begin{pmatrix}<br>0 &amp; 0 \<br>b &amp; 0<br>\end{pmatrix}<br>\begin{pmatrix}<br>0 &amp; a \<br>0 &amp; 0<br>\end{pmatrix}</h1><p>\begin{pmatrix}<br>ab &amp; 0 \<br>0 &amp; -ab<br>\end{pmatrix},<br>]<br>而这正是矩阵有时成为量子力学中表示算符的合适工具的原因。如果方程(7.1)存在由实数或复数的n×n方阵构成的解，海森堡的量子力学将会更简单。然而，对于任何有限的n，都不存在矩阵解x&#x3D;X和p&#x3D;P。我们可以通过取迹来说明这一点。（矩阵M的迹，记作Tr M，是主对角线元素之和。）假设<br>[<br>XP - PX &#x3D; i\hbar \mathbf{1}_n ,<br>]<br>其中(\mathbf{1}_n)是n×n单位矩阵。那么<br>[<br>\operatorname{Tr}(XP) - \operatorname{Tr}(PX) &#x3D; i\hbar \operatorname{Tr} \mathbf{1}_n &#x3D; i\hbar n ,<br>]<br>但是矩阵乘积的迹不依赖于它们相乘的顺序¹，因此方程(7.4)的左边为零，导致矛盾。所以方程(7.3)的原始前提必定错误。</p>
+<p>存在由无限矩阵构成的方程(7.1)的解，这是海森堡发现的。在这种情况下，之前的论证不适用，因为无限矩阵的迹一般不能定义。这样的无限矩阵写起来很繁琐，因此这种方法很复杂。取而代之，我们给出薛定谔的观点。埃尔温·薛定谔(Erwin Schrödinger)独立地发展了一种量子力学方法，最初看起来与海森堡的方法截然不同，但很快人们意识到它们是等价的，因此我们现在谈论薛定谔绘景(Schrödinger picture)和海森堡绘景(Heisenberg picture)中的量子力学，它们具有相同的物理内容。薛定谔的量子力学更关注算符x和p所作用的状态。<br>在薛定谔绘景中，人们通过将x和p表示为作用在状态ψ上的微分算符而非矩阵，来求解方程(7.1)。ψ不是被有限矩阵作用的数列向量，而是x（通常也是时间t）的函数。关于导数(\frac{d}{dx})的一阶微分算符具有形式<br>[<br>D &#x3D; a(x) + b(x) \frac{d}{dx},<br>]<br>其中a(x)和b(x)是普通函数，它们二者之一可以为零。作用在ψ上，<br>[<br>D\psi &#x3D; a(x)\psi + b(x) \frac{d\psi}{dx},<br>]</p>
+<p>¹ XP的矩阵元为((XP)<em>{ab} &#x3D; \sum_c X</em>{ac} P_{cb})，因此对角元为((XP)<em>{aa} &#x3D; \sum_c X</em>{ac} P_{ca})，于是(\operatorname{Tr}(XP) &#x3D; \sum_a \sum_c X_{ac} P_{ca})。类似地，(\operatorname{Tr}(PX) &#x3D; \sum_a \sum_c P_{ac} X_{ca})，如果交换指标a, c的标记和求和顺序，它就等于(\operatorname{Tr}(XP))。</p>
+<p>薛定谔方程<br>207<br>所以 (D\psi) 是 (x) 的一个新函数²。还存在含有高阶导数的微分算符，我们稍后就会看到。表示 (x) 和 (p) 的算符都是一阶形式 (7.5)。算符 (x) 由 (x) 表示，即取 (a(x)&#x3D;x)、(b(x)&#x3D;0) 的 (D)。这里有一个必须容忍的记号混淆：(x) 可以表示一个算符、一个函数，或者一个特定的实数值，但根据上下文含义应该清楚。位置算符 (x) 作用在函数 (\psi(x)) 上产生新函数 (x\psi(x))。动量算符表示为<br>[<br>p &#x3D; -i\hbar \frac{d}{dx},<br>\tag{7.7}<br>]<br>即取 (a(x)&#x3D;0)、(b(x)&#x3D;-i\hbar) 的 (D)。最后，单位算符 (\mathbf{1}) 由 (1) 表示，即取 (a(x)&#x3D;1)、(b(x)&#x3D;0) 的 (D)。</p>
+<p>重要的是检验在薛定谔绘景下 (\psi) 满足方程 (7.1)。验证过程如下：<br>[<br>\begin{aligned}<br>(xp - px)\psi<br>&amp;&#x3D; x\left(-i\hbar \frac{d}{dx}\right)\psi - \left(-i\hbar \frac{d}{dx}\right)(x\psi) \<br>&amp;&#x3D; -i\hbar x \frac{d\psi}{dx} + i\hbar \left(\psi + x \frac{d\psi}{dx}\right) \<br>&amp;&#x3D; i\hbar \psi \<br>&amp;&#x3D; (i\hbar \mathbf{1})\psi,<br>\end{aligned}<br>\tag{7.8}<br>]<br>由于这一结果对任意函数 (\psi) 都成立，对易关系 (7.1) 得以确证。注意关键一步是对 (x\psi) 求导时用到的莱布尼茨法则，这在矩阵背景下并没有显然的类比。</p>
+<p>在薛定谔绘景中，(x) 和 (p) 由微分算符表示，而在海森堡绘景中它们由无穷维矩阵表示，但这其实只是一种形式上的差别。一个更显著的差别是，在海森堡绘景中算符随时间变化，而态 (\psi) 保持不变。在薛定谔绘景中，(x) 和 (p) 不随时间变化，而 (\psi) 随时间改变。只要从形式理论中提取物理结果时足够谨慎，这两种绘景是等价的。在薛定谔绘景中，算符 (x) 和 (p) 是普遍的对象，无论粒子的动力学如何，它们都一样；态 (\psi) 的动力学则因不同粒子、不同情况而异。</p>
+<h2 id="7-3-薛定谔方程"><a href="#7-3-薛定谔方程" class="headerlink" title="7.3 薛定谔方程"></a>7.3 薛定谔方程</h2><p>一维粒子的牛顿动力学由粒子运动的势 (V(x)) 控制。势决定了作用在粒子上的力。在量子力学中，粒子的动力学同样由势 (V(x)) 控制。在薛定谔绘景中，粒子的物理信息由态 (\psi(x,t)) 承载，它也被称为粒子在时刻 (t) 的波函数。我们很快将讨论从 (\psi) 对 (x) 的依赖关系中可以导出什么，但首先讨论 (\psi) 的动力学——它如何随时间演化。这取决于势。  </p>
+<p>² 这里记号省略了 (\psi) 和 (D\psi) 的宗量 (x)，因为对导数来说写出它会显得累赘。</p>
+<p>208<br>量子力学<br>一个新的算符 H，称为哈密顿量(Hamiltonian)，控制着 ψ 的动力学演化。它以质点的经典总能量为模型，是 x 和 p 的函数。对于在势 V(x) 中运动的粒子，哈密顿量是算符<br>H &#x3D;<br>1<br>2mp2 + V (x) ,<br>(7.9)<br>即动能与势能之和（这些术语在量子力学中仍然适用）。m 是粒子的经典质量，是一个正的常数。我们稍后将讨论为什么时间演化由这个特定的算符决定。<br>由于 p 由 −i¯h d<br>dx 表示，p2 就是这个算符作用两次。这给出二阶微分算符<br>p2 &#x3D;<br><br>−i¯h d<br>dx<br> <br>−i¯h d<br>dx<br><br>&#x3D; −¯h2 d2<br>dx2 .<br>(7.10)<br>另一方面，V(x) 仅仅是 x 的函数，其作用就是相乘。作用于态 ψ(x, t) 时，对 x 的导数变为偏导数，于是<br>Hψ &#x3D; −¯h2<br>2m<br>∂2ψ<br>∂x2 + V (x)ψ ,<br>(7.11)<br>这是一个关于 x 和 t 的新函数。幸运的是，p2 作为算符没有歧义。某些经典量，比如 xp，会存在次序歧义，因为经典上 xp 和 px 相同，但作为算符，由于方程(7.1)，它们相差一个常数。<br>薛定谔绘景（Schrödinger picture）中量子力学的动力学原理是：态 ψ(x, t) 按照如下方程随时间演化：<br>i¯h∂ψ<br>∂t &#x3D; Hψ ,<br>(7.12)<br>或者完整写出来，<br>i¯h∂ψ<br>∂t &#x3D; −¯h2<br>2m<br>∂2ψ<br>∂x2 + V (x)ψ .<br>(7.13)<br>这就是薛定谔方程。作为初始数据，必须对所有 x 给定 ψ，而由于方程(7.13)是对时间的一阶微分方程，这就足够了。ψ &#x3D; 0 总是薛定谔方程的一个解，但并不描述物理态，因此从现在起，我们所说的解总是指非零解。<br>方程(7.13)是一个线性偏微分方程，所以构造解的一种方法是找到一组特解，然后将一般解构造为特解的线性叠加。更明确地说，如果 ψ0(x, t), ψ1(x, t), ψ2(x, t), . . . 是(7.13)的独立解，那么<br>ψ(x, t) &#x3D; a0ψ0(x, t) + a1ψ1(x, t) + a2ψ2(x, t) + · · ·<br>(7.14)<br>也是解，其中 a0, a1, a2, . . . 是不全为零且使得求和收敛的任意常数。<br>这里需要说明两点。第一，薛定谔方程显含 i，因此解 ψ 通常是复的。所以常数 a0, a1, a2, . . . 是复数。它们被称为振幅。第二，所有</p>
+<p>薛定谔方程<br>209<br>通过线性叠加得到的解在物理上都是有效的，没有一个被排除。这就是量子力学的叠加原理(superposition principle)，它本质上只是方程具有线性性质的结果。这使得薛定谔方程与无源麦克斯韦方程这类线性波动方程形成了类比：后者的波解可以叠加，且任何解都是物理的。在经典粒子动力学中找不到类似的情况。波的叠加会产生干涉图样，这种行为虽然令人惊讶，但已得到实验证实。从前，量子力学曾被称为波动力学。然而，尽管粒子态具有波的性质，粒子本身仍然是局域的、点状的物体。</p>
+<p>接下来的一个技术问题是找出一组特别方便的独立态ψ₀, ψ₁, ψ₂, …，并确定有多少个这样的态。实际上，有无穷多个。在某一给定时刻，函数ψ构成的空间是一个无穷维矢量空间，薛定谔方程给出ψ在这个空间中的演化。其中仍存在一组特别重要的态，称为定态(stationary states)。这些定态并非与时间无关，但它们对时间的依赖关系特别简单，而且它们的大部分物理性质都是与时间无关的。</p>
+<p>为寻找定态，我们需要分离变量。假设ψ是一个只依赖于x的函数与一个只依赖于t的函数的乘积。这意味着对时间的依赖通过一个简单的指数因子e⁻ⁱᴱᵗ&#x2F;̄ʰ体现，其中E是一个起初未知的实常数。于是完整的波函数为</p>
+<p>ψ(x, t) &#x3D; χ(x) e⁻ⁱᴱᵗ&#x2F;̄ʰ ，            (7.15)</p>
+<p>其中χ(x)和E是待求的。将波函数(7.15)代入薛定谔方程(7.13)，算符īʰ ∂&#x2F;∂t只对含时相因子求导，结果降下因子E。而包含空间导数的算符H只作用在χ上，于是得到</p>
+<p>Eχ e⁻ⁱᴱᵗ&#x2F;̄ʰ &#x3D; Hχ e⁻ⁱᴱᵗ&#x2F;̄ʰ 。            (7.16)</p>
+<p>时间依赖因子消去，留下</p>
+<p>Hχ &#x3D; Eχ 。            (7.17)</p>
+<p>更明确地写出来，</p>
+<p>–̄ʰ²&#x2F;(2m) d²χ&#x2F;dx² + V(x)χ &#x3D; Eχ 。            (7.18)</p>
+<p>这就是定态薛定谔方程。解χ(x)称为定态波函数，E则是它的能量。注意，由于不再有时间依赖关系，偏导数∂&#x2F;∂x又变成了寻常导数d&#x2F;dx。</p>
+<p>现在我们可以解释为什么基于粒子经典能量来构造算符H并把它用作量子力学演化算符是合理的。根据德布罗意(de Broglie)的思想，动量为正p的粒子由波长为2π̄ʰ&#x2F;p的波来描述。波eⁱᵏˣ的波长为2π&#x2F;k，因此这个波（波数为k）描述的是动量为p &#x3D; ̄ʰk的粒子。对于这个波，定态薛定谔方程(7.18)的第一项为</p>
+<p>–̄ʰ²&#x2F;(2m) d²&#x2F;dx² eⁱᵏˣ &#x3D; ̄ʰ²k²&#x2F;(2m) eⁱᵏˣ &#x3D; p²&#x2F;(2m) eⁱᵏˣ ，            (7.19)</p>
+<p>右边出现的系数p²&#x2F;(2m)正是动能（这里p是经典动量，不是算符）。现在假设V(x)是一个缓慢变化的光滑函数……</p>
+<p>210<br>量子力学<br>其中 x 所在的尺度远大于 2π&#x2F;k。那么，在局部，e^{ikx} 近似满足定态薛定谔方程 (7.18)，只要<br>p^2&#x2F;(2m) e^{ikx} + V(x)e^{ikx} &#x3D; E e^{ikx} ,<br>(7.20)<br>其中 p &#x3D; ¯hk，且 k 随 x 缓慢变化。如果 p^2&#x2F;(2m) + V(x) &#x3D; E，则方程两边系数匹配。这样，薛定谔方程就与经典能量方程联系了起来。因为 E 是常数，即使 p 和 V 各自变化，能量依然是守恒的。这个论证虽然粗糙，但它表明，当量子粒子的波长远小于外部给定势能 V 的特征长度尺度时，经典粒子运动可以转化为定态薛定谔方程的解，同时也表明将首次出现于方程 (7.15) 中的常数 E 解释为能量是正确的。方程 (7.18) 解的更好近似形式为<br>χ(x) &#x3D; A(x) e^{ik(x)x}<br>(7.21)<br>其中 ¯h^2 k^2(x) &#x2F; (2m) &#x3D; E − V(x)，且 A(x) 的幅度和相位都缓慢变化，这个形式加强了上述论证。</p>
+<p>现在让我们回到方程 (7.17) 及其精确解。方程 (7.17) 及其显式形式 (7.18) 是算符理论中被大量研究的对象。H 作用在函数 χ 上，但并未产生一个完全独立的函数；它只产生 χ 的常数倍。这样的函数 χ 是特殊的，E 也是特殊的。E 被称为 H 的本征值，或能量本征值，而 χ(x) 则是 H 的属于本征值 E 的本征函数或本征态。对于物理上合理的势 V(x)，H 有无穷多个本征值 E。它们可以是离散的（像整数），也可以是连续的（像所有实数），或者是两者的组合（一些离散值以及填满一个或多个区间的连续谱），如图 7.2 所示。在物理学中，能量本征值常被称为能级。它们是粒子能够具有的唯一精确能量。与最低能级相联系的本征函数称为基态，与较高能级相联系的则称为激发态。两个或多个具有相同能量的态称为简并态。</p>
+<p>只有对某些势能才能显式求解一维薛定谔方程 (7.18) 并找出能量本征值。我们将考察几个重要的例子。更一般地研究本征值谱是薛定谔算符理论的一部分，这是一个深奥而复杂的课题。</p>
+<p>7.3.1<br>自由粒子<br>让我们从自由粒子的例子开始，此时 V 处处为零。自由粒子的薛定谔方程为<br>i¯h ∂ψ&#x2F;∂t &#x3D; −(¯h^2&#x2F;(2m)) ∂^2 ψ&#x2F;∂x^2 .<br>(7.22)<br>通过分离变量，它化为定态薛定谔方程<br>−(¯h^2&#x2F;(2m)) d^2 χ&#x2F;dx^2 &#x3D; Eχ .<br>(7.23)</p>
+<p>薛定谔方程<br>211<br>第一激发态<br>基态<br>第二激发态<br>连续谱<br>图7.2 一个典型的势可以包含一组离散的能级以及一个连续的能级谱。<br>方程(7.23)是一个二阶常微分方程，对于任何正的能量E，有两个独立的实数解。它们是<br>χ1(x) &#x3D; cos<br> 1<br>¯h<br>√<br>2mE x<br><br>,<br>χ2(x) &#x3D; sin<br> 1<br>¯h<br>√<br>2mE x<br><br>.<br>(7.24)<br>通解是线性叠加<br>χ(x) &#x3D; A cos<br> 1<br>¯h<br>√<br>2mE x<br></p>
+<ul>
+<li>B sin<br> 1<br>¯h<br>√<br>2mE x<br><br>,<br>(7.25)<br>其中A和B是实数或复常数。<br>我们现在必须考虑χ(x)在x →±∞时的行为。物理上可接受的χ必须在x →±∞时保持有界（即χ的模不能无限增大）。我们称这样的解为可接受的。不可接受的解是指χ在一个方向或两个方向上无限增长的解。因此，对于任何A和B，解(7.25)都是可接受的，但如果E是负的，那么独立的解将是χ1(x) &#x3D; e<br>1<br>¯h<br>√<br>2m|E| x<br>和χ2(x) &#x3D; e−1<br>¯h<br>√<br>2m|E| x，它们在x →∞或x →−∞时指数增长，都是不可接受的。如果E &#x3D; 0，只有一个可接受的解，χ(x) &#x3D; 常数。结论是对于自由粒子，允许的能量本征值包含所有实数E ≥0，构成一个连续的本征值谱。没有负能级。<br>通常，使用特定的复指数形式的解更为方便。在方程(7.25)中取A &#x3D; 1和B &#x3D; ±i，我们得到独立解<br>χ+(x) &#x3D; e<br>i<br>¯h<br>√<br>2mE x ,<br>χ−(x) &#x3D; e−i<br>¯h<br>√<br>2mE x ,<br>(7.26)<br>通解是这些解的叠加。包含时间依赖关系的完整波函数为</li>
+</ul>
+<p>212<br>量子力学<br>ψ+(x, t) &#x3D; e<br>i<br>¯h(<br>√<br>2mE x−Et) ,<br>ψ−(x, t) &#x3D; e<br>i<br>¯h(−<br>√<br>2mE x−Et) .<br>(7.27)<br>如果我们使用德布罗意(de Broglie)波数k &#x3D; ± 1<br>¯h<br>√<br>2mE，那么E &#x3D; ¯h2k2<br>2m ，自由粒子的薛定谔方程的一组完备独立定态解可以用k更简单地写为<br>ψ(x, t) &#x3D; ei kx−¯hk2<br>2m t<br>,<br>(7.28)<br>其中k取任何实数值，包括负值。这些是简单的波形式解，空间波长为2π<br>|k|，表示一个动量为¯hk、能量为¯h2k2<br>2m 的粒子。<br>我们不能忘记，薛定谔方程的通解是包含时间依赖因子的定态叠加。对于自由粒子，通解为<br>ψ(x, t) &#x3D;<br>Z ∞<br>−∞<br>F(k)ei kx−¯hk2<br>2m t<br>dk ,<br>(7.29)<br>其中F(k)是任意复函数，当|k| →∞时衰减得足够快以保证积分收敛。k是一个连续参数，这就是为什么叠加是k的积分而不是求和。<br>7.3.2<br>谐振子<br>现在让我们研究第二个重要例子，量子谐振子，其薛定谔方程为<br>i¯h∂ψ<br>∂t &#x3D; −¯h2<br>2m<br>∂2ψ<br>∂x2 + 1<br>2mω2x2ψ .<br>(7.30)<br>势为V (x) &#x3D;<br>1<br>2mω2x2，一个质量为m的经典粒子在此势中以频率ω振荡。定态薛定谔方程现在取形式<br>−¯h2<br>2m<br>d2χ<br>dx2 + 1<br>2mω2x2χ &#x3D; Eχ .<br>(7.31)<br>经典情况下，有限能量的粒子在此势中在有限区间内振荡。在量子力学中，我们施加边界条件：χ在x →±∞时必须趋近于零。<br>为了分析方程(7.31)，通过使用标度化的长度和能量变量来简化记号是有帮助的。我们选择y &#x3D; p mω<br>¯h x和ε &#x3D;<br>2<br>¯hωE。那么χ(y)满足<br>−d2χ<br>dy2 + y2χ &#x3D; εχ .<br>(7.32)<br>回想一下，对于自由粒子，能量可以取任何正值或零。而这里，本征值ε只能取某些离散值。原因如下。对于大的|y|，对于任何ε，方程(7.32)的两个独立解大致为e−1<br>2 y2和e<br>1<br>2 y2。只有在大正y处行为像e−1<br>2 y2的解才可能是可接受的，因为</p>
+<p>薛定谔方程<br>213<br>–2<br>2<br>4<br>–4<br>4<br>2<br>6<br>8<br>10<br>ε<br>χ₁<br>χ₀<br>χ₂<br>χ₃<br>χ₄<br>y<br>图7.3 谐振子的五个最低能量解 χn(y)。</p>
+<p>另一个解则会增长。如果我们取这个解并将其延拓到很大的负 y 处，那么它通常会是该处 e^{-1&#x2F;2 y^2} 和 e^{1&#x2F;2 y^2} 解的某种组合，而其中 e^{1&#x2F;2 y^2} 的部分将完全占主导。它的增长行为使得这个解终究不可接受。因此，对于一般的 ε 值，不存在同时满足两个边界条件的可接受解。只有当 ε 取某些离散值时，才存在一个在 y 很大正和很大负处都按 e^{-1&#x2F;2 y^2} 衰减的解，这些特殊值就是本征值。</p>
+<p>本征值是哪些呢？最低的是 ε &#x3D; 1，解正好是 χ(y) &#x3D; e^{-1&#x2F;2 y^2}，因为（求两次导数）<br>$$<br>\left( -\frac{d^2}{dy^2} + y^2 \right) e^{-\frac{1}{2} y^2} &#x3D; \frac{d}{dy} \left( y e^{-\frac{1}{2} y^2} \right) + y^2 e^{-\frac{1}{2} y^2} &#x3D; e^{-\frac{1}{2} y^2}.<br>\tag{7.33}<br>$$<br>这就是基态解。完整的本征值序列构成一个离散序列：ε &#x3D; 1, 3, 5, 7, …。将这个序列记为 ε_n &#x3D; 2n+1，从 n&#x3D;0 开始。相应的定态波函数为 χ_n(y)，它们的形式为<br>$$<br>\chi_n(y) &#x3D; H_n(y) e^{-\frac{1}{2} y^2}<br>\tag{7.34}<br>$$<br>其中 H_n(y) 是 y 的 n 次多项式。前五个解如图7.3所示。尽管有多项式前置因子，χ_n(y) 在大的 |y| 处几乎像 e^{-1&#x2F;2 y^2} 一样快地衰减。用原始变量表示，第 n 个解为<br>$$<br>\chi_n(x) &#x3D; H_n \left( \sqrt{\frac{m\omega}{\hbar}} x \right) e^{-\frac{m\omega}{2\hbar} x^2}, \quad \text{其中} \quad E_n &#x3D; \left( n + \frac{1}{2} \right) \hbar \omega .<br>\tag{7.35}<br>$$<br>这个序列中的多项式被称为厄米多项式(Hermite polynomials)。前几个例子是<br>$$<br>\begin{aligned}<br>H_0(y) &amp;&#x3D; 1, \<br>H_1(y) &amp;&#x3D; y, \<br>H_2(y) &amp;&#x3D; y^2 - \frac{1}{2}, \<br>H_3(y) &amp;&#x3D; y^3 - \frac{3}{2} y,<br>\end{aligned}<br>\tag{7.36}<br>$$<br>其中，按照惯例，首项的系数已设为1。一个一般公式</p>
+<p>214<br>量子力学<br>对于所有这些多项式，有<br>Hn(y) &#x3D;<br><br>−1<br>2<br>n<br>ey2 dn<br>dyn e−y2 .<br>(7.37)<br>能量本征值 En (n &#x3D; 0, 1, 2, . . .) 就是谐振子的能级。基态能量为 E0 &#x3D; 1<br>2¯hω，所有能量高于 E0 的态都是激发态。值得注意的是，基态能量为正，且相邻能级之间的间隔均相等。1<br>2¯hω 被称为零点能，是量子谐振子所能具有的最低能量。相比之下，经典谐振子的最小能量为零，此时粒子静止在势阱底部 x &#x3D; 0 处。</p>
+<p>对于谐振子，通解为<br>ψ(x, t) &#x3D;<br>∞<br>X<br>n&#x3D;0<br>anHn<br>rmω<br>¯h x<br><br>e−mω<br>2¯h x2e−i(n+ 1<br>2)ωt .<br>(7.38)<br>振幅 an 必须在 n →∞ 时足够快地趋于零，以保证求和收敛，除此之外它们是任意的。</p>
+<p>那么更一般的势呢？例如，可以考虑含有 V (x) &#x3D;<br>1<br>2mω2x2 + x4 或 V (x) &#x3D; |x| 的薛定谔方程。这些势的最小值为零，并且在 x →±∞ 时趋于无穷大。确定它们的能量本征值并不容易，但对于这类势，能量是势最小值以上的一组无穷多个离散正数。像 V (x) &#x3D; 1<br>2mω2x2 + x3 这样的势，当 x →−∞ 时 V 趋于 −∞，在量子力学中并不导致物理上合理的模型。它们根本没有能量本征值，粒子动力学是不稳定的。</p>
+<p>7.4<br>波函数的诠释——可观测量</p>
+<p>应该如何诠释薛定谔方程的解？它们的物理意义是什么？我们知道，定态<br>ψ(x, t) &#x3D; χ(x)e−i<br>¯h Et ,<br>(7.39)<br>其中 Hχ &#x3D; Eχ，是一个具有能量 E 的态，但也存在这些态的叠加态，具有不同的 E 值。如何理解它们？粒子在哪里，它的动量是多少？粒子是否具有确定的能量？</p>
+<p>这些问题由马克斯·玻恩(Max Born)解决，他提出了量子理论的标准统计观点。根据玻恩的观点，薛定谔波函数提供了关于粒子及其动力学的概率性信息。这与薛定谔最初的直觉——波函数是一个可测量的对象，就像电磁波或海浪一样——相悖，但它迅速成为量子力学标准诠释的关键组成部分。尽管量子力学的诠释至今仍未令所有人满意，但量子力学提供了一个预言实验概率性结果的规则，且已被证明极其成功。没有任何实验或观测曾经质疑过量子力学运作极佳这一事实。</p>
+<p>波函数的诠释——可观测量<br>215<br>7.4.1 位置概率<br>我们首先需要讨论粒子在何处。基本思想是，在时间t，<br>∫_{x0}^{x1} |ψ(x, t)|^2 dx   (7.40)<br>表示粒子位于x0和x1之间的概率。被积函数是波函数的模平方，|ψ(x, t)|^2 &#x3D; ψ*(x, t) ψ(x, t)，其中ψ*是ψ的复共轭。|ψ(x, t)|^2是实数且非负，代表在x处找到粒子的概率密度。<br>总概率必须为1，因此为了使(7.40)式有意义，波函数必须归一化，即满足<br>∫_{-∞}^{∞} |ψ(x, t)|^2 dx &#x3D; 1 .   (7.41)<br>对于遵守薛定谔方程(7.12)的ψ，只要在某一初始时刻满足归一化条件，该条件在所有时刻均成立。如果一个波函数未归一化，那么要么需要乘以一个常数使其归一化，要么等价地，将(7.40)式替换为<br>(∫_{x0}^{x1} |ψ(x, t)|^2 dx) &#x2F; (∫_{-∞}^{∞} |ψ(x, t)|^2 dx) .   (7.42)<br>如果ψ已归一化，那么e^{iα}ψ（其中α为实常数）仍是归一化的且满足薛定谔方程。概率密度不受相位因子e^{iα}影响，粒子的其他任何物理性质也是如此。因此，人们将ψ和e^{iα}ψ视为物理上等价的波函数。<br>在定态中，ψ(x, t) &#x3D; χ(x) e^{-iE t&#x2F;ħ}，所以|ψ(x, t)|^2 &#x3D; |χ(x)|^2，对χ的归一化条件为<br>∫_{-∞}^{∞} |χ(x)|^2 dx &#x3D; 1 .   (7.43)<br>概率密度|χ(x)|^2不随时间变化，这就是这类态被称为定态的原因。对于更一般的波函数，在x0和x1之间找到粒子的概率随时间改变，因此在这个意义上，粒子在运动。<br>作为一个例子，让我们考虑谐振子的基态和第一激发态，采用标度坐标y。归一化的定态为<br>χ_0(y) &#x3D; (1&#x2F;π)^{1&#x2F;4} e^{-y^2&#x2F;2}   和   χ_1(y) &#x3D; (4&#x2F;π)^{1&#x2F;4} y e^{-y^2&#x2F;2} ,   (7.44)<br>这可以利用高斯积分(1.45)和(1.65)来验证。单独地，这些态具有确定的能量，在这些态中，粒子位于y &#x3D; 0</p>
+<p>216<br>量子力学<br>和 y &#x3D; 1 的概率分别是<br>$$\frac{1}{\sqrt{\pi}} \int_{0}^{1} e^{-y^{2}} , dy \simeq 0.421$$<br>以及<br>$$\frac{4}{\sqrt{\pi}} \int_{0}^{1} y^{2} e^{-y^{2}} , dy \simeq 0.214 ,.$$<br>(7.45)<br>后者更小，因为粒子在激发态比在基态更加弥散。这类似于经典振动的振幅随着能量增加而增大。在这些状态的叠加中，含时相位因子具有不同的频率，粒子出现在 y &#x3D; 0 和 y &#x3D; 1 之间的概率以谐振子频率 ω 振荡。</p>
+<p>概率诠释可以通过测量粒子是否位于 x₀ 和 x₁ 之间来实验检验。单次测量的答案将是“是”或“否”，但如果实验被重复多次，每次都以相同方式制备该状态，那么给出“是”的测量结果所占的比例应当趋近于预言的概率。有些物理学家认为，依赖重复测量的诠释不能令人满意，并提出了不同的诠释。然而，似乎确定无疑的是，没有任何版本的量子力学能携带更多信息，使得位置测量的结果完全确定。概率是量子力学不可避免的特征。</p>
+<p><strong>7.4.2 其他物理量——厄米算符</strong></p>
+<p>我们已经引入了如下观念：基本的动力学变量——位置 x 和动量 p——在量子力学中成为算符。我们也已经看到，哈密顿量 H &#x3D; \frac{1}{2m} p^{2} + V(x) 是一个关键的算符；它出现在薛定谔方程中，并与粒子的能量相关。另一个算符是单独的动能，\frac{1}{2m} p^{2}。量子力学的一个基本假设是：每个可观测量——每一个可以测量的物理量——都由一个算符表示。算符通常与经典的动力学变量（一般是 x 和 p 的函数）相关联，但我们稍后会遇到的旋量算符则没有相近的经典对应物。在量子力学中，可观测量总是由厄米算符(Hermitian operator)来表示，它们与厄米多项式一样，是以数学家夏尔·埃尔米特(Charles Hermite)的名字命名的。我们将证明，厄米算符最重要的性质是它们具有实的本征值，因此它们类似于实的动力学变量。</p>
+<p>数学上，如果算符 O 具有如下对称性质（称为厄米性），则它是厄米的：若对于任何在 x → ±∞ 时足够快地趋于零的复函数 φ(x) 和 η(x)，都有<br>$$\int_{-\infty}^{\infty} \overline{O \eta} , \varphi , dx &#x3D; \int_{-\infty}^{\infty} \overline{\eta} , O\varphi , dx ,,$$<br>则称 O 是厄米的。<br>(7.46)<br>（记住 φ, η, Oφ 和 Oη 都是 x 的函数。）另一种等价的表述是，\int_{-\infty}^{\infty} \overline{\varphi} , O\eta , dx 是 \int_{-\infty}^{\infty} \overline{\eta} , O\varphi , dx 的复共轭。</p>
+<p>检验特定算符的厄米性并不困难。通常需要进行一次分部积分。例如，\frac{d^{2}}{dx^{2}} 是厄米的，因为<br>$$\int_{-\infty}^{\infty} \overline{\frac{d^{2}\eta}{dx^{2}}} , \varphi , dx &#x3D; \int_{-\infty}^{\infty} \overline{\eta} , \frac{d^{2}\varphi}{dx^{2}} , dx ,,$$<br>(7.47)</p>
+<p>波函数的诠释——可观测量<br>217<br>这可以通过两次分部积分来验证。同样地，i d&#x2F;dx 是厄米的——因子 i 至关重要——因为<br>∫_−∞^∞ (i dη&#x2F;dx) φ dx &#x3D; ∫_−∞^∞ η (i dφ&#x2F;dx) dx 。 (7.48)<br>分部积分会给出一个负号，但 i &#x3D; −i*。显然，哈密顿量 H &#x3D; −ħ²&#x2F;(2m) d²&#x2F;dx² + V(x) 和动量算符 p &#x3D; −iħ d&#x2F;dx 都是厄米的。</p>
+<p>一个厄米算符 O 通常有无穷多个独立的本征函数，我们假定它们可以用 k &#x3D; 0, 1, 2, … 来标记。（这是方便的，并且对一整类算符都成立，但对其他一些算符则需要使用连续标记而非离散标记。）因此 O 具有本征函数和本征值的离散谱<br>Oφ_k &#x3D; λ_k φ_k ,  k &#x3D; 0, 1, 2, … 。 (7.49)<br>由 O 的厄米性可得两个关键结果：(i) 每个本征值 λ_k 都是实数；(ii) 对应于不同本征值 λ_k 和 λ_l 的本征函数 φ_k(x) 和 φ_l(x) 是正交的，其意义为<br>∫_−∞^∞ φ_l^* φ_k dx &#x3D; 0 。 (7.50)<br>（这是针对复函数而言的，类似于两个正交向量的点积为零。）</p>
+<p>结果 (i) 和 (ii) 的证明颇为相似。我们从 O 的一对本征函数出发，它们满足方程<br>Oφ_k &#x3D; λ_k φ_k , (7.51)<br>Oφ_l &#x3D; λ_l φ_l , (7.52)<br>并假设 λ_l ≠ λ_k。然后，利用方程 (7.51) 的复共轭、O 的厄米性以及再次使用方程 (7.51)，我们得到<br>λ_k ∫_−∞^∞ φ_k^* φ_k dx &#x3D; ∫_−∞^∞ (Oφ_k)^* φ_k dx &#x3D; ∫_−∞^∞ φ_k^* Oφ_k dx &#x3D; λ_k ∫_−∞^∞ φ_k^* φ_k dx , (7.53)<br>因此 λ_k* &#x3D; λ_k，从而 λ_k 是实数。</p>
+<p>类似地，<br>λ_l ∫_−∞^∞ φ_l^* φ_k dx &#x3D; ∫_−∞^∞ (Oφ_l)^* φ_k dx &#x3D; ∫_−∞^∞ φ_l^* Oφ_k dx &#x3D; λ_k ∫_−∞^∞ φ_l^* φ_k dx , (7.54)<br>这里我们用到了方程 (7.52) 的复共轭、O 的本征值为实数（我们刚刚证明的）、O 的厄米性以及方程 (7.51)。由于 λ_l ≠ λ_k，这串等式意味着 ∫_−∞^∞ φ_l^* φ_k dx &#x3D; 0，这正是我们要证明的正交性条件 (7.50)。</p>
+<p>我们可以通过使用满足<br>∫_−∞^∞ φ_k^* φ_k dx &#x3D; 1 (7.55)<br>的归一化本征函数 φ_k，将这个正交性结果略微加强为正交归一性。</p>
+<p>218<br>量子力学<br>于是，正交归一性条件即为<br>∫<em>−∞^∞ φ_l^* φ_k dx &#x3D; δ</em>{lk} , (7.56)<br>其中 δ_{lk} 是克罗内克δ符号(Kronecker delta symbol)，当 l &#x3D; k 时取值为 1，当 l ≠ k 时取值为 0。方程 (7.56) 将正交性条件 (7.50) 与归一化条件 (7.55) 结合了起来。在某些本征值有多个本征函数的情况下（即本征值简并的情况），也可以实现正交归一性。</p>
+<p>在厄米算符分析中有一个深刻的定理：本征函数 φ_k 构成一个完备集，意味着任何波函数 ψ 都可以表示成它们的线性组合。（这可能是量子力学所需的最重要的数学定理，在原子物理、凝聚态物理以及理论化学的应用中都会被例行地用及。）它是傅里叶级数(Fourier series)思想的推广——任何周期函数都可以表示为具有相同周期的正弦和余弦函数的线性组合。利用完备性，我们可以写出<br>ψ(x, t) &#x3D; Σ_{k&#x3D;0}^∞ c_k(t) φ_k(x) , (7.57)<br>其中振幅 c_k(t) 依赖于时间 t，因为 ψ 是 t 的函数。</p>
+<p>如果 ψ 是归一化的，那么这组振幅在以下意义下也是归一化的：<br>Σ_{k&#x3D;0}^∞ |c_k(t)|² &#x3D; 1 。 (7.58)<br>这是因为，对于归一化的 ψ，<br>1 &#x3D; ∫<em>−∞^∞ |ψ(x, t)|² dx<br>  &#x3D; Σ</em>{l&#x3D;0}^∞ Σ_{k&#x3D;0}^∞ c_l(t)^* c_k(t) ∫<em>−∞^∞ φ_l^* φ_k dx<br>  &#x3D; Σ</em>{l&#x3D;0}^∞ Σ_{k&#x3D;0}^∞ c_l(t)^* c_k(t) δ_{lk}<br>  &#x3D; Σ_{k&#x3D;0}^∞ c_k(t)^* c_k(t)<br>  &#x3D; Σ_{k&#x3D;0}^∞ |c_k(t)|² 。 (7.59)<br>这里我们用到了本征函数的正交归一性，以及克罗内克δ的基本性质 Σ_l α_l δ_{lk} &#x3D; α_k，该性质成立是因为只有 l &#x3D; k 的项对求和有贡献。</p>
+<p>7.4.3 可观测量的测量<br>由厄米算符 O 表示的物理量称为可观测量。现在我们来考虑可观测量的测量。我们需要用到 O 的……</p>
+<p>波函数的诠释——可观测量<br>219<br>具有实数本征值λk，并且我们刚刚讨论过，O的归一化本征函数φk(x)构成一个完备、正交归一的函数集。令代表粒子状态的波函数具有展开式(7.57)，ψ(x, t) &#x3D; P∞<br>k&#x3D;0 ck(t)φk(x)。</p>
+<p>量子力学的一个基本假设是：对算符O所表示的物理量进行测量，其可能的结果就是O的本征值λk，并且只能是这些值。如果本征值构成离散集合，那么它们之间必然存在间隔。本征值的集合当然只依赖于O，而不依赖于波函数。波函数只是决定了各种结果出现的概率。如果在时刻t进行测量，那么得到结果λk的概率为|ck(t)|2。归一化条件(7.58)的含义是：所有可能结果的概率之和为1，这是必须满足的。</p>
+<p>知道一个测量所有可能的结果及其概率，就是我们在量子力学中能够期望的最大信息量。不存在隐藏变量能够给出比波函数更多的粒子信息。有时信息还会更少。一般情形下存在不确定性，因为各种结果都以一定的概率可能出现。例外的情况是：如果波函数（在时刻t）恰好是O的一个本征函数，例如本征函数φK，对应的本征值为λK。此时我们说，粒子对于O所代表的可观测量具有确定值λK。那么测量得到λK的概率就是1。</p>
+<p>能量又如何处理？设哈密顿量H的本征值为En (n &#x3D; 0, 1, 2, . . .)，与En对应的归一化本征函数为χn(x)。回想一下，χn(x)是定态波函数。薛定谔方程的一般非定态解可以用它们表示为</p>
+<p>ψ(x, t) &#x3D; ∞∑ n&#x3D;0 anχn(x)e−i ¯h Ent ,   (7.60)</p>
+<p>并且如果ψ(x, t)是归一化的，则有</p>
+<p>∞∑ n&#x3D;0 |an|2 &#x3D; 1 .   (7.61)</p>
+<p>如果我们测量能量，结果将是其中一个En值，测量得到En的概率为|an|2。这是我们关于一般算符O所述内容的一个特例，因为方程(7.60)就是将ψ按H的本征函数展开。这时振幅cn(t)为ane−i ¯h Ent, 且|cn(t)|2 &#x3D; |an|2。能量的特殊之处在于，这些概率不随时间改变，即使对非定态波函数也是如此。这是量子力学中能量守恒的一个体现。然而，在非定态中能量仍然是不确定的——只有在定态中能量才具有确定值。</p>
+<p>我们也可以考虑动量的测量。我们知道，动量算符 p &#x3D; −i¯h d&#x2F;dx 是厄米的(hermitian)。它的本征值方程为</p>
+<p>−i¯h d&#x2F;dx φ &#x3D; λφ ,   (7.62)</p>
+<p>边界条件是φ在x →±∞时不应指数增长。方程的解为φk(x) &#x3D; e^{ikx}，本征值λ &#x3D; ¯hk，k为任意实常数。函数e^{ikx}既不增长也不衰减，且满足边界条件，故所有实数k都允许。因此动量本征值构成连续谱，这不同于我们在方势阱中遇到的能量本征值离散情形。k为负值对应负动量。这里我们再次看到，动量可能取的结果就是算符p的本征值，即所有实数¯hk。注意，这些本征函数e^{ikx}不能在通常意义上归一化，因为|φk|2 &#x3D; 1，使得积分∫∞−∞ |φk|2 dx发散。这是连续谱本征函数的一般特性，需要单独处理，我们将在下一节讨论。</p>
+<p>220<br>量子力学<br>其幅度当 x →±∞ 时衰减，而这是可接受的。因此 eikx（自由粒子的定态）是动量算符 p 的本征函数，本征值为 ¯hk。由于 k 可取任意实数值，动量的测量可以有任何实数值的结果。一般波函数 ψ(x, t) 可以用这些本征函数展开，形式为<br>ψ(x, t) &#x3D; 1<br>2π<br>Z ∞<br>−∞<br>eψ(k, t)eikxdk ,<br>(7.63)<br>而测得动量值 ¯hk 的概率密度为<br>1<br>2π| eψ(k, t)|2。方程<br>(7.63) 是傅里叶逆变换的公式，因此 eψ(k, t) 是 ψ(x, t) 的傅里叶变换。如果波函数 ψ 是归一化的，则<br>1 &#x3D;<br>Z ∞<br>−∞<br>|ψ(x, t)|2dx &#x3D; 1<br>2π<br>Z ∞<br>−∞<br>| eψ(k, t)|2dk ,<br>(7.64)<br>这表明动量概率密度是正确归一化的。（在傅里叶变换理论中，这个结果被称为帕塞瓦尔定理(Parseval’s theorem)。）</p>
+<p>动量只有对动量算符的本征函数才有确定值。如果波函数在某一时刻为 eikx，动量就是 ¯hk。这就将德布罗意(de Broglie)关于动量的洞见纳入到了关于可观测量、厄米算符和概率的普遍量子力学框架中。然而，这种具有确定动量的波函数实际上是不可归一化的。对于具有连续本征值集合的算符，其本征函数通常就是这种情况。为了使分析具有物理意义，必须将波函数限制在一个大的、有限的空间区域内，使其可归一化，此时动量就不是完全确定的。正如我们将看到的，这可以解释为不确定性原理的一种表现。</p>
+<p>7.5<br>期望值<br>这里我们讨论量子测量结果的平均值。根据定义，平均值是按概率加权的测量结果的平均。例如，如果抛掷一个各面为1到6点的公平骰子，测量结果的平均值是 3 1<br>2。在量子力学中，平均值被称为期望值。</p>
+<p>回顾归一化波函数 ψ 用 O 的本征函数展开的表达式 (7.57)，系数为 ck(t)。在时刻 t 测量由 O 表示的可观测量的期望值为<br>⟨O⟩&#x3D;<br>X<br>k<br>|ck(t)|2λk ,<br>(7.65)<br>因为结果 λk 的概率为 |ck(t)|2。由于 ck(t) 与波函数相关，有一个更优美的计算 ⟨O⟩ 的替代公式，<br>⟨O⟩&#x3D;<br>Z ∞<br>−∞<br>ψ(x, t) O ψ(x, t) dx ,<br>(7.66)<br>我们马上会证明它。请注意，这个公式直接依赖于算符 O 如何作用于波函数，而不需要明确知道各个</p>
+<p>期望值<br>221<br>概率来确定⟨O⟩。人们可能会预期，动力学变量的物理值与表示该变量的算符如何作用于波函数有关，而方程(7.66)证实了这一点。</p>
+<h1 id="如果波函数ψ是O的本征值为λ的本征函数，那么该态对于算符O具有确定的值，即λ。公式-7-66-与此一致，因为此时Oψ-λψ，所以⟨O⟩-λ∫-∞−∞ψ-x-t-ψ-x-t-dx-λ-7-67-方程-7-65-和-7-66-的等价性证明如下。从方程-7-66-出发，我们将波函数用O的本征函数展开，依次得到⟨O⟩"><a href="#如果波函数ψ是O的本征值为λ的本征函数，那么该态对于算符O具有确定的值，即λ。公式-7-66-与此一致，因为此时Oψ-λψ，所以⟨O⟩-λ∫-∞−∞ψ-x-t-ψ-x-t-dx-λ-7-67-方程-7-65-和-7-66-的等价性证明如下。从方程-7-66-出发，我们将波函数用O的本征函数展开，依次得到⟨O⟩" class="headerlink" title="如果波函数ψ是O的本征值为λ的本征函数，那么该态对于算符O具有确定的值，即λ。公式(7.66)与此一致，因为此时Oψ &#x3D; λψ，所以⟨O⟩&#x3D; λ∫ ∞−∞ψ(x, t)ψ(x, t) dx &#x3D; λ .(7.67)方程(7.65)和(7.66)的等价性证明如下。从方程(7.66)出发，我们将波函数用O的本征函数展开，依次得到⟨O⟩"></a>如果波函数ψ是O的本征值为λ的本征函数，那么该态对于算符O具有确定的值，即λ。公式(7.66)与此一致，因为此时Oψ &#x3D; λψ，所以<br>⟨O⟩&#x3D; λ<br>∫ ∞<br>−∞<br>ψ(x, t)ψ(x, t) dx &#x3D; λ .<br>(7.67)<br>方程(7.65)和(7.66)的等价性证明如下。从方程(7.66)出发，我们将波函数用O的本征函数展开，依次得到<br>⟨O⟩</h1><h1 id="∑k∑lck-t-cl-t-∫-∞−∞φk-x-O-φl-x-dx"><a href="#∑k∑lck-t-cl-t-∫-∞−∞φk-x-O-φl-x-dx" class="headerlink" title="∑k∑lck(t)cl(t)∫ ∞−∞φk(x) O φl(x) dx"></a>∑<br>k<br>∑<br>l<br>ck(t)cl(t)<br>∫ ∞<br>−∞<br>φk(x) O φl(x) dx</h1><h1 id="∑k∑lck-t-cl-t-λl∫-∞−∞φk-x-φl-x-dx"><a href="#∑k∑lck-t-cl-t-λl∫-∞−∞φk-x-φl-x-dx" class="headerlink" title="∑k∑lck(t)cl(t)λl∫ ∞−∞φk(x)φl(x) dx"></a>∑<br>k<br>∑<br>l<br>ck(t)cl(t)λl<br>∫ ∞<br>−∞<br>φk(x)φl(x) dx</h1><h1 id="∑k∑lck-t-cl-t-λlδkl"><a href="#∑k∑lck-t-cl-t-λlδkl" class="headerlink" title="∑k∑lck(t)cl(t)λlδkl"></a>∑<br>k<br>∑<br>l<br>ck(t)cl(t)λlδkl</h1><h1 id="∑kck-t-ck-t-λk"><a href="#∑kck-t-ck-t-λk" class="headerlink" title="∑kck(t)ck(t)λk"></a>∑<br>k<br>ck(t)ck(t)λk</h1><p>∑<br>k<br>|ck(t)|²λk ,<br>(7.68)<br>其中关键步骤（从第二行到第三行）利用了O的本征函数的正交归一化条件(7.56)。</p>
+<h1 id="以下是方程-7-66-的一些例子。能量的期望值为⟨H⟩-∫-∞−∞ψ-x-t-H-ψ-x-t-dx-7-69-它等于∑∞-n-0-an-²En，并且不随时间改变。位置x的期望值可以简化，因为算符x的作用就是简单地给波函数乘以x，所以⟨x⟩"><a href="#以下是方程-7-66-的一些例子。能量的期望值为⟨H⟩-∫-∞−∞ψ-x-t-H-ψ-x-t-dx-7-69-它等于∑∞-n-0-an-²En，并且不随时间改变。位置x的期望值可以简化，因为算符x的作用就是简单地给波函数乘以x，所以⟨x⟩" class="headerlink" title="以下是方程(7.66)的一些例子。能量的期望值为⟨H⟩&#x3D;∫ ∞−∞ψ(x, t) H ψ(x, t) dx ,(7.69)它等于∑∞ n&#x3D;0 |an|²En，并且不随时间改变。位置x的期望值可以简化，因为算符x的作用就是简单地给波函数乘以x，所以⟨x⟩"></a>以下是方程(7.66)的一些例子。能量的期望值为<br>⟨H⟩&#x3D;<br>∫ ∞<br>−∞<br>ψ(x, t) H ψ(x, t) dx ,<br>(7.69)<br>它等于∑∞ n&#x3D;0 |an|²En，并且不随时间改变。位置x的期望值可以简化，因为算符x的作用就是简单地给波函数乘以x，所以<br>⟨x⟩</h1><h1 id="∫-∞−∞ψ-x-t-x-ψ-x-t-dx"><a href="#∫-∞−∞ψ-x-t-x-ψ-x-t-dx" class="headerlink" title="∫ ∞−∞ψ(x, t) x ψ(x, t) dx"></a>∫ ∞<br>−∞<br>ψ(x, t) x ψ(x, t) dx</h1><p>∫ ∞<br>−∞<br>|ψ(x, t)|²x dx .<br>(7.70)<br>这与|ψ(x, t)|²作为位置概率密度是一致的。也许最有用的例子是动量的期望值。这就是<br>⟨p⟩&#x3D; −iℏ<br>∫ ∞<br>−∞<br>ψ(x, t) ∂<br>∂xψ(x, t) dx .<br>(7.71)<br>即使动量概率密度涉及ψ的傅里叶变换，期望值的公式(7.71)却并不涉及。</p>
+<p>222<br>量子力学<br>7.6<br>测量之后<br>量子力学还有一条进一步的公设，涉及进行一次测量后波函数会发生什么。假设测量由 O 表示的动力学变量。回想一下，波函数有如下展开<br>ψ(x, t) &#x3D;<br>X<br>k<br>ck(t)φk(x) ,<br>(7.72)<br>其中 φk(x) 是 O 的归一化本征函数，本征值为 λk。在时刻 t 的测量结果以概率 |ck(t)|2 为 λk。假设测量结果是这些可能值之一 λK。该公设说，测量后瞬间波函数不再是 ψ；它是与本征值 λK 相联系的本征函数 φK(x)。测量盖过了薛定谔方程，波函数发生了跳跃。这种跳跃称为波函数坍缩。如果紧接着重复测量，结果将再次是 λK，概率为 1。如果不做进一步测量，波函数将从 φK 出发按照薛定谔方程演化。</p>
+<p>波函数坍缩相当神秘，特别是它不由任何动力学方程描述。由玻尔 (Bohr) 开创的被确立的哥本哈根诠释 (Copenhagen interpretation) 认为，测量是由服从经典物理学的仪器进行的，而这些仪器必须具有确定的值。如果测量给出值 λK，那么可观测量 O 有确定值 λK，此时状态必须是 φK。但之前并非如此。哥本哈根诠释要求一个经典世界与原子的量子世界共存，所以量子力学本身，如果没有经典测量仪器，便没有意义。</p>
+<p>当人们认识到测量仪器及其产生的记录是物理的，并且与被测对象并无根本性的不同时，这确实不能令人满意。随着量子现象在越来越大的系统中被观测到，而测量仪器和记录测量结果的系统变得越来越小，宏观实验室设备与量子系统之间的尺度区别逐渐消失，这一点越来越成为现实。例如，在粒子物理实验中，对电子位置的记录现在牵涉的不是指针或照片，而是硅芯片及类似半导体器件中的其他电子。</p>
+<p>没有人真正理解这些所谓的波函数跳跃。有一种观点是，测量并不使波函数坍缩，而是在对象与测量仪器之间建立起关联。这依赖于测量仪器可以处于状态的叠加的可能性。正如这些说明所表明的，量子力学的诠释仍在被物理学家们争论，关于量子系统的状态究竟意味着什么，或者如何理解波函数坍缩，尚未达成共识。我们将在最后一章回到这些未解决的问题上来。</p>
+<p>7.7<br>不确定性关系<br>如果一个粒子的波函数是某个厄米算符 O 的本征函数，本征值为 λ，那么对 O 的测量将以概率 1 给出结果 λ。该粒子有 O 的确定值，不存在不确定性。例如，在一个定态——哈密顿量的本征函数——中，粒子有确定的能量。对于更一般的波函数，有一系列可能的结果和各种概率，因此存在不确定性。</p>
+<p>不确定性关系</p>
+<p>现在考虑两个可观测量的情况，它们分别用算符 O1 和 O2 表示。这两个量能否在没有不确定性的情况下同时具有确定值？与之密切相关的问题是，它们能否被同时测量。答案取决于这两个算符是否对易。假设 O1 和 O2 不对易，这意味着它们的对易子是一个不恒等于零的算符 O3：<br>[O1, O2] &#x3D; O1O2 − O2O1 &#x3D; O3 .    (7.73)<br>经典的不对易算符是 x 和 p，它们满足正则对易关系 [x, p] &#x3D; i¯h1，但还有许多其他例子，包括我们将在第 8.5 节讨论的自旋算符对。</p>
+<p>O1 和 O2 不对易的一个后果是，它们的本征函数并非完全相同。假设它们有一个共同的本征函数 φ，那么<br>O1φ &#x3D; λ1φ ,   O2φ &#x3D; λ2φ ,   (7.74)<br>其中本征值可以不同。现在，用 O1 作用于第二个方程，用 O2 作用于第一个方程，得到<br>O1O2φ &#x3D; λ2O1φ &#x3D; λ2λ1φ ,   O2O1φ &#x3D; λ1O2φ &#x3D; λ1λ2φ .   (7.75)<br>将这两个方程相减，我们得到<br>[O1, O2]φ &#x3D; 0 ,   (7.76)<br>因此 O3φ &#x3D; 0。一般来说，O3 的本征值不会为零，所以这最后一个方程无解，从而得出结论：O1 和 O2 没有共同的本征函数。</p>
+<p>在特殊情况下，O3 可能有一个或多个本征值为零的本征函数，这类函数可以同时是 O1 和 O2 的本征函数。但 O3 的本征值为零的本征函数子空间肯定不是一个完备的函数集合；如果它是完备的，O3 就会恒等于零。因此，O1 的某些本征函数位于此子空间之外，而这些函数不可能同时是 O2 的本征函数。其结果就是，O1 和 O2 同时具有确定值的态是受限的，因为这样的态是 O1 和 O2 的共同本征函数。可能根本没有这样的态，或者至多有少数几个。</p>
+<p>排除这少数几个态，可以说 O1 和 O2 的组合取值总是存在不确定性。一个一般的态对这两个可观测量都存在不确定性，因为它不会是其中任何一个的本征函数；但即使 O1 有一个确定值，O2 也没有，反之，如果 O2 有一个确定值，O1 也没有。这个结论涉及的是，在可以选择测量 O1 或 O2 的情况下，测量结果的不确定性。</p>
+<p>一个更物理的推论是，如果 O1 和 O2 不对易，实际上就不可能同时测量它们。根据量子力学的测量公设，一次同时测量会产生两个可观测量的确定结果，波函数会坍缩到这两个算符的一个共同本征函数上。然而，我们刚刚看到，共同本征函数的存在与算符的不对易性是不相容的（因为没有理由假设被测量的态是 O3 的本征值为零的本征函数）。</p>
+<p>224<br>量子力学<br>事实上，我们可以从物理上更直观地理解这一点。测量可观测量 (O_1) 的仪器会在物理上妨碍测量可观测量 (O_2) 的仪器。例如，精确的位置测量需要一台能够截获粒子的局域化装置。另一方面，精确的动量测量则需要粒子能够在一个大区域内自由运动。一种测量动量的方法是，当粒子穿过一个存在均匀磁场的区域时，测量其散射角，但在该区域内部不能同时存在一个精确的位置探测器。<br>另一个例子是粒子处于非平庸势 (V(x)) 中的情况。算符 (p) 和 (H) 不对易，因此动量和总能量不能同时被测量。从物理上看，这是因为一个能量确定的粒子，其位置受势 (V) 的约束，它不可能同时在一个足够大的区域内自由运动以便确定其动量。<br>位置和动量测量之间存在着定量的不确定性关系。对于给定的态，无论是位置测量还是动量测量，其测量结果相对于平均值都有某种概率分布。参数化这些分布的最简单量是标准差 (\Delta x) 和 (\Delta p)。它们满足海森伯不确定性关系<br>[<br>\Delta x \Delta p \ge \frac{1}{2} \bar{h},<br>\tag{7.77}<br>]<br>该关系可利用对易关系 (7.1) 推导出来。一个态可以有较小的 (\Delta x)，但此时 (\Delta p) 会较大，反之亦然。如果动量完全确定，则位置完全未知。类似的结果也适用于其他不对易的算符。<br>这一不确定性关系使我们能够理解粒子在探测器中留下的径迹的不精确性。这类径迹确实测量了位置，但并非十分精确。径迹的曲率测量了粒子的动量，同样也不是绝对精确的。位置和动量的综合不确定度与不确定性关系是相容的。<br>现在我们转向 (O_1) 和 (O_2) 对易的情况，即 ([O_1, O_2] &#x3D; 0)。假设 (\lambda_1) 是 (O_1) 的一个非简并本征值。这意味着存在一个本征函数 (\phi) 使得<br>[<br>O_1 \phi &#x3D; \lambda_1 \phi,<br>\tag{7.78}<br>]<br>并且该方程的解仅为 (\phi) 的常数倍。现在用 (O_2) 作用得到 (O_2 O_1 \phi &#x3D; \lambda_1 O_2 \phi)，因此，由于 (O_1) 和 (O_2) 对易，<br>[<br>O_1 O_2 \phi &#x3D; \lambda_1 O_2 \phi.<br>\tag{7.79}<br>]<br>这表明 (O_2 \phi) 是 (O_1) 的、本征值为 (\lambda_1) 的一个本征函数，并且根据非简并假设，它必定是 (\phi) 的倍数。因此对于某个 (\lambda_2) 有 (O_2 \phi &#x3D; \lambda_2 \phi)，所以 (\phi) 是 (O_1) 和 (O_2) 的共同本征函数。如果 (O_1) 的所有本征值都是非简并的，那么当 (O_1) 和 (O_2) 对易时，(O_1) 的每个本征函数都同时是 (O_2) 的本征函数。<br>(O_1) 的本征值可能是简并的，此时存在两个或更多个具有该本征值的独立本征函数，那么 (O_1) 的每个本征函数都自动成为 (O_2) 的本征函数这一结论就不再成立。不过，如果仔细地（从对应于每个简并本征值的子空间内部）选择 (O_1) 的本征函数，那么它们可以被安排为同时是 (O_1) 和 (O_2) 的本征函数。而且，这些共同本征函数构成一组完备的函数系。因此波函数有一个展开式。</p>
+<p>散射和隧穿<br>225</p>
+<p>就这些同时本征函数而言。物理上，这意味着 O1 和 O2 可以被同时测量，测量结果是 O1 和 O2 对于其中一个同时本征函数的本征值对。</p>
+<p>有些对易算符的例子颇为平凡。例如，p 的任意次幂与 p 的其他任意次幂对易。特别地，p 与动能 1&#x2F;2m p^2 对易，因此动量的本征函数自动成为动能的本征函数。我们将在第 8 章讨论三维量子力学时，找到更有趣的对易算符的例子。</p>
+<p>7.8 散射和隧穿</p>
+<p>让我们暂时放下测量和诠释的问题，回到量子力学的实质——求解薛定谔方程。假设 V(x) 是一个有限力程的势，当 x → ±∞ 时趋于零。处于这一势中的粒子的定态薛定谔方程为<br>-¯h2<br>2m<br>d2χ<br>dx2 + V (x)χ &#x3D; Eχ 。<br>(7.80)<br>在 |x| 很大时，粒子几乎感受不到势，因此近乎自由。对于具有给定正能量的自由粒子，定态薛定谔方程有两个独立解。它们是<br>χ+(x) &#x3D; e^{ikx} ,   χ−(x) &#x3D; e^{−ikx} ,<br>(7.81)<br>其中 k 为正。第一个解代表一个向右运动的粒子，动量为 ¯hk，能量为 ¯h^2k^2&#x2F;2m；第二个解代表一个向左运动的粒子，动量为 −¯hk，能量为 ¯h^2k^2&#x2F;2m。</p>
+<p>势 V 的作用是以确定的方式将这些左边 (x ≪ 0) 和右边 (x ≫ 0) 的自由粒子解连接起来。方程 (7.80) 的一个解具有如下形式<br>χ(x) &#x3D; e^{ikx} + R e^{−ikx}   (x ≪ 0) ,<br>χ(x) &#x3D; T e^{ikx}             (x ≫ 0) 。<br>(7.82)<br>在左边，这是来自左边的（单位振幅的）入射波与振幅为 R 的反射波的叠加；在右边，它纯粹是一个出射波，振幅为 T。这一解在量子力学中被解释为描述了一个动量为 ¯hk 的入射粒子被势散射。R 是反射振幅，T 是透射振幅。二者都是 k 的函数。粒子被反射的概率为 |R|^2，透射的概率为 |T|^2。可以证明，对于任何实势，|R|^2 + |T|^2 &#x3D; 1，这与量子力学的概率诠释相一致。在 V 有显著影响的中心区域，完整的解并没有简单的公式，但正是这个完整解（通常需要数值求解）决定了 R 和 T。第二个独立解代表一个从右边入射的粒子，它具有不同的、但并非完全独立的反射和透射振幅。</p>
+<p>正势，即所谓的势垒，造成的量子散射与相应的经典情况很不相同。在一维空间中，经典粒子将</p>
+<p>226<br>量子力学<br>能量<br>+Be–kx<br>Aekx<br>V(x)<br>V0<br>Teikx<br>eikx + Re–ikx<br>透射<br>E<br>x<br>反射<br>入射波<br>图7.4 势垒。</p>
+<p>如果粒子的初始动能超过势垒高度——势的最大值，就不会被反射。粒子在穿越势垒时会减速，但总是会透射过去。反之，如果粒子的动能小于势垒高度，则它无法越过势垒，总是会被反射。量子力学的结果在极限情况下与这些经典预期一致。对于能量远大于势垒高度的粒子，反射概率非常小；对于能量远小于势垒高度的粒子，透射概率非常小。然而，在中间能量下，经典行为和量子行为是不同的。总能量略小于势垒高度的粒子的透射被称为隧穿（tunnelling）。隧穿概率既取决于势垒高度超过粒子能量的量，也取决于势垒的宽度。对于给定的粒子能量和势垒高度，势垒越窄，隧穿越容易发生。隧穿在核物理中有着特别重要的应用，我们将在第11章中讨论。</p>
+<p>对于一些简单的势，R 和 T 可以相当容易地计算出来，例如阶跃势（step potential），它在某个区间内为非零常数，其他地方为零。阶跃势垒和阶跃势阱如图7.4和7.5所示。</p>
+<p>一个具有精确粒子散射解的奇特特例是光滑势阱<br>V (y) &#x3D; −<br>2<br>cosh2 y .<br>(7.83)<br>标度化的定态薛定谔方程<br>−d2χ<br>dy2 −<br>2<br>cosh2 y χ &#x3D; k2χ ,<br>(7.84)<br>其中标度能量 ε &#x3D; k2，其散射解为3<br>χ(y) &#x3D; k + i tanh y<br>k −i<br>eiky .<br>(7.85)</p>
+<p>3 要证明这一点，需要用到<br>d<br>dy cosh y &#x3D; sinh y,<br>d<br>dy sinh y &#x3D; cosh y 以及<br>d<br>dy tanh y &#x3D;<br>1<br>cosh2 y .</p>
+<p>量子力学中的变分原理<br>227<br>Aeik’x+Be–ik’x<br>V(x)<br>–V0<br>Teikx<br>eikx + Re–ikx<br>透射<br>能量<br>E<br>x<br>反射<br>入射波<br>图7.5 势阱。</p>
+<p>其渐近形式与方程(7.82)匹配，其中 R &#x3D; 0，T &#x3D; k+i<br>k−i，因为当 y →±∞ 时 tanh y →±1。没有反射，且对于所有能量，透射概率 |T|2 为1。这很不寻常，V (y) 被称为无反射势（reﬂectionless potential）。</p>
+<p>势(7.83)也有一个离散的束缚态。其能量为 ε &#x3D; −1，本征函数为 χ(y) &#x3D;<br>1<br>cosh y，因为<br><br>−d2<br>dy2 −<br>2<br>cosh2 y<br><br>1<br>cosh y &#x3D; −<br>1<br>cosh y .<br>(7.86)<br>束缚态能量 ε &#x3D; −1 对应于散射问题中的一个非物理虚数值 k &#x3D; i，而散射解(7.85)和透射振幅 T 都在这个 k 值处有奇点，这并非巧合。</p>
+<p>更一般地，V (y) &#x3D; −n(n+1)<br>cosh2 y 对于任何正整数 n 都是无反射的，并且它也有离散能量本征值为 −1, −4, . . . , −n2 的束缚态。</p>
+<p>7.9<br>量子力学中的变分原理</p>
+<p>可以通过变分原理将薛定谔方程推导为欧拉–拉格朗日（Euler–Lagrange）方程。这是因为它是一种波动方程。这里需要考虑的量不像经典粒子或波场中那样是作用量（action），并且它不是洛伦兹不变的，因此我们用 I 表示它而不是 S。I 包含波函数 ψ(x, t) 及其复共轭 ψ(x, t)，以及它们的一阶偏导数，其表达式为<br>I &#x3D;<br>Z 1<br>2i¯hψ ∂ψ<br>∂t −1<br>2i¯h∂ψ<br>∂t ψ −¯h2<br>2m<br>∂ψ<br>∂x<br>∂ψ<br>∂x −V (x)ψψ<br><br>dxdt .<br>(7.87)<br>这是在2.3.5节所讨论意义下的形式表达式，积分遍及全空间和时间。I 是实的，这里的独立函数实际上是 ψ 的实部和虚部，但在这种情况和类似情况下，可以将 ψ 和 ψ 视为独立的。</p>
+<p>228<br>量子力学<br>要求 (I) 在 (\psi) 的局域变分下取稳定值，会给出如下一般形式的欧拉–拉格朗日方程 (Euler–Lagrange equation)<br>[<br>\frac{\partial}{\partial t} \left( \frac{\partial I}{\partial (\partial \psi &#x2F; \partial t)} \right) + \frac{\partial}{\partial x} \left( \frac{\partial I}{\partial (\partial \psi &#x2F; \partial x)} \right) - \frac{\partial I}{\partial \psi} &#x3D; 0 .<br>\tag{7.88}<br>]<br>对于 (7.87) 式所定义的 (I)，该方程为<br>[<br>-i \hbar \frac{\partial \psi}{\partial t} - \frac{\hbar^2}{2m} \frac{\partial^2 \psi}{\partial x^2} + V(x) \psi &#x3D; 0 ,<br>\tag{7.89}<br>]<br>它是薛定谔方程 (7.13) 的重新排列。</p>
+<p>还应当考虑 (\psi) 的变分，但这只会给出薛定谔方程的复共轭，当薛定谔方程成立时，该共轭方程自动满足。</p>
+<p>看到薛定谔方程能够这样推导出来是很有意思的，但这种方法应用并不多。我们无法轻易地把它变成寻找解的一个实用工具。由于薛定谔方程对时间导数是一阶的，我们不可能同时在初始时刻 (t_0) 和末时刻 (t_1) 完全指定波函数。相反，在数学上自洽的做法是，在 (t_0) 和 (t_1) 时刻对所有 (x) 固定波函数的相位（但不固定模），但通常具有物理意义的实际问题并非如此，它涉及的波函数仅在初始时刻 (t_0) 就同时固定了相位和模。</p>
+<p>有一个变分原理要有用得多，它适用于定态波函数，尤其是基态，即能量最低的态。这就是瑞利–里兹原理 (Rayleigh–Ritz principle)，它允许我们在难以精确计算基态能量的情况下对其进行估算。我们将在第9章中利用这一原理来研究化学键。</p>
+<p>假设一个量子力学粒子的哈密顿量 (Hamiltonian) 为 (H)，具有离散的能级集合<br>[<br>E_0 &lt; E_1 \le E_2 \le \dots<br>\tag{7.90}<br>]<br>以及对应的正交归一定态<br>[<br>\chi_0(x), \chi_1(x), \chi_2(x), \dots ,<br>\tag{7.91}<br>]<br>但 (E_0) 和 (\chi_0(x)) 都不为精确已知。我们将假设基态是非简并的——事实上，对于任何合理的哈密顿量，都存在一个支持这一结论的定理。回想一下，一个固定时刻的一般归一化波函数可以用定态展开为<br>[<br>\psi(x) &#x3D; \sum_{n&#x3D;0}^{\infty} c_n \chi_n(x) , \quad \sum_{n&#x3D;0}^{\infty} |c_n|^2 &#x3D; 1 ,<br>\tag{7.92}<br>]<br>并且该波函数的能量期望值有两个等价的表达式<br>[<br>E &#x3D; \langle H \rangle &#x3D; \int_{-\infty}^{\infty} \psi(x) H \psi(x) , dx<br>\tag{7.93}<br>]</p>
+<p>量子力学中的变分原理 229<br>以及<br>[<br>E &#x3D; \sum_{n&#x3D;0}^{\infty} |c_n|^2 E_n .<br>\tag{7.94}<br>]<br>第二个表达式是对能量 (E_n) 的加权平均，因此其值不低于 (E_0)。(E) 的最小值是 (E_0)，且仅当 (|c_0| &#x3D; 1) 而 (c_1 &#x3D; c_2 &#x3D; \cdots &#x3D; 0) 时才能取到。因此，基态能量 (E_0) 也是下列第一表达式的最小值：<br>[<br>E &#x3D; \int_{-\infty}^{\infty} \psi(x) H \psi(x) , dx<br>\tag{7.95}<br>]<br>其中 (\psi) 取遍所有归一化的函数。若不对 (\psi) 施加归一化约束，则 (E_0) 是<br>[<br>E &#x3D; \frac{\int_{-\infty}^{\infty} \psi(x) H \psi(x) , dx}{\int_{-\infty}^{\infty} \psi(x) \psi(x) , dx}<br>\tag{7.96}<br>]<br>的最小取值。这一 (E) 的最小值给出了粒子基态能量的实用定义，从而避免了求解定态薛定谔方程。此方法很容易推广到更复杂的系统的哈密顿量，包括三维空间中的粒子和多粒子系统。</p>
+<p>我们可以利用公式 (7.95) 和 (7.96) 来估算基态能量 (E_0)。只需寻找一个不需要归一的试探函数 (\psi(x))，它应当合理地接近真正的基态波函数 (\chi_0(x))。比值 (7.96) 称为瑞利商(Rayleigh quotient)，即为基态能量的估值。一种有效的手段是找到一族依赖于一个或多个参数 (\alpha) 的函数 (\psi(x; \alpha))，将瑞利商计算为 (\alpha) 的函数，然后对 (\alpha) 求其最小值。最后一步往往直接明了，使用普通的微积分运算或简单的数值方法即可。</p>
+<p>这样得到的 (E_0) 估值通常异常精确，其理由如下。假设 (\psi) 是归一化的，以便使用公式 (7.95)。任何一个接近真实的归一化基态 (\chi_0) 的试探函数 (\psi) 都可以表示为<br>[<br>\psi &#x3D; \frac{1}{\sqrt{1 + \varepsilon^2}} (\chi_0 + \varepsilon \chi_\perp)<br>\tag{7.97}<br>]<br>其中 (\varepsilon) 很小。这里的 (\chi_\perp) 是激发态 (\chi_1, \chi_2, \ldots) 的某个归一化线性组合。前面的因子使 (\psi) 归一化。用此 (\psi) 估算的基态能量为<br>[<br>\begin{aligned}<br>E &amp;&#x3D; \frac{1}{1 + \varepsilon^2} \int_{-\infty}^{\infty} (\chi_0 + \varepsilon \chi_\perp) H (\chi_0 + \varepsilon \chi_\perp) , dx \<br>&amp;&#x3D; \frac{1}{1 + \varepsilon^2} \int_{-\infty}^{\infty} (\chi_0 + \varepsilon \chi_\perp) (E_0 \chi_0 + \varepsilon H \chi_\perp) , dx .<br>\end{aligned}<br>\tag{7.98}<br>]<br>现在，(\chi_\perp) 和 (H \chi_\perp) 都是 (\chi_1, \chi_2, \ldots) 的线性组合，因此自动与 (\chi_0) 正交。所以表达式 (7.98) 中正比于 (\varepsilon) 的两个交叉项均为零。于是该表达式等于 (E_0) 加上 (\varepsilon^2) 量级的修正，这些修正部分来自前面的因子 (\frac{1}{1+\varepsilon^2})，部分来自 (\chi_\perp H \chi_\perp) 的贡献。这意味着能量估值的误差是 (\varepsilon^2) 量级，通常远比试探波函数中 (\varepsilon) 量级的误差小得多。</p>
+<p>230<br>量子力学<br>让我们将此方法应用于一个基态波函数及其能量无法以封闭形式获知的例子，即纯四次振子，其哈密顿量(采用简化单位)为<br>H &#x3D; −d2<br>dy2 + y4 .<br>(7.99)<br>与谐振子类似，它具有一组无限、离散的能级。我们使用归一化的谐振子基态作为试探函数，<br>ψ(y; α) &#x3D;<br>α<br>π<br> 1<br>4 e−1<br>2 αy2 .<br>(7.100)<br>α 是一个易于调节的宽度参数，与谐振子的频率相关。公式 (7.95) 估算基态能量 E0 为<br>E &#x3D;<br>Z ∞<br>−∞<br><br>−ψ d2<br>dy2 ψ + y4ψ2<br><br>dy &#x3D;<br>Z ∞<br>−∞<br> dψ<br>dy<br>2</p>
+<ul>
+<li>y4ψ2<br>!<br>dy ,<br>(7.101)<br>其中我们利用了 ψ 的实性，并通过分部积分得到第二个表达式。<br>对于我们的试探函数，dψ<br>dy &#x3D; −<br>  α<br>π<br> 1<br>4 αy e−1<br>2 αy2，并且利用高斯积分(Gaussian integrals) (1.65)和(1.66)，我们发现<br>E &#x3D; α<br>2 +<br>3<br>4α2 .<br>(7.102)<br>现在我们通过改变 α 来优化它。E 的最小值在 ∂E<br>∂α &#x3D; 1<br>2 −<br>3<br>2α3 &#x3D; 0，因此 α &#x3D; 3<br>1<br>3 。<br>使用这一族试探函数的最佳能量估计值为<br>E0 ≃3<br>4 3<br>1<br>3 ≃1.08 .<br>(7.103)<br>这比纯四次振子的真实基态能量 E0 ≃ 1.06 高出约 2%，该真实值可通过数值方法或使用更精细的试探函数族求得。<br>变分方法对于较高能级也有所阐述。瑞利商(Rayleigh quotient)在哈密顿量 H 的每个本征函数处有一个鞍点。若试探波函数与 χn 相差一个量级为 ε 的误差，则瑞利商与 En 的误差为 ε^2 阶。然而，该误差可正可负，因此难以找到像 α 这样可以系统变化的参数。所以，即使使用试探函数族，也不容易找到鞍点和较高能级。<br>7.10<br>进一步阅读<br>B.H. 布兰斯登(B.H. Bransden) 和 C.J. 乔凯恩(C.J. Joachain), 《量子力学》(Quantum Mechanics) (第二版), 哈洛: 培生出版社, 2000.<br>A.I.M. 雷(A.I.M. Rae), 《量子力学》(Quantum Mechanics) (第五版), 博卡拉顿佛罗里达: 泰勒与弗朗西斯出版社, 2008.<br>L.D. 朗道(L.D. Landau) 和 E.M. 栗弗席兹(E.M. Lifschitz), 《量子力学(非相对论理论)》(Quantum Mechanics (Non-Relativistic Theory)): 《理论物理学教程》(Course of Theoretical Physics), 第3卷 (第三版), 牛津: 巴特沃斯-海涅曼出版社, 1977.</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io/2026/05/02/misc/translation/output/7_Quantum_Mechanics_cn/">http://hebangwen.github.io/2026/05/02/misc/translation/output/7_Quantum_Mechanics_cn/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://hebangwen.github.io" target="_blank">Yet Another 何榜文's Blog</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/05/02/misc/translation/output/8_Quantum_Mechanics_in_Three_Dimensions_cn/" title=""><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2"></div></div><div class="info-2"><div class="info-item-1">8_Quantum_Mechanics_in_Three_Dimensions8三维量子力学 8.1 引言 就算符与测量而言，量子力学的基本原理在三维空间中与一维时本质上相同。薛定谔方程包含拉普拉斯算子(Laplacian) ∇² 而非 d²&#x2F;dx²，并含有一势能 V(x)，通常比一维情况下更难求解。然而，当势能具有球对称性时，这些困难会大大降低，寻找粒子态及其能量变得容易得多。一个物理上重要的例子是由原子中带正电的原子核产生的库仑势(Coulomb potential)。原子中的电子在这种吸引势中遵循薛定谔方程，其解出现在一组离散、无限的负能级上，这为原子结构提供了良好的解释。对于这些电子束缚态，位置概率密度集中在原子核周围，并随着远离中心而迅速衰减。在库仑势中，也存在正能量的电子散射态。三维空间中的散射是一个比一维更复杂的话题，因为散射粒子可以向各个方向出射；它们并非仅仅向前透射或向后反射。量子力学散射理论对于理解多种涉及粒子束的实验很重要，但我们不会详细讨论它。 在三维量子力学中，存在表征角动量的算符，这些算符在一维中没有对应物。当势能具有球对称性时，角动量与哈密...</div></div></div></a><a class="pagination-related" href="/2026/05/02/misc/translation/output/5_Curved_Space_cn/" title=""><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2"></div></div><div class="info-2"><div class="info-item-1">5_Curved_Space5弯曲空间5.1球面几何到目前为止，我们只考虑了平直欧几里得空间和狭义相对论中的平直时空（即闵可夫斯基空间）中的物理。在本章中，我们将涉足更一般的弯曲空间几何，并探讨它的一些物理应用。在下一章，我们将使用这里发展的数学工具来描述广义相对论的弯曲时空几何，即爱因斯坦的引力理论。欧几里得空间是以希腊数学家欧几里得(Euclid)的名字命名的，他在公元前3世纪将古典几何最重要的成果汇编成他的《几何原本》。欧几里得从一小组定义和公理或公设开始。然后，他一步一步地构建出简单的结果，例如证明三角形的内角和等于两个直角——因此它们总和为180°或π弧度——并逐渐建立起关于多边形、圆和正立体结构的更复杂结果。两千年来，几何的概念就意味着欧几里得的几何。人们曾普遍认为欧几里得的结果在任何情况下都必须成立，以至于欧几里得几何与现实世界结构之间的直接对应关系被无条件接受。我们现在知道，这种信念是错误的。欧几里得的几何甚至在像球面这样熟悉的曲面上也不成立。这是因为欧几里得的一条公理——平行公设——在球面上不成立。表述平行公设的方法有多种。根据其中一种表述，如果我们选择平面内的...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">61</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">75</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#7-Quantum-Mechanics"><span class="toc-number">1.</span> <span class="toc-text">7_Quantum_Mechanics</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#206%E9%87%8F%E5%AD%90%E5%8A%9B%E5%AD%A6%E6%B5%B7%E6%A3%AE%E5%A0%A1-Heisenberg-%E9%80%9A%E8%BF%87%E7%BB%99%E5%87%BA%E7%AE%97%E7%AC%A6x%E5%92%8Cp%E5%A6%82%E4%BD%95%E9%9A%8F%E6%97%B6%E9%97%B4%E6%BC%94%E5%8C%96%E7%9A%84%E8%A7%84%E5%88%99%EF%BC%8C%E6%9E%84%E5%BB%BA%E4%BA%86%E4%B8%80%E4%B8%AA%E5%8A%A8%E5%8A%9B%E5%AD%A6%E7%90%86%E8%AE%BA%EF%BC%8C%E5%90%8C%E6%97%B6%E5%AE%83%E4%BB%AC%E5%9C%A8%E6%AF%8F%E4%B8%80%E6%97%B6%E5%88%BB%E4%BB%8D%E6%BB%A1%E8%B6%B3%E6%96%B9%E7%A8%8B-7-1-%E3%80%82%E4%BB%96%E8%BF%98%E8%AE%BE%E6%B3%95%E4%BB%8Ex%E5%92%8Cp%E4%BB%A5%E5%8F%8A%E8%83%BD%E9%87%8F%E7%AD%89%E5%AF%BC%E5%87%BA%E9%87%8F%E4%B8%AD%E6%8F%90%E5%8F%96%E7%89%A9%E7%90%86%E6%84%8F%E4%B9%89%E3%80%82%E7%84%B6%E8%80%8C%EF%BC%8C%E8%BF%99%E7%A7%8D%E9%87%8F%E5%AD%90%E5%8A%9B%E5%AD%A6%E6%96%B9%E6%B3%95%E7%9B%B8%E5%BD%93%E6%8A%BD%E8%B1%A1%E5%92%8C%E4%B8%A5%E8%8B%9B%E3%80%82%E7%9F%A9%E9%98%B5%E7%9B%B8%E4%B9%98%E6%97%B6%E4%B8%80%E8%88%AC%E4%B8%8D%E5%AF%B9%E6%98%93%E3%80%82%E4%BE%8B%E5%A6%82%EF%BC%8C-begin-pmatrix-0-a-0-0-end-pmatrix-begin-pmatrix-0-0-b-0-end-pmatrix"><span class="toc-number">1.1.</span> <span class="toc-text">206量子力学海森堡(Heisenberg)通过给出算符x和p如何随时间演化的规则，构建了一个动力学理论，同时它们在每一时刻仍满足方程(7.1)。他还设法从x和p以及能量等导出量中提取物理意义。然而，这种量子力学方法相当抽象和严苛。矩阵相乘时一般不对易。例如，[\begin{pmatrix}0 &amp; a \0 &amp; 0\end{pmatrix}\begin{pmatrix}0 &amp; 0 \b &amp; 0\end{pmatrix}</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#begin-pmatrix-0-0-b-0-end-pmatrix-begin-pmatrix-0-a-0-0-end-pmatrix"><span class="toc-number">2.</span> <span class="toc-text">\begin{pmatrix}0 &amp; 0 \b &amp; 0\end{pmatrix}\begin{pmatrix}0 &amp; a \0 &amp; 0\end{pmatrix}</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-3-%E8%96%9B%E5%AE%9A%E8%B0%94%E6%96%B9%E7%A8%8B"><span class="toc-number">2.1.</span> <span class="toc-text">7.3 薛定谔方程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A6%82%E6%9E%9C%E6%B3%A2%E5%87%BD%E6%95%B0%CF%88%E6%98%AFO%E7%9A%84%E6%9C%AC%E5%BE%81%E5%80%BC%E4%B8%BA%CE%BB%E7%9A%84%E6%9C%AC%E5%BE%81%E5%87%BD%E6%95%B0%EF%BC%8C%E9%82%A3%E4%B9%88%E8%AF%A5%E6%80%81%E5%AF%B9%E4%BA%8E%E7%AE%97%E7%AC%A6O%E5%85%B7%E6%9C%89%E7%A1%AE%E5%AE%9A%E7%9A%84%E5%80%BC%EF%BC%8C%E5%8D%B3%CE%BB%E3%80%82%E5%85%AC%E5%BC%8F-7-66-%E4%B8%8E%E6%AD%A4%E4%B8%80%E8%87%B4%EF%BC%8C%E5%9B%A0%E4%B8%BA%E6%AD%A4%E6%97%B6O%CF%88-%CE%BB%CF%88%EF%BC%8C%E6%89%80%E4%BB%A5%E2%9F%A8O%E2%9F%A9-%CE%BB%E2%88%AB-%E2%88%9E%E2%88%92%E2%88%9E%CF%88-x-t-%CF%88-x-t-dx-%CE%BB-7-67-%E6%96%B9%E7%A8%8B-7-65-%E5%92%8C-7-66-%E7%9A%84%E7%AD%89%E4%BB%B7%E6%80%A7%E8%AF%81%E6%98%8E%E5%A6%82%E4%B8%8B%E3%80%82%E4%BB%8E%E6%96%B9%E7%A8%8B-7-66-%E5%87%BA%E5%8F%91%EF%BC%8C%E6%88%91%E4%BB%AC%E5%B0%86%E6%B3%A2%E5%87%BD%E6%95%B0%E7%94%A8O%E7%9A%84%E6%9C%AC%E5%BE%81%E5%87%BD%E6%95%B0%E5%B1%95%E5%BC%80%EF%BC%8C%E4%BE%9D%E6%AC%A1%E5%BE%97%E5%88%B0%E2%9F%A8O%E2%9F%A9"><span class="toc-number">3.</span> <span class="toc-text">如果波函数ψ是O的本征值为λ的本征函数，那么该态对于算符O具有确定的值，即λ。公式(7.66)与此一致，因为此时Oψ &#x3D; λψ，所以⟨O⟩&#x3D; λ∫ ∞−∞ψ(x, t)ψ(x, t) dx &#x3D; λ .(7.67)方程(7.65)和(7.66)的等价性证明如下。从方程(7.66)出发，我们将波函数用O的本征函数展开，依次得到⟨O⟩</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E2%88%91k%E2%88%91lck-t-cl-t-%E2%88%AB-%E2%88%9E%E2%88%92%E2%88%9E%CF%86k-x-O-%CF%86l-x-dx"><span class="toc-number">4.</span> <span class="toc-text">∑k∑lck(t)cl(t)∫ ∞−∞φk(x) O φl(x) dx</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E2%88%91k%E2%88%91lck-t-cl-t-%CE%BBl%E2%88%AB-%E2%88%9E%E2%88%92%E2%88%9E%CF%86k-x-%CF%86l-x-dx"><span class="toc-number">5.</span> <span class="toc-text">∑k∑lck(t)cl(t)λl∫ ∞−∞φk(x)φl(x) dx</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E2%88%91k%E2%88%91lck-t-cl-t-%CE%BBl%CE%B4kl"><span class="toc-number">6.</span> <span class="toc-text">∑k∑lck(t)cl(t)λlδkl</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E2%88%91kck-t-ck-t-%CE%BBk"><span class="toc-number">7.</span> <span class="toc-text">∑kck(t)ck(t)λk</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A5%E4%B8%8B%E6%98%AF%E6%96%B9%E7%A8%8B-7-66-%E7%9A%84%E4%B8%80%E4%BA%9B%E4%BE%8B%E5%AD%90%E3%80%82%E8%83%BD%E9%87%8F%E7%9A%84%E6%9C%9F%E6%9C%9B%E5%80%BC%E4%B8%BA%E2%9F%A8H%E2%9F%A9-%E2%88%AB-%E2%88%9E%E2%88%92%E2%88%9E%CF%88-x-t-H-%CF%88-x-t-dx-7-69-%E5%AE%83%E7%AD%89%E4%BA%8E%E2%88%91%E2%88%9E-n-0-an-%C2%B2En%EF%BC%8C%E5%B9%B6%E4%B8%94%E4%B8%8D%E9%9A%8F%E6%97%B6%E9%97%B4%E6%94%B9%E5%8F%98%E3%80%82%E4%BD%8D%E7%BD%AEx%E7%9A%84%E6%9C%9F%E6%9C%9B%E5%80%BC%E5%8F%AF%E4%BB%A5%E7%AE%80%E5%8C%96%EF%BC%8C%E5%9B%A0%E4%B8%BA%E7%AE%97%E7%AC%A6x%E7%9A%84%E4%BD%9C%E7%94%A8%E5%B0%B1%E6%98%AF%E7%AE%80%E5%8D%95%E5%9C%B0%E7%BB%99%E6%B3%A2%E5%87%BD%E6%95%B0%E4%B9%98%E4%BB%A5x%EF%BC%8C%E6%89%80%E4%BB%A5%E2%9F%A8x%E2%9F%A9"><span class="toc-number">8.</span> <span class="toc-text">以下是方程(7.66)的一些例子。能量的期望值为⟨H⟩&#x3D;∫ ∞−∞ψ(x, t) H ψ(x, t) dx ,(7.69)它等于∑∞ n&#x3D;0 |an|²En，并且不随时间改变。位置x的期望值可以简化，因为算符x的作用就是简单地给波函数乘以x，所以⟨x⟩</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E2%88%AB-%E2%88%9E%E2%88%92%E2%88%9E%CF%88-x-t-x-%CF%88-x-t-dx"><span class="toc-number">9.</span> <span class="toc-text">∫ ∞−∞ψ(x, t) x ψ(x, t) dx</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/03/misc/translation/output/2_Motions_of_Bodies-Newton's_Laws_cn/" title="无标题">无标题</a><time datetime="2026-05-03T01:02:34.931Z" title="发表于 2026-05-03 09:02:34">2026-05-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/03/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-04-26-2026-05-03/" title="端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）">端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）</a><time datetime="2026-05-03T01:00:00.000Z" title="发表于 2026-05-03 09:00:00">2026-05-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/02/misc/translation/output/book_with_images/" title="无标题">无标题</a><time datetime="2026-05-02T14:38:54.961Z" title="发表于 2026-05-02 22:38:54">2026-05-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/02/misc/translation/output/book_wrapper/" title="无标题">无标题</a><time datetime="2026-05-02T14:34:11.812Z" title="发表于 2026-05-02 22:34:11">2026-05-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/02/misc/translation/output/metadata/" title="无标题">无标题</a><time datetime="2026-05-02T14:33:54.395Z" title="发表于 2026-05-02 22:33:54">2026-05-02</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
