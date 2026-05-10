@@ -1,0 +1,422 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10） | Yet Another 何榜文's Blog</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本周（5月3日~5月10日），15 个开源仓库中有 9 个产生了更新，共计 168 次提交。以下是各仓库的关键变化及技术分析。 tencent&#x2F;ncnn：Vulkan 管线缓存、PNNX 功能增强与 x86 修复本周 ncnn 共有 13 次提交，涵盖 Vulkan 后端、PNNX 工具链及 x86 优化等多个方面。 Vulkan 管线持久化缓存最值得关注的变化是 Vulkan 后端新增">
+<meta property="og:type" content="article">
+<meta property="og:title" content="端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）">
+<meta property="og:url" content="http://hebangwen.github.io/2026/05/10/%E7%AB%AF%E4%BE%A7AI%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-05-03-2026-05-10/index.html">
+<meta property="og:site_name" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:description" content="本周（5月3日~5月10日），15 个开源仓库中有 9 个产生了更新，共计 168 次提交。以下是各仓库的关键变化及技术分析。 tencent&#x2F;ncnn：Vulkan 管线缓存、PNNX 功能增强与 x86 修复本周 ncnn 共有 13 次提交，涵盖 Vulkan 后端、PNNX 工具链及 x86 优化等多个方面。 Vulkan 管线持久化缓存最值得关注的变化是 Vulkan 后端新增">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2026-05-10T01:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-10T01:02:40.825Z">
+<meta property="article:author" content="何榜文">
+<meta property="article:tag" content="MNN">
+<meta property="article:tag" content="llama.cpp">
+<meta property="article:tag" content="周报">
+<meta property="article:tag" content="推理框架">
+<meta property="article:tag" content="ncnn">
+<meta property="article:tag" content="TVM">
+<meta property="article:tag" content="ONNX Runtime">
+<meta property="article:tag" content="ExecuTorch">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）",
+  "url": "http://hebangwen.github.io/2026/05/10/%E7%AB%AF%E4%BE%A7AI%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-05-03-2026-05-10/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2026-05-10T01:00:00.000Z",
+  "dateModified": "2026-05-10T01:02:40.825Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "http://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="http://hebangwen.github.io/2026/05/10/%E7%AB%AF%E4%BE%A7AI%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-05-03-2026-05-10/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">Yet Another 何榜文's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-05-10T01:00:00.000Z" title="发表于 2026-05-10 09:00:00">2026-05-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-05-10T01:02:40.825Z" title="更新于 2026-05-10 09:02:40">2026-05-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI-%E7%B3%BB%E7%BB%9F/">AI 系统</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><p>本周（5月3日~5月10日），15 个开源仓库中有 9 个产生了更新，共计 168 次提交。以下是各仓库的关键变化及技术分析。</p>
+<h2 id="tencent-ncnn：Vulkan-管线缓存、PNNX-功能增强与-x86-修复"><a href="#tencent-ncnn：Vulkan-管线缓存、PNNX-功能增强与-x86-修复" class="headerlink" title="tencent&#x2F;ncnn：Vulkan 管线缓存、PNNX 功能增强与 x86 修复"></a>tencent&#x2F;ncnn：Vulkan 管线缓存、PNNX 功能增强与 x86 修复</h2><p>本周 ncnn 共有 13 次提交，涵盖 Vulkan 后端、PNNX 工具链及 x86 优化等多个方面。</p>
+<h3 id="Vulkan-管线持久化缓存"><a href="#Vulkan-管线持久化缓存" class="headerlink" title="Vulkan 管线持久化缓存"></a>Vulkan 管线持久化缓存</h3><p>最值得关注的变化是 Vulkan 后端新增了管线缓存持久化支持（PR #6702）。此前 ncnn 的 Vulkan 后端每次运行时都需要重新编译 SPIR-V 着色器，这在移动端 GPU（如 Adreno、Mali）上可能导致数秒的启动延迟。新的实现按着色器哈希缓存编译后的管线对象，并附带严格的设备&#x2F;驱动&#x2F;着色器校验，确保缓存不会在不同 GPU 间误用。这对生产环境中需要快速冷启动的场景意义重大。</p>
+<p>同时，PR #6705 修复了 Vulkan 扩展依赖链的处理——某些扩展存在传递依赖（如 <code>VK_KHR_16bit_storage</code> 依赖 <code>VK_KHR_storage_buffer_storage_class</code>），之前的实现未递归解析这些依赖关系。</p>
+<h3 id="PNNX：Torch-2-11-支持、FLOPs-统计与-NPY-输入"><a href="#PNNX：Torch-2-11-支持、FLOPs-统计与-NPY-输入" class="headerlink" title="PNNX：Torch 2.11 支持、FLOPs 统计与 NPY 输入"></a>PNNX：Torch 2.11 支持、FLOPs 统计与 NPY 输入</h3><p>PNNX 方面有三项更新：</p>
+<ul>
+<li><strong>Torch 2.11 兼容性更新</strong>（PR #6701），保持与最新 PyTorch 的同步；</li>
+<li><strong>FLOPs 和内存操作数统计</strong>（PR #5836），允许开发者在模型转换时直接打印计算量和访存量，对模型选型和性能预估非常实用；</li>
+<li><strong>NPY 张量输入支持</strong>（PR #6700），允许用户直接传入 NumPy 格式的 <code>.npy</code> 文件作为 PNNX 推理输入，简化了 Python 生态与 ncnn 的集成路径；</li>
+<li>PReLU（num_parameters&#x3D;1）自动转换为 LeakyReLU（PR #6344），使得更多激活函数能与 Conv 融合，减少运行时 Kernel Launch 次数。</li>
+</ul>
+<h3 id="x86-与架构修复"><a href="#x86-与架构修复" class="headerlink" title="x86 与架构修复"></a>x86 与架构修复</h3><ul>
+<li>修复了 i386 平台上 AVX512 BF16 GEMM 的 B-tile 打包顺序问题（PR #6708），DPBF16 指令需要特定的 K&#x2F;K+1 配对顺序；</li>
+<li>ASAN 报告了 x86 临时缓冲区对齐问题（PR #6703）；</li>
+<li>修复了 Windows ARM 构建（PR #6699），确保 ncnn 在新一代 Windows on ARM 设备上可用；</li>
+<li>修复了 SSE ShuffleChannel 中最后一个通道处理逻辑的缓冲区溢出（PR #5735）。</li>
+</ul>
+<h3 id="Conv1D-GEMM-实现（PR-6587）"><a href="#Conv1D-GEMM-实现（PR-6587）" class="headerlink" title="Conv1D GEMM 实现（PR #6587）"></a>Conv1D GEMM 实现（PR #6587）</h3><p>Conv1D 算子新增了 GEMM 路径，使用 <code>cm</code>（列主序矩阵乘法）加速。这对于语音识别（如 Mamba、S4 等序列模型的 Conv1D 层）场景有实际意义。</p>
+<hr>
+<h2 id="alibaba-MNN：LLM-推理优化、Qualcomm-QNN-并行化与-RISC-V-加速"><a href="#alibaba-MNN：LLM-推理优化、Qualcomm-QNN-并行化与-RISC-V-加速" class="headerlink" title="alibaba&#x2F;MNN：LLM 推理优化、Qualcomm QNN 并行化与 RISC-V 加速"></a>alibaba&#x2F;MNN：LLM 推理优化、Qualcomm QNN 并行化与 RISC-V 加速</h2><p>阿里巴巴 MNN 本周 15 次提交，LLM 相关优化占据主导。</p>
+<h3 id="Omni-模型交错生成：Thinker-Talker-延迟降低-2-7-倍"><a href="#Omni-模型交错生成：Thinker-Talker-延迟降低-2-7-倍" class="headerlink" title="Omni 模型交错生成：Thinker&#x2F;Talker 延迟降低 2.7 倍"></a>Omni 模型交错生成：Thinker&#x2F;Talker 延迟降低 2.7 倍</h3><p>PR #4397 实现了 Omni 多模态模型（如 Qwen2-Audio 等）的交错生成策略。传统的 Thinker&#x2F;Talker 模式中，Thinker（文本&#x2F;推理部分）和 Talker（音频&#x2F;输出部分）串行执行，Talker 等待 Thinker 完整生成后才开始。新实现将两者交错执行，TTFA（Time-To-First-Audio）降低了 2.7 倍。这是一个经典的流水线并行（Pipeline Parallelism）思路在单设备推理中的应用。</p>
+<h3 id="推测解码中的缓存修复"><a href="#推测解码中的缓存修复" class="headerlink" title="推测解码中的缓存修复"></a>推测解码中的缓存修复</h3><p>PR #4421&#x2F;#4410 修复了推测解码（Speculative Decoding）中的两个关键问题：KV Cache 不匹配和 M-RoPE 支持。推测解码依赖 draft model 和 target model 之间共享的 KV Cache 结构，缓存的 dtype 或 shape 不匹配会导致灾难性后果。M-RoPE 是 Qwen2-VL 等多模态模型的旋转位置编码变体，在多维空间中应用 RoPE。</p>
+<h3 id="GPTQ-权重量化加载器修复"><a href="#GPTQ-权重量化加载器修复" class="headerlink" title="GPTQ 权重量化加载器修复"></a>GPTQ 权重量化加载器修复</h3><p>PR #4411 修复了 GPTQ 加载器中 weight_dict 的重初始化问题。在逐层量化的 GPTQ 流程中，每次调用加载器会重置共享的权值字典，导致量化解码器的权重引用被破坏。</p>
+<h3 id="QNN-离线图导出的多进程并行化"><a href="#QNN-离线图导出的多进程并行化" class="headerlink" title="QNN 离线图导出的多进程并行化"></a>QNN 离线图导出的多进程并行化</h3><p>PR #4414 将 Qualcomm QNN 后端的离线图导出过程改为多进程并行。QNN 编译每个子图时是独立进程，充分挖掘多核 CPU 的并行能力，减少整体编译时间。</p>
+<h3 id="RISC-V-向量扩展-Int8-加速"><a href="#RISC-V-向量扩展-Int8-加速" class="headerlink" title="RISC-V 向量扩展 Int8 加速"></a>RISC-V 向量扩展 Int8 加速</h3><p>PR #4359 为 RISC-V 向量扩展（RVV）增加了 Int8 函数加速。RVV 在嵌入式 AI 场景中越来越重要，MNN 持续扩展对其支持。</p>
+<h3 id="几何计算修复与内存管理"><a href="#几何计算修复与内存管理" class="headerlink" title="几何计算修复与内存管理"></a>几何计算修复与内存管理</h3><ul>
+<li>GeometryCumSum 的 midtensor 类型不匹配修复——创建中间张量时未复制数据类型，导致整型 cumsum 结果错误（默认为 float）；</li>
+<li>KV Cache 磁盘扩展中的 size_t 宽度收窄问题修复（PR #4413）；</li>
+<li>CPU 频率扫描时的错误日志修复（PR #4400）。</li>
+</ul>
+<hr>
+<h2 id="ggml-org-llama-cpp：新模型架构、SYCL-OpenCL-CUDA-加速与-Hexagon-后端"><a href="#ggml-org-llama-cpp：新模型架构、SYCL-OpenCL-CUDA-加速与-Hexagon-后端" class="headerlink" title="ggml-org&#x2F;llama.cpp：新模型架构、SYCL&#x2F;OpenCL&#x2F;CUDA 加速与 Hexagon 后端"></a>ggml-org&#x2F;llama.cpp：新模型架构、SYCL&#x2F;OpenCL&#x2F;CUDA 加速与 Hexagon 后端</h2><p>llama.cpp 本周 30 次提交，覆盖新模型支持、多后端性能优化和基础设施更新。</p>
+<h3 id="新模型架构支持"><a href="#新模型架构支持" class="headerlink" title="新模型架构支持"></a>新模型架构支持</h3><ul>
+<li><strong>Sarvam MoE 架构</strong>（PR #20275）：支持印度 AI 创业公司 Sarvam AI 的 MoE 模型；</li>
+<li><strong>Gemma 4 26B NVFP4</strong>（PR #22804）：Google Gemma 4 系列 26B 模型的 NVFP4（NVIDIA FP4 量化）格式支持；</li>
+<li><strong>MiMo-V2.5 Flash Attention</strong>（PR #22812）：支持 d_kq&#x3D;192、d_v&#x3D;128 的非标准注意力头维度配置，Flash Attention MMA&#x2F;Tiles 路径扩展；</li>
+<li><strong>Sarashina 2.2 Vision 3B</strong>（PR #22103）：日本语言模型家族的多模态扩展。</li>
+</ul>
+<h3 id="SYCL-后端：BF16、量化内核与-Battlemage-GPU"><a href="#SYCL-后端：BF16、量化内核与-Battlemage-GPU" class="headerlink" title="SYCL 后端：BF16、量化内核与 Battlemage GPU"></a>SYCL 后端：BF16、量化内核与 Battlemage GPU</h3><p>本周 SYCL 团队提交频繁，说明 Intel 在 llama.cpp 的投入持续加大：</p>
+<ul>
+<li><strong>BF16 GET_ROWS 支持</strong>（PR #21391）：此前 Gemma 4 等模型使用 BF16 嵌入张量时，GET_ROWS 操作会 fallback 到 CPU，导致每 token 一次完整的 GPU→CPU 张量传输。新增的 SYCL BF16 路径消除了这一瓶颈；</li>
+<li><strong>Q5_K&#x2F;Q8_0 MMVQ 重排</strong>（PR #22152）：优化量化矩阵的乘法和反量化路径；</li>
+<li><strong>Battlemage AOT 构建</strong>（PR #22147）：通过 <code>spir64_gen</code> 目标为 Intel Battlemage GPU 提供离线编译支持，对 Arch Linux 等社区的 Intel GPU 用户意义重大；</li>
+<li><strong>PAD 算子的非连续输入支持</strong>（PR #22148）；</li>
+<li><strong>Flash Attention 减少分配开销</strong>（PR #22732）。</li>
+</ul>
+<h3 id="CUDA：Snake-激活融合与-out-prod-批量"><a href="#CUDA：Snake-激活融合与-out-prod-批量" class="headerlink" title="CUDA：Snake 激活融合与 out_prod 批量"></a>CUDA：Snake 激活融合与 out_prod 批量</h3><ul>
+<li><strong>Snake 激活融合</strong>（PR #22667）：语音模型（BigVGAN、Vocos）中的 Snake 激活函数原本被分解为 mul→sin→sqr→mul→add 五个独立算子，现在 fused 为单次 elementwise kernel，显著减少 kernel launch 开销；</li>
+<li><strong>out_prod 批量 cublasSgemmStridedBatched</strong>（PR #22651）：将 out_prod 算子的内循环批量化为 cuBLAS strided batched GEMM。</li>
+</ul>
+<h3 id="Hexagon：Gated-Delta-Net-与-L2-Normalization"><a href="#Hexagon：Gated-Delta-Net-与-L2-Normalization" class="headerlink" title="Hexagon：Gated Delta Net 与 L2 Normalization"></a>Hexagon：Gated Delta Net 与 L2 Normalization</h3><ul>
+<li><strong>Gated Delta Net 内核</strong>（PR #22837）：在 Hexagon HVX 上实现了 GDN 循环的完整 pipeline——PP 路径使用 4 行融合 kernel，TG 路径用 8 行减少 K&#x2F;Q&#x2F;Gate 向量重载开销，VTCM 状态暂存区配合 DMA 实现单周期访问；</li>
+<li><strong>L2 Normalization</strong>（PR #22816）：新增 HVX 向量化的 L2 Norm 实现。</li>
+</ul>
+<h3 id="OpenCL：Adreno-Q4-0-MoE-GEMM"><a href="#OpenCL：Adreno-Q4-0-MoE-GEMM" class="headerlink" title="OpenCL：Adreno Q4_0 MoE GEMM"></a>OpenCL：Adreno Q4_0 MoE GEMM</h3><p>PR #22731 为 Adreno GPU 增加了 Q4_0 量化的 MoE GEMM 实现，扩展了 OpenCL 后端对 MoE 架构的覆盖。</p>
+<h3 id="其他重要修复"><a href="#其他重要修复" class="headerlink" title="其他重要修复"></a>其他重要修复</h3><ul>
+<li><strong>PCI bus ID 标准化</strong>（PR #22820）：统一使用小写 PCI bus ID；</li>
+<li><strong>推理预算 logit bias 回滚</strong>（PR #22740）：修复 +inf logit bias 导致的 reasoning token 预算处理问题；</li>
+<li><strong>设备状态保存&#x2F;加载修复</strong>（PR #22805）：修复 <code>llama_state_*</code> API 的跨设备状态序列化问题；</li>
+<li><strong>Vertex AI 兼容 API</strong>（PR #22545）：server 端新增 GCP Vertex AI 协议兼容模式。</li>
+</ul>
+<hr>
+<h2 id="qualcomm-ai-hub-models：Scorecard-重构、CI-修复与设备支持"><a href="#qualcomm-ai-hub-models：Scorecard-重构、CI-修复与设备支持" class="headerlink" title="qualcomm&#x2F;ai-hub-models：Scorecard 重构、CI 修复与设备支持"></a>qualcomm&#x2F;ai-hub-models：Scorecard 重构、CI 修复与设备支持</h2><p>高通 AI Hub 模型库本周 30 次提交，主要围绕 LLM Scorecard 基础设施重构。</p>
+<h3 id="LLM-Scorecard-重构（6-个-PR-系列）"><a href="#LLM-Scorecard-重构（6-个-PR-系列）" class="headerlink" title="LLM Scorecard 重构（6 个 PR 系列）"></a>LLM Scorecard 重构（6 个 PR 系列）</h3><p>本周由 Kory Watson 主导了一个 6 PR 的系列重构：</p>
+<ol>
+<li>Scorecard 工件路径集中管理（PR #3254）</li>
+<li>ScorecardJobYaml 新增 <code>from_intermediates</code>&#x2F;<code>from_test_artifacts</code>（PR #3263）</li>
+<li>移除量化测试中的 device 参数（PR #3264）</li>
+<li>评分卡结果收集扁平化（PR #3265）</li>
+<li>导出返回类型改为类型化容器类（PR #3267）</li>
+<li>新增组件&#x2F;图名持久化存档（PR #3269）</li>
+</ol>
+<p>这一重构将 LLM 逐步融入 Scorecard 评测流程，扁平化设计使得后续支持更多参数量维度（如子图名称）成为可能。</p>
+<h3 id="设备与-CI-修复"><a href="#设备与-CI-修复" class="headerlink" title="设备与 CI 修复"></a>设备与 CI 修复</h3><ul>
+<li>切回生产环境部署（PR #3268）：dev 后端自 5 月 7 日起连续故障，所有 nightly 任务因此失败；</li>
+<li>新增 X Plus 芯片名支持（PR #3261&#x2F;3266）；</li>
+<li>修复 GPU weekly 任务中 schedule 触发的空 inputs 问题（PR #3246）；</li>
+<li>添加 similar devices 功能（PR #3206&#x2F;3221&#x2F;3227）；</li>
+<li>TTS 模型导出问题修复：Pydantic v2 序列化时基类字段丢失导致的 config.json assets 为空；</li>
+<li>Nightly 失败 Issue 自动嵌入测试摘要（PR #3240）。</li>
+</ul>
+<hr>
+<h2 id="microsoft-onnxruntime：FLOAT8E8M0-数据类型、Plugin-EP-生态与-CoreML-WebGPU"><a href="#microsoft-onnxruntime：FLOAT8E8M0-数据类型、Plugin-EP-生态与-CoreML-WebGPU" class="headerlink" title="microsoft&#x2F;onnxruntime：FLOAT8E8M0 数据类型、Plugin EP 生态与 CoreML&#x2F;WebGPU"></a>microsoft&#x2F;onnxruntime：FLOAT8E8M0 数据类型、Plugin EP 生态与 CoreML&#x2F;WebGPU</h2><p>ONNX Runtime 本周 30 次提交，数据类型扩展和 Plugin EP 基础设施是两大主题。</p>
+<h3 id="新数据类型-FLOAT8E8M0"><a href="#新数据类型-FLOAT8E8M0" class="headerlink" title="新数据类型 FLOAT8E8M0"></a>新数据类型 FLOAT8E8M0</h3><p>PR #28381 新增了 FLOAT8E8M0 数据类型支持。这是一种全正数的 8 位浮点格式：8 位指数、0 位尾数、无符号位。所有值都是 2 的幂（<code>2^(val-127)</code>），0xFF 保留为 NaN。这与其说是一个”精度可用的数值类型”，不如说是一种<strong>缩放因子编码格式</strong>——非常适合做量化 scale 的紧凑表示，或者某些极端量化的权重值。</p>
+<h3 id="Plugin-EP-基础设施"><a href="#Plugin-EP-基础设施" class="headerlink" title="Plugin EP 基础设施"></a>Plugin EP 基础设施</h3><p>本周 Plugin EP 的 API 完善速度明显加快：</p>
+<ul>
+<li><strong>Session 选项 Getter</strong>（PR #28377）：新增 <code>MemPatternEnabled</code> 和 <code>ExecutionMode</code> 的 getter API，让 Plugin EP 可以查询当前 session 配置以做兼容性校验；</li>
+<li><strong>OnSessionInitializationEnd 回调</strong>（PR #28319）：给 Plugin EP 作者一个机会在 session 初始化完成后清理临时资源；</li>
+<li><strong>加载器引用计数泄露修复</strong>（PR #28396）：当 Plugin DLL 不导出 <code>GetProvider</code> 时，共享库的引用计数未递减；</li>
+<li><strong>CUDA Plugin NuGet 包</strong>（PR #28378）：C#&#x2F;.NET 打包，主包名 <code>Microsoft.ML.OnnxRuntime.EP.Cuda</code>；</li>
+<li><strong>CUDA Plugin Python 包</strong>（PR #28299）：Linux&#x2F;Windows x64 的 Python wheel 发布流水线；</li>
+<li><strong>WebGPU NuGet 包</strong>（PR #28313）：移除对 ORT 主包的硬依赖（PR #28384）。</li>
+</ul>
+<h3 id="FusedConv-的-CoreML-支持"><a href="#FusedConv-的-CoreML-支持" class="headerlink" title="FusedConv 的 CoreML 支持"></a>FusedConv 的 CoreML 支持</h3><p>PR #28289 为 CoreML EP 增加了 <code>com.microsoft:FusedConv</code> 的支持。FusedConv 是 ORT 的 ConvActivationFusion pass 生成的融合算子，此前 CoreML EP 无法处理保存后重新加载的优化模型中的 FusedConv 节点。</p>
+<h3 id="WebGPU-FlashAttention：支持-QKV-Bias"><a href="#WebGPU-FlashAttention：支持-QKV-Bias" class="headerlink" title="WebGPU FlashAttention：支持 QKV Bias"></a>WebGPU FlashAttention：支持 QKV Bias</h3><p>PR #28380 移除了 FlashAttention 中 <code>bias == nullptr</code> 的限制，使得 MultiHeadAttention 节点即使带有 QKV Bias 也能走 FlashAttention 加速路径。这对 Whisper 等语音模型的 WebGPU 推理性能提升显著。</p>
+<h3 id="算子-opset-覆盖补齐"><a href="#算子-opset-覆盖补齐" class="headerlink" title="算子 opset 覆盖补齐"></a>算子 opset 覆盖补齐</h3><p>本周多个 PR 补齐了 CUDA EP 的 ONNX opset 覆盖缺口：</p>
+<ul>
+<li>Round（opset 11→22）</li>
+<li>Equal（opset 13→19）</li>
+<li>Reshape（opset 23→25）</li>
+<li>RNN（opset 14→22）</li>
+<li>ReduceMax&#x2F;ReduceMin（opset 18→20）</li>
+<li>Cast（opset 23→25）</li>
+<li>同时修复了 Resize 中 <code>round_prefer_ceil</code> 模式对负半值的不正确处理（PR #28345）。</li>
+</ul>
+<h3 id="Pre-opset-13-Split-的-CoreML-回退修复"><a href="#Pre-opset-13-Split-的-CoreML-回退修复" class="headerlink" title="Pre-opset-13 Split 的 CoreML 回退修复"></a>Pre-opset-13 Split 的 CoreML 回退修复</h3><p>PR #28270 将 CoreML Split 的最低支持 opset 从 13 降至 1。pre-13 的 Split 通过 INTS 属性传递分割尺寸，而新版通过第二个输入传递。现在 CoreML EP 两种方式都支持了。</p>
+<h3 id="量化工具链改进"><a href="#量化工具链改进" class="headerlink" title="量化工具链改进"></a>量化工具链改进</h3><p>PR #28221 为 <code>quantize_static()</code> 新增了 <code>calibration_cache_path</code> 参数，允许用户保存和重放校准阶段的 <code>TensorsData</code>。当迭代调参（调整 <code>nodes_to_exclude</code>、<code>activation_type</code>、<code>weight_type</code>）时，无需重新跑昂贵的校准推理。</p>
+<h3 id="PEP-561-py-typed-标记"><a href="#PEP-561-py-typed-标记" class="headerlink" title="PEP 561 py.typed 标记"></a>PEP 561 py.typed 标记</h3><p>PR #28438 在 <code>onnxruntime</code> 包根目录添加了 PEP 561 的 <code>py.typed</code> 标记文件，使得 mypy&#x2F;pyright 等类型检查工具能正确解析 inline 类型注解。</p>
+<hr>
+<h2 id="microsoft-onnxruntime-genai：CUDA-Graph、Gemma-4-多模态与-Qwen3-5-优化"><a href="#microsoft-onnxruntime-genai：CUDA-Graph、Gemma-4-多模态与-Qwen3-5-优化" class="headerlink" title="microsoft&#x2F;onnxruntime-genai：CUDA Graph、Gemma 4 多模态与 Qwen3.5 优化"></a>microsoft&#x2F;onnxruntime-genai：CUDA Graph、Gemma 4 多模态与 Qwen3.5 优化</h2><p>本周 6 次提交，集中在性能优化和新模型支持。</p>
+<h3 id="CUDA-Graph-Capture：Decode-吞吐提升-20-45"><a href="#CUDA-Graph-Capture：Decode-吞吐提升-20-45" class="headerlink" title="CUDA Graph Capture：Decode 吞吐提升 20-45%"></a>CUDA Graph Capture：Decode 吞吐提升 20-45%</h3><p>PR #2070 移除了此前对 CUDA Graph 的硬性阻挡，在 decode 阶段启用 CUDA Graph capture。Graph capture 将整个 decode 迭代的 kernel launch 序列化到单个图执行中，消除了每 token 的 CPU→GPU launch 开销。Qwen3.5 系列（0.8B-9B）的 decode 吞吐量提升了 20-45%。</p>
+<h3 id="Gemma-4-多模态支持"><a href="#Gemma-4-多模态支持" class="headerlink" title="Gemma 4 多模态支持"></a>Gemma 4 多模态支持</h3><p>PR #2103 为 ORT GenAI 新增了 Google Gemma 4 全系列多模态支持：纯文本（<code>gemma4_text</code>）、视觉语言和 Any-to-Any（视觉+音频+文本）。Any-to-Any 通过 <code>speech.filename</code> 配置自动检测，无需单独注册模型类型。</p>
+<h3 id="Qwen3-5：移除-RMSNorm-的-fp32-cast"><a href="#Qwen3-5：移除-RMSNorm-的-fp32-cast" class="headerlink" title="Qwen3.5：移除 RMSNorm 的 fp32 cast"></a>Qwen3.5：移除 RMSNorm 的 fp32 cast</h3><p>PR #2101 移除了 Qwen3.5 模型中 RMSNorm 附近强制 fp32 的 use_fp32 标记。在 24 层模型中，这消除了约 216 个 Cast 节点（108 个 to-fp32 + 108 个 to-fp16），WebGPU 上 decode 速度提升 13.2%（76.6→86.8 tps）。</p>
+<h3 id="LFM2-模型支持"><a href="#LFM2-模型支持" class="headerlink" title="LFM2 模型支持"></a>LFM2 模型支持</h3><p>PR #1979 添加了 LiquidAI 的 LFM2 系列 LLM 支持，包括 Model Builder 支持。</p>
+<hr>
+<h2 id="pytorch-executorch：Vulkan-着色器优化、W4A8-GEMM-量化与-CI-修复"><a href="#pytorch-executorch：Vulkan-着色器优化、W4A8-GEMM-量化与-CI-修复" class="headerlink" title="pytorch&#x2F;executorch：Vulkan 着色器优化、W4A8 GEMM 量化与 CI 修复"></a>pytorch&#x2F;executorch：Vulkan 着色器优化、W4A8 GEMM 量化与 CI 修复</h2><p>ExecuTorch 本周 30 次提交，Vulkan 后端的调优和 TFLite 兼容性改进是重点。</p>
+<h3 id="Vulkan-后端深度优化"><a href="#Vulkan-后端深度优化" class="headerlink" title="Vulkan 后端深度优化"></a>Vulkan 后端深度优化</h3><p>多个 PR 围绕 Vulkan 后端的着色器性能展开：</p>
+<ul>
+<li><strong>q8ta_pixel_shuffle 融合自定义算子</strong>（PR #19397）：RefineNet 分割模型的 PixelShuffle 操作原本被分解为 dequant→view→permute→view→quant 五个步骤，周期约 860μs。融合为单一着色器后显著降低延迟；</li>
+<li><strong>q8ta_conv2d_pw 累积器减半</strong>（PR #19396）：Adreno 740 上点态量化卷积的 int32 累积器从 32 个减至 16 个，提升 ALU 占用率，降低长延迟停顿；</li>
+<li><strong>Subgroup 属性查询基础设施</strong>（PR #0cafcb2）：添加 <code>VK_EXT_subgroup_size_control</code> 支持，为编写跨 GPU（Adreno&#x3D;64、Mali&#x3D;16、NVIDIA&#x3D;32）子组宽度可移植的着色器奠定基础；</li>
+<li><strong>布局感知分区器的量化张量流通</strong>（PR #19395）：允许 identity-like 操作保持 PACKED_INT8 布局流通，消除虚假的 clone dispatch。</li>
+</ul>
+<h3 id="W4A8-GEMM-量化优化"><a href="#W4A8-GEMM-量化优化" class="headerlink" title="W4A8 GEMM 量化优化"></a>W4A8 GEMM 量化优化</h3><p>PR #19209 将 W4A8 MoE GEMM 的激活量化提升到主循环之外。原始实现中每个 K-tile 都需要对激活做 <code>tl.max(tl.abs(a))</code> + INT8 转换，每个 program 做了 256 次归约。新实现预量化激活到单独的 INT8 缓冲区，将 BF16→INT8 带宽占用减半。对于 MoE 模型的推理，每次前向推理会调用多个 Expert GEMM，这一优化的累积效果相当可观。</p>
+<h3 id="TFLite-XNNPACK-更新"><a href="#TFLite-XNNPACK-更新" class="headerlink" title="TFLite&#x2F;XNNPACK 更新"></a>TFLite&#x2F;XNNPACK 更新</h3><ul>
+<li><strong>XNNPACK 更新重放</strong>（PR #19237）：此前被回退的 XNNPACK 更新重新落地，pthreadpool 相关问题已修复；</li>
+<li><strong>量化 Conv1D NLC 的 AOT 偏移预计算</strong>（PR #19344）；</li>
+<li><strong>算子传播优化</strong>（PR #19345&#x2F;19346）：Slice 操作在 Binary Broadcast 和 Unary 操作前的传播重排。</li>
+</ul>
+<h3 id="文档与-CI"><a href="#文档与-CI" class="headerlink" title="文档与 CI"></a>文档与 CI</h3><ul>
+<li>Python 类型注解修复（PR #4413a5c）：在 Runtime API 参考文档中添加 Extension APIs；</li>
+<li><strong>HF Xet 存储禁用</strong>（PR #19371）：HuggingFace 的 Xet 存储后端在 CI 运行时中经常暂停下载，导致 90 分钟超时，全量设置 <code>HF_HUB_DISABLE_XET=1</code>；</li>
+<li>文档 URL 修复（PR #19325&#x2F;19338）：修复多处过期版本引用的文档链接；</li>
+<li>macOS CI 的 PyTorch wheel 缓存键修复（PR #19350）。</li>
+</ul>
+<hr>
+<h2 id="apache-tvm：TFLite-前端扩展、PyTorch-到-Relax-的-Bug-修复与-Web-OPFS"><a href="#apache-tvm：TFLite-前端扩展、PyTorch-到-Relax-的-Bug-修复与-Web-OPFS" class="headerlink" title="apache&#x2F;tvm：TFLite 前端扩展、PyTorch 到 Relax 的 Bug 修复与 Web OPFS"></a>apache&#x2F;tvm：TFLite 前端扩展、PyTorch 到 Relax 的 Bug 修复与 Web OPFS</h2><p>TVM 本周 13 次提交，覆盖 Bug 修复和新前端支持。</p>
+<h3 id="TFLite-前端：Conv3D-与-Segment-算子"><a href="#TFLite-前端：Conv3D-与-Segment-算子" class="headerlink" title="TFLite 前端：Conv3D 与 Segment 算子"></a>TFLite 前端：Conv3D 与 Segment 算子</h3><ul>
+<li><strong>Conv3D 支持</strong>（PR #19523）：为 Relax TFLite 前端增加了 3D 卷积的支持，正确映射 TFLite 的 DHWIO 核布局；</li>
+<li><strong>Segment 算子</strong>（PR #19491）：新增 <code>SEGMENT_SUM</code>、<code>UNSORTED_SEGMENT_MIN</code>、<code>UNSORTED_SEGMENT_PROD</code> 的 Relax 前端支持，通过 <code>relax.op.scatter_nd</code> 配合对应归约模式实现；</li>
+<li><strong>SPACE_TO_BATCH_ND &#x2F; BATCH_TO_SPACE_ND 测试覆盖</strong>（PR #19499）：改为通过 TOPI 实现；</li>
+<li><strong>GATHER 测试覆盖</strong>（PR #19516）。</li>
+</ul>
+<h3 id="PyTorch-前端-Bug-修复"><a href="#PyTorch-前端-Bug-修复" class="headerlink" title="PyTorch 前端 Bug 修复"></a>PyTorch 前端 Bug 修复</h3><p>本周 Soowon Jeong 贡献了多个 PyTorch 前端的精度修复：</p>
+<ul>
+<li><strong><code>torch.flip</code> 的多轴支持</strong>（PR #19511）：此前 Relax 的 flip 转换器将多维度输入截断为单轴，静默丢弃了除第一个之外的所有维度；</li>
+<li><strong><code>std</code>&#x2F;<code>var</code> 的 correction 支持</strong>（PR #19512）：<code>correction</code> 参数被忽略，所有方差都除以 n（总体方差），而非 (n-1) 或用户指定的值；</li>
+<li><strong><code>index_put_</code> 的嵌套 tuple segfault</strong>（PR #19488）：当输出包含嵌套 Python tuple 时，直接传递给 Relax 的 tuple 构造器导致段错误。</li>
+</ul>
+<h3 id="S-TIR-GPU-调度器修复"><a href="#S-TIR-GPU-调度器修复" class="headerlink" title="S-TIR GPU 调度器修复"></a>S-TIR GPU 调度器修复</h3><p>PR #19514 修复了 <code>DefaultGPUSchedule</code> 对纯标量 PrimFunc 的处理——当 body 是 <code>SBlockRealize</code>（无循环、无迭代变量）时，调度器试图在根块上添加循环，触发 <code>Cannot add loops on top of the root block</code> 崩溃。修复方法是在裸标量 body 上包裹一个恒等循环。</p>
+<h3 id="TIR-CSE-跳过布尔表达式"><a href="#TIR-CSE-跳过布尔表达式" class="headerlink" title="TIR CSE 跳过布尔表达式"></a>TIR CSE 跳过布尔表达式</h3><p>PR #19502 使 TIR 的公共子表达式消除（CSE）跳过布尔类型的子表达式。布尔表达式（如 <code>i &lt; n</code>、<code>a &amp;&amp; b</code>）通常是分支条件，将其提升为 <code>cse_v: bool</code> 常量并不利于下游优化（ProveCondition、分支消除等）。</p>
+<h3 id="Web-后端：OPFS-缓存支持"><a href="#Web-后端：OPFS-缓存支持" class="headerlink" title="Web 后端：OPFS 缓存支持"></a>Web 后端：OPFS 缓存支持</h3><p>PR #19494 为 TVM Web 运行时添加了 Origin Private File System（OPFS）作为工件缓存机制。OPFS 是浏览器 File System API 的一部分，相比 IndexedDB 提供更好的大文件存取性能。</p>
+<hr>
+<h2 id="ml-explore-mlx-lm：Gemma-4-共享层的-KV-投影修复"><a href="#ml-explore-mlx-lm：Gemma-4-共享层的-KV-投影修复" class="headerlink" title="ml-explore&#x2F;mlx-lm：Gemma 4 共享层的 KV 投影修复"></a>ml-explore&#x2F;mlx-lm：Gemma 4 共享层的 KV 投影修复</h2><p>Apple MLX 框架本周仅 1 次提交。PR #1240 修复了 Gemma 4 模型权重清理（sanitize）函数中对共享层的 KV 投影映射的处理。当模型的多层共享相同的键值投影时，权重清理函数未能正确剥离这些共享投影的冗余条目。</p>
+<hr>
+<h2 id="无更新仓库"><a href="#无更新仓库" class="headerlink" title="无更新仓库"></a>无更新仓库</h2><p>以下仓库本周无新提交：</p>
+<ul>
+<li>airockchip&#x2F;rknn-toolkit2</li>
+<li>airockchip&#x2F;rknn-llm</li>
+<li>sophgo&#x2F;tpu-mlir</li>
+<li>sophgo&#x2F;LLM-TPU</li>
+<li>futz12&#x2F;ncnn_llm</li>
+<li>mlc-ai&#x2F;mlc-llm</li>
+</ul>
+<hr>
+<h2 id="本周技术亮点总结"><a href="#本周技术亮点总结" class="headerlink" title="本周技术亮点总结"></a>本周技术亮点总结</h2><ol>
+<li><p><strong>llama.cpp 的多后端并发优化</strong>最为活跃——SYCL 团队的 Intel GPU 优化、CUDA 的算子融合和批量 GEMM、Hexagon 的 GDN 和 L2 Norm、OpenCL 的 Adreno MoE GEMM，体现了 GGML 生态在多样化硬件上的广泛兼容性。</p>
+</li>
+<li><p><strong>ONNX Runtime 的 Plugin EP 生态</strong>正在加速成型：CUDA 和 WebGPU 的 Python&#x2F;NuGet 包发布流水线落地、新增 session 配置 getter 和回调 API，EP 开发者体验大幅改善。</p>
+</li>
+<li><p><strong>端侧量化推理的深化</strong>——ncnn 的 Conv1D GEMM、ExecuTorch 的 W4A8 量化预提取和 Vulkan q8ta 融合算子、llama.cpp 的 Snake 激活融合，都在推动端侧推理的极致性能。</p>
+</li>
+<li><p><strong>TVM 的 PyTorch 前端精度修复</strong>——flip 多轴、std&#x2F;var correction、index_put_ segfault这些修复虽不 headline，但对生产环境的模型部署正确性至关重要。</p>
+</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io/2026/05/10/%E7%AB%AF%E4%BE%A7AI%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-05-03-2026-05-10/">http://hebangwen.github.io/2026/05/10/%E7%AB%AF%E4%BE%A7AI%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-05-03-2026-05-10/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://hebangwen.github.io" target="_blank">Yet Another 何榜文's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/MNN/">MNN</a><a class="post-meta__tags" href="/tags/llama-cpp/">llama.cpp</a><a class="post-meta__tags" href="/tags/%E5%91%A8%E6%8A%A5/">周报</a><a class="post-meta__tags" href="/tags/%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/">推理框架</a><a class="post-meta__tags" href="/tags/ncnn/">ncnn</a><a class="post-meta__tags" href="/tags/TVM/">TVM</a><a class="post-meta__tags" href="/tags/ONNX-Runtime/">ONNX Runtime</a><a class="post-meta__tags" href="/tags/ExecuTorch/">ExecuTorch</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/05/05/misc/translation/output/book_with_images_final/" title=""><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2"></div></div><div class="info-2"><div class="info-item-1"> title: “后费曼物理学讲义：基础物理的启发之旅”author:  Nicholas Manton Nicholas Meedate: 2026-05-02language: zh-CNrights: “翻译仅供个人学习使用”…  Preface序言撰写这本书是一大乐事。它使我们有机会深入思考物理学的所有主要分支，以及它们如何联合起来，构成一幅关于物理世界的连贯图景。最终呈现的，是一部既简明扼要又全面透彻的物理学全景观览。数学是描述我们周围世界诸多现象的自然语言，正如理查德·费曼(Richard Feynman)和吉姆·阿尔-哈利利(Jim Al Khalili)等众多评论者所强调的，数学对于真正理解物理学至关重要。因此，我们的叙述必然是数学化的。我们清晰阐释了支撑现代基础物理的数学推理，并毫不回避地给出了关键方程及其解。 人们对宇宙的科学解释，从未有过如此强烈的求知欲。我们的目标是为基础物理学提供一次启迪人心的巡礼，任何至少学过高中物理和数学的人都能理解。对于那些刚刚走出校门的读者，这本书可以让他们一窥大学物理课程中的大部分内容。本书也适合那些在大学修读过科学或工程数学课...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/05/03/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-04-26-2026-05-03/" title="端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-03</div><div class="info-item-2">端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）</div></div><div class="info-2"><div class="info-item-1">本周（2026-04-26 ~ 2026-05-03）共跟踪 15 个仓库，其中 9 个仓库有更新，合计 165 次提交。以下是对各仓库关键变化的详细解读。  本周无更新的仓库： tencent&#x2F;ncnn、airockchip&#x2F;rknn-toolkit2、airockchip&#x2F;rknn-llm、futz12&#x2F;ncnn_llm、mlc-ai&#x2F;mlc-llm、ml-explore&#x2F;mlx-lm   ggml-org&#x2F;llama.cpp（30 commits）本周 llama.cpp 依然保持了最高的活动量，涵盖后端优化、新硬件支持和用户界面重构。 CUDA &#x2F; GPU 后端 多 GPU PCI Bus ID 去重修复（#22533）：修复了当多个 GPU 共享 PCI Bus ID 时，CUDA 设备检测 OOM 导致仅发现 1 张卡而忽略其他 3 张的严重 bug。同时同步更新了 HIP 和 MUSA 宏的支持。 Flash Attention Pascal 架构修复（#22541）：Tile-base...</div></div></div></a><a class="pagination-related" href="/2026/04/29/edge-ai-inference-weekly-2026-04-22-2026-04-29/" title="端侧 AI 推理框架周报（2026-04-22 ~ 2026-04-29）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-29</div><div class="info-item-2">端侧 AI 推理框架周报（2026-04-22 ~ 2026-04-29）</div></div><div class="info-2"><div class="info-item-1">本周跟踪了 15 个主流端侧 AI 推理框架的开源仓库，其中 9 个有显著更新，共产生 170 次提交。以下是各仓库的重点变化分析。 1. alibaba&#x2F;MNN — 4 commitsVulkan 后端 no-subgroup 降级分支MNN 本周在 Vulkan 后端的 VulkanLinearAttention 和 Conv1x1-Decode 的 gemv 操作中引入了 no-subgroup 降级分支。这是一个非常实用的兼容性改进：  背景：Vulkan subgroup（子组）操作是现代 GPU 做 warp-level 协作的高效方式，但并非所有 Vulkan 实现都支持（特别是 Mesa 驱动的某些 Intel GPU、部分移动端 Mali GPU）。 实现思路：为主路径保留 subgroup 优化的高性能路径，同时为不支持的设备提供了纯线程级替代实现。使得 LLM decode 阶段的注意力计算在更广泛的 Vulkan 设备上可用。  这种”高性能路径 + 通用降级”的架构思路值得借鉴，尤其对于需要跨平台部署的推理框架而言。 CPU ARMv8.2&#...</div></div></div></a><a class="pagination-related" href="/2024/05/21/MNN-OP-AnyNet/" title="MNN 自定义算子，以 AnyNet 为例"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-05-21</div><div class="info-item-2">MNN 自定义算子，以 AnyNet 为例</div></div><div class="info-2"><div class="info-item-1">1. 介绍本文主要介绍如何在 MNN 中添加自定义算子，以 AnyNet 为例。AnyNet 添加了一个自定义算子，虽然可以用 pytorch 表达，并且导出 ONNX 和 MNN，但是节点过多，可视化工具无法很好的展示，因此本文尝试将 AnyNet 中的自定义算子添加到 MNN 中。 自定义 MNN 算子需要先将 pytorch 计算逻辑导出成 ONNX 节点，并且由 MNN 来解释。这需要首先将 pytorch 计算包装成 torch.autograd.Function，然后通过 torch.onnx.export 导出 ONNX 节点。然后通过 MNN 的 MNN::OpConverter 来解释 ONNX 节点。 2. AnyNet AnyNet 自定义了一个 SPNet 算子，并且使用 CUDA 实现了这个算子。SPN的结构，分为两种，分别是单路连接和三路连接：  实际上就是通过一个权重矩阵，上一个点迭代地给下一个点权重，对于单路连接和三路连接，有： $$\begin{align}h_{k,t} &amp;&#x3D; (1 - p_{k,t}) \cdot x_{k,...</div></div></div></a><a class="pagination-related" href="/2024/10/29/llamacpp-q-quants/" title="llama.cpp Q 量化方式总结"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-10-29</div><div class="info-item-2">llama.cpp Q 量化方式总结</div></div><div class="info-2"><div class="info-item-1">llama.cpp Q 量化方式总结TheBloke 里有许多不同量化方式的模型，如下： 123456789CapybaraHermes-2.5-Mistral-7B-GGUF  | - capybarahemers-2.5-mistral-7b.Q2_K.gguf  | - capybarahemers-2.5-mistral-7b.Q3_K_L.gguf  | - capybarahemers-2.5-mistral-7b.Q3_K_M.gguf  | - capybarahemers-2.5-mistral-7b.Q3_K_S.gguf  | - capybarahemers-2.5-mistral-7b.Q4_0.gguf  | - capybarahemers-2.5-mistral-7b.Q4_K_M.gguf  | - capybarahemers-2.5-mistral-7b.Q4_K_S.gguf  | ...  它们都属于 llama.cpp 中 Q 量化定义的范围。llama.cpp 里的 Q 量化有两个格式：QX_Y 和 QX_K，第一种是对称量化和非对称...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">65</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">75</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#tencent-ncnn%EF%BC%9AVulkan-%E7%AE%A1%E7%BA%BF%E7%BC%93%E5%AD%98%E3%80%81PNNX-%E5%8A%9F%E8%83%BD%E5%A2%9E%E5%BC%BA%E4%B8%8E-x86-%E4%BF%AE%E5%A4%8D"><span class="toc-number">1.</span> <span class="toc-text">tencent&#x2F;ncnn：Vulkan 管线缓存、PNNX 功能增强与 x86 修复</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Vulkan-%E7%AE%A1%E7%BA%BF%E6%8C%81%E4%B9%85%E5%8C%96%E7%BC%93%E5%AD%98"><span class="toc-number">1.1.</span> <span class="toc-text">Vulkan 管线持久化缓存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PNNX%EF%BC%9ATorch-2-11-%E6%94%AF%E6%8C%81%E3%80%81FLOPs-%E7%BB%9F%E8%AE%A1%E4%B8%8E-NPY-%E8%BE%93%E5%85%A5"><span class="toc-number">1.2.</span> <span class="toc-text">PNNX：Torch 2.11 支持、FLOPs 统计与 NPY 输入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#x86-%E4%B8%8E%E6%9E%B6%E6%9E%84%E4%BF%AE%E5%A4%8D"><span class="toc-number">1.3.</span> <span class="toc-text">x86 与架构修复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Conv1D-GEMM-%E5%AE%9E%E7%8E%B0%EF%BC%88PR-6587%EF%BC%89"><span class="toc-number">1.4.</span> <span class="toc-text">Conv1D GEMM 实现（PR #6587）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#alibaba-MNN%EF%BC%9ALLM-%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E3%80%81Qualcomm-QNN-%E5%B9%B6%E8%A1%8C%E5%8C%96%E4%B8%8E-RISC-V-%E5%8A%A0%E9%80%9F"><span class="toc-number">2.</span> <span class="toc-text">alibaba&#x2F;MNN：LLM 推理优化、Qualcomm QNN 并行化与 RISC-V 加速</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Omni-%E6%A8%A1%E5%9E%8B%E4%BA%A4%E9%94%99%E7%94%9F%E6%88%90%EF%BC%9AThinker-Talker-%E5%BB%B6%E8%BF%9F%E9%99%8D%E4%BD%8E-2-7-%E5%80%8D"><span class="toc-number">2.1.</span> <span class="toc-text">Omni 模型交错生成：Thinker&#x2F;Talker 延迟降低 2.7 倍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E6%B5%8B%E8%A7%A3%E7%A0%81%E4%B8%AD%E7%9A%84%E7%BC%93%E5%AD%98%E4%BF%AE%E5%A4%8D"><span class="toc-number">2.2.</span> <span class="toc-text">推测解码中的缓存修复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GPTQ-%E6%9D%83%E9%87%8D%E9%87%8F%E5%8C%96%E5%8A%A0%E8%BD%BD%E5%99%A8%E4%BF%AE%E5%A4%8D"><span class="toc-number">2.3.</span> <span class="toc-text">GPTQ 权重量化加载器修复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#QNN-%E7%A6%BB%E7%BA%BF%E5%9B%BE%E5%AF%BC%E5%87%BA%E7%9A%84%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%B9%B6%E8%A1%8C%E5%8C%96"><span class="toc-number">2.4.</span> <span class="toc-text">QNN 离线图导出的多进程并行化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RISC-V-%E5%90%91%E9%87%8F%E6%89%A9%E5%B1%95-Int8-%E5%8A%A0%E9%80%9F"><span class="toc-number">2.5.</span> <span class="toc-text">RISC-V 向量扩展 Int8 加速</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%A0%E4%BD%95%E8%AE%A1%E7%AE%97%E4%BF%AE%E5%A4%8D%E4%B8%8E%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-number">2.6.</span> <span class="toc-text">几何计算修复与内存管理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ggml-org-llama-cpp%EF%BC%9A%E6%96%B0%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84%E3%80%81SYCL-OpenCL-CUDA-%E5%8A%A0%E9%80%9F%E4%B8%8E-Hexagon-%E5%90%8E%E7%AB%AF"><span class="toc-number">3.</span> <span class="toc-text">ggml-org&#x2F;llama.cpp：新模型架构、SYCL&#x2F;OpenCL&#x2F;CUDA 加速与 Hexagon 后端</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B0%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84%E6%94%AF%E6%8C%81"><span class="toc-number">3.1.</span> <span class="toc-text">新模型架构支持</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SYCL-%E5%90%8E%E7%AB%AF%EF%BC%9ABF16%E3%80%81%E9%87%8F%E5%8C%96%E5%86%85%E6%A0%B8%E4%B8%8E-Battlemage-GPU"><span class="toc-number">3.2.</span> <span class="toc-text">SYCL 后端：BF16、量化内核与 Battlemage GPU</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CUDA%EF%BC%9ASnake-%E6%BF%80%E6%B4%BB%E8%9E%8D%E5%90%88%E4%B8%8E-out-prod-%E6%89%B9%E9%87%8F"><span class="toc-number">3.3.</span> <span class="toc-text">CUDA：Snake 激活融合与 out_prod 批量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hexagon%EF%BC%9AGated-Delta-Net-%E4%B8%8E-L2-Normalization"><span class="toc-number">3.4.</span> <span class="toc-text">Hexagon：Gated Delta Net 与 L2 Normalization</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OpenCL%EF%BC%9AAdreno-Q4-0-MoE-GEMM"><span class="toc-number">3.5.</span> <span class="toc-text">OpenCL：Adreno Q4_0 MoE GEMM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E9%87%8D%E8%A6%81%E4%BF%AE%E5%A4%8D"><span class="toc-number">3.6.</span> <span class="toc-text">其他重要修复</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#qualcomm-ai-hub-models%EF%BC%9AScorecard-%E9%87%8D%E6%9E%84%E3%80%81CI-%E4%BF%AE%E5%A4%8D%E4%B8%8E%E8%AE%BE%E5%A4%87%E6%94%AF%E6%8C%81"><span class="toc-number">4.</span> <span class="toc-text">qualcomm&#x2F;ai-hub-models：Scorecard 重构、CI 修复与设备支持</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LLM-Scorecard-%E9%87%8D%E6%9E%84%EF%BC%886-%E4%B8%AA-PR-%E7%B3%BB%E5%88%97%EF%BC%89"><span class="toc-number">4.1.</span> <span class="toc-text">LLM Scorecard 重构（6 个 PR 系列）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E5%A4%87%E4%B8%8E-CI-%E4%BF%AE%E5%A4%8D"><span class="toc-number">4.2.</span> <span class="toc-text">设备与 CI 修复</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#microsoft-onnxruntime%EF%BC%9AFLOAT8E8M0-%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E3%80%81Plugin-EP-%E7%94%9F%E6%80%81%E4%B8%8E-CoreML-WebGPU"><span class="toc-number">5.</span> <span class="toc-text">microsoft&#x2F;onnxruntime：FLOAT8E8M0 数据类型、Plugin EP 生态与 CoreML&#x2F;WebGPU</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B0%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B-FLOAT8E8M0"><span class="toc-number">5.1.</span> <span class="toc-text">新数据类型 FLOAT8E8M0</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Plugin-EP-%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD"><span class="toc-number">5.2.</span> <span class="toc-text">Plugin EP 基础设施</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FusedConv-%E7%9A%84-CoreML-%E6%94%AF%E6%8C%81"><span class="toc-number">5.3.</span> <span class="toc-text">FusedConv 的 CoreML 支持</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#WebGPU-FlashAttention%EF%BC%9A%E6%94%AF%E6%8C%81-QKV-Bias"><span class="toc-number">5.4.</span> <span class="toc-text">WebGPU FlashAttention：支持 QKV Bias</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%97%E5%AD%90-opset-%E8%A6%86%E7%9B%96%E8%A1%A5%E9%BD%90"><span class="toc-number">5.5.</span> <span class="toc-text">算子 opset 覆盖补齐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Pre-opset-13-Split-%E7%9A%84-CoreML-%E5%9B%9E%E9%80%80%E4%BF%AE%E5%A4%8D"><span class="toc-number">5.6.</span> <span class="toc-text">Pre-opset-13 Split 的 CoreML 回退修复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8F%E5%8C%96%E5%B7%A5%E5%85%B7%E9%93%BE%E6%94%B9%E8%BF%9B"><span class="toc-number">5.7.</span> <span class="toc-text">量化工具链改进</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PEP-561-py-typed-%E6%A0%87%E8%AE%B0"><span class="toc-number">5.8.</span> <span class="toc-text">PEP 561 py.typed 标记</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#microsoft-onnxruntime-genai%EF%BC%9ACUDA-Graph%E3%80%81Gemma-4-%E5%A4%9A%E6%A8%A1%E6%80%81%E4%B8%8E-Qwen3-5-%E4%BC%98%E5%8C%96"><span class="toc-number">6.</span> <span class="toc-text">microsoft&#x2F;onnxruntime-genai：CUDA Graph、Gemma 4 多模态与 Qwen3.5 优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CUDA-Graph-Capture%EF%BC%9ADecode-%E5%90%9E%E5%90%90%E6%8F%90%E5%8D%87-20-45"><span class="toc-number">6.1.</span> <span class="toc-text">CUDA Graph Capture：Decode 吞吐提升 20-45%</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Gemma-4-%E5%A4%9A%E6%A8%A1%E6%80%81%E6%94%AF%E6%8C%81"><span class="toc-number">6.2.</span> <span class="toc-text">Gemma 4 多模态支持</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Qwen3-5%EF%BC%9A%E7%A7%BB%E9%99%A4-RMSNorm-%E7%9A%84-fp32-cast"><span class="toc-number">6.3.</span> <span class="toc-text">Qwen3.5：移除 RMSNorm 的 fp32 cast</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LFM2-%E6%A8%A1%E5%9E%8B%E6%94%AF%E6%8C%81"><span class="toc-number">6.4.</span> <span class="toc-text">LFM2 模型支持</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pytorch-executorch%EF%BC%9AVulkan-%E7%9D%80%E8%89%B2%E5%99%A8%E4%BC%98%E5%8C%96%E3%80%81W4A8-GEMM-%E9%87%8F%E5%8C%96%E4%B8%8E-CI-%E4%BF%AE%E5%A4%8D"><span class="toc-number">7.</span> <span class="toc-text">pytorch&#x2F;executorch：Vulkan 着色器优化、W4A8 GEMM 量化与 CI 修复</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Vulkan-%E5%90%8E%E7%AB%AF%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%8C%96"><span class="toc-number">7.1.</span> <span class="toc-text">Vulkan 后端深度优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#W4A8-GEMM-%E9%87%8F%E5%8C%96%E4%BC%98%E5%8C%96"><span class="toc-number">7.2.</span> <span class="toc-text">W4A8 GEMM 量化优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TFLite-XNNPACK-%E6%9B%B4%E6%96%B0"><span class="toc-number">7.3.</span> <span class="toc-text">TFLite&#x2F;XNNPACK 更新</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E6%A1%A3%E4%B8%8E-CI"><span class="toc-number">7.4.</span> <span class="toc-text">文档与 CI</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#apache-tvm%EF%BC%9ATFLite-%E5%89%8D%E7%AB%AF%E6%89%A9%E5%B1%95%E3%80%81PyTorch-%E5%88%B0-Relax-%E7%9A%84-Bug-%E4%BF%AE%E5%A4%8D%E4%B8%8E-Web-OPFS"><span class="toc-number">8.</span> <span class="toc-text">apache&#x2F;tvm：TFLite 前端扩展、PyTorch 到 Relax 的 Bug 修复与 Web OPFS</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#TFLite-%E5%89%8D%E7%AB%AF%EF%BC%9AConv3D-%E4%B8%8E-Segment-%E7%AE%97%E5%AD%90"><span class="toc-number">8.1.</span> <span class="toc-text">TFLite 前端：Conv3D 与 Segment 算子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PyTorch-%E5%89%8D%E7%AB%AF-Bug-%E4%BF%AE%E5%A4%8D"><span class="toc-number">8.2.</span> <span class="toc-text">PyTorch 前端 Bug 修复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#S-TIR-GPU-%E8%B0%83%E5%BA%A6%E5%99%A8%E4%BF%AE%E5%A4%8D"><span class="toc-number">8.3.</span> <span class="toc-text">S-TIR GPU 调度器修复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TIR-CSE-%E8%B7%B3%E8%BF%87%E5%B8%83%E5%B0%94%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-number">8.4.</span> <span class="toc-text">TIR CSE 跳过布尔表达式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Web-%E5%90%8E%E7%AB%AF%EF%BC%9AOPFS-%E7%BC%93%E5%AD%98%E6%94%AF%E6%8C%81"><span class="toc-number">8.5.</span> <span class="toc-text">Web 后端：OPFS 缓存支持</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ml-explore-mlx-lm%EF%BC%9AGemma-4-%E5%85%B1%E4%BA%AB%E5%B1%82%E7%9A%84-KV-%E6%8A%95%E5%BD%B1%E4%BF%AE%E5%A4%8D"><span class="toc-number">9.</span> <span class="toc-text">ml-explore&#x2F;mlx-lm：Gemma 4 共享层的 KV 投影修复</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A0%E6%9B%B4%E6%96%B0%E4%BB%93%E5%BA%93"><span class="toc-number">10.</span> <span class="toc-text">无更新仓库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E5%91%A8%E6%8A%80%E6%9C%AF%E4%BA%AE%E7%82%B9%E6%80%BB%E7%BB%93"><span class="toc-number">11.</span> <span class="toc-text">本周技术亮点总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/10/%E7%AB%AF%E4%BE%A7AI%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-05-03-2026-05-10/" title="端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）">端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）</a><time datetime="2026-05-10T01:00:00.000Z" title="发表于 2026-05-10 09:00:00">2026-05-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/05/misc/translation/output/book_with_images_final/" title="无标题">无标题</a><time datetime="2026-05-05T05:27:10.670Z" title="发表于 2026-05-05 13:27:10">2026-05-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/05/misc/translation/images/rendered/render_mapping/" title="无标题">无标题</a><time datetime="2026-05-05T01:46:51.017Z" title="发表于 2026-05-05 09:46:51">2026-05-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/03/misc/translation/output/2_Motions_of_Bodies-Newton's_Laws_cn/" title="无标题">无标题</a><time datetime="2026-05-03T01:02:34.931Z" title="发表于 2026-05-03 09:02:34">2026-05-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/03/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-04-26-2026-05-03/" title="端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）">端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）</a><time datetime="2026-05-03T01:00:00.000Z" title="发表于 2026-05-03 09:00:00">2026-05-03</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Yet Another 何榜文's Blog | Yet Another 何榜文's Blog</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="{&quot;Preface.txt&quot;:{&quot;chunks&quot;:{&quot;chunk_0&quot;:true,&quot;chunk_1&quot;:true},&quot;done&quot;:2,&quot;assembled&quot;:true},&quot;0_Introduction.txt&quot;:{&quot;chunks&quot;:{&quot;chunk_0&quot;:true,&quot;chunk_1&quot;:true,&quot;chunk_2&quot;:true},&quot;done&quot;:3,&quot;assembled&quot;:true},&quot;1_Fundamen">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:url" content="http://hebangwen.github.io/2026/05/02/misc/translation/progress/index.html">
+<meta property="og:site_name" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:description" content="{&quot;Preface.txt&quot;:{&quot;chunks&quot;:{&quot;chunk_0&quot;:true,&quot;chunk_1&quot;:true},&quot;done&quot;:2,&quot;assembled&quot;:true},&quot;0_Introduction.txt&quot;:{&quot;chunks&quot;:{&quot;chunk_0&quot;:true,&quot;chunk_1&quot;:true,&quot;chunk_2&quot;:true},&quot;done&quot;:3,&quot;assembled&quot;:true},&quot;1_Fundamen">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2026-05-02T06:16:07.606Z">
+<meta property="article:modified_time" content="2026-05-02T12:49:38.547Z">
+<meta property="article:author" content="何榜文">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "",
+  "url": "http://hebangwen.github.io/2026/05/02/misc/translation/progress/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2026-05-02T06:16:07.606Z",
+  "dateModified": "2026-05-02T12:49:38.547Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "http://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="http://hebangwen.github.io/2026/05/02/misc/translation/progress/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Yet Another 何榜文\'s Blog',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">Yet Another 何榜文's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Yet Another 何榜文's Blog</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">无标题</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-05-02T06:16:07.606Z" title="发表于 2026-05-02 14:16:07">2026-05-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-05-02T12:49:38.547Z" title="更新于 2026-05-02 20:49:38">2026-05-02</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container">{"Preface.txt":{"chunks":{"chunk_0":true,"chunk_1":true},"done":2,"assembled":true},"0_Introduction.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true},"done":3,"assembled":true},"1_Fundamental_Ideas.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true},"done":16,"assembled":true},"2_Motions_of_Bodies-Newton's_Laws.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true,"chunk_16":true,"chunk_17":true,"chunk_18":true,"chunk_19":true,"chunk_20":true,"chunk_21":true,"chunk_22":true,"chunk_23":true,"chunk_24":true,"chunk_25":true,"chunk_26":true,"chunk_27":true,"chunk_28":true,"chunk_29":true,"chunk_30":true,"chunk_31":true,"chunk_32":true},"done":33,"assembled":true},"3_Fields-Maxwell's_Equations.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true,"chunk_16":true,"chunk_17":true,"chunk_18":true,"chunk_19":true,"chunk_20":true,"chunk_21":true,"chunk_22":true,"chunk_23":true,"chunk_24":true,"chunk_25":true,"chunk_26":true,"chunk_27":true,"chunk_28":true,"chunk_29":true,"chunk_30":true,"chunk_31":true},"done":32,"assembled":true},"4_Special_Relativity.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true,"chunk_16":true,"chunk_17":true,"chunk_18":true,"chunk_19":true},"done":20,"assembled":true},"5_Curved_Space.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true,"chunk_16":true,"chunk_17":true,"chunk_18":true,"chunk_19":true,"chunk_20":true,"chunk_21":true,"chunk_22":true,"chunk_23":true},"done":24,"assembled":true},"6_General_Relativity.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true,"chunk_16":true,"chunk_17":true,"chunk_18":true,"chunk_19":true,"chunk_20":true,"chunk_21":true,"chunk_22":true,"chunk_23":true,"chunk_24":true,"chunk_25":true,"chunk_26":true,"chunk_27":true,"chunk_28":true,"chunk_29":true,"chunk_30":true,"chunk_31":true,"chunk_32":true,"chunk_33":true,"chunk_34":true,"chunk_35":true,"chunk_36":true,"chunk_37":true,"chunk_38":true,"chunk_39":true},"done":40,"assembled":true},"7_Quantum_Mechanics.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true,"chunk_16":true,"chunk_17":true,"chunk_18":true,"chunk_19":true,"chunk_20":true,"chunk_21":true,"chunk_22":true,"chunk_23":true,"chunk_24":true},"done":25,"assembled":true},"8_Quantum_Mechanics_in_Three_Dimensions.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true,"chunk_16":true,"chunk_17":true,"chunk_18":true,"chunk_19":true,"chunk_20":true,"chunk_21":true,"chunk_22":true,"chunk_23":true,"chunk_24":true,"chunk_25":true,"chunk_26":true,"chunk_27":true,"chunk_28":true,"chunk_29":true},"done":30,"assembled":true},"9_Atoms,_Molecules_and_Solids.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true,"chunk_16":true,"chunk_17":true,"chunk_18":true,"chunk_19":true,"chunk_20":true,"chunk_21":true,"chunk_22":true,"chunk_23":true,"chunk_24":true,"chunk_25":true,"chunk_26":true,"chunk_27":true,"chunk_28":true,"chunk_29":true,"chunk_30":true,"chunk_31":true,"chunk_32":true,"chunk_33":true},"done":34,"assembled":true},"10_Thermodynamics.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true,"chunk_16":true,"chunk_17":true,"chunk_18":true,"chunk_19":true,"chunk_20":true,"chunk_21":true,"chunk_22":true,"chunk_23":true,"chunk_24":true,"chunk_25":true,"chunk_26":true,"chunk_27":true,"chunk_28":true,"chunk_29":true,"chunk_30":true,"chunk_31":true,"chunk_32":true,"chunk_33":true,"chunk_34":true,"chunk_35":true,"chunk_36":true,"chunk_37":true,"chunk_38":true,"chunk_39":true,"chunk_40":true,"chunk_41":true,"chunk_42":true},"done":43,"assembled":true},"11_Nuclear_Physics.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true,"chunk_16":true,"chunk_17":true,"chunk_18":true,"chunk_19":true,"chunk_20":true,"chunk_21":true,"chunk_22":true,"chunk_23":true,"chunk_24":true,"chunk_25":true,"chunk_26":true,"chunk_27":true,"chunk_28":true,"chunk_29":true,"chunk_30":true},"done":31,"assembled":true},"12_Particle_Physics.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true,"chunk_16":true,"chunk_17":true,"chunk_18":true,"chunk_19":true,"chunk_20":true,"chunk_21":true,"chunk_22":true,"chunk_23":true,"chunk_24":true,"chunk_25":true,"chunk_26":true,"chunk_27":true,"chunk_28":true,"chunk_29":true,"chunk_30":true,"chunk_31":true,"chunk_32":true,"chunk_33":true,"chunk_34":true,"chunk_35":true,"chunk_36":true,"chunk_37":true,"chunk_38":true,"chunk_39":true,"chunk_40":true,"chunk_41":true,"chunk_42":true,"chunk_43":true,"chunk_44":true,"chunk_45":true,"chunk_46":true},"done":47,"assembled":true},"13_Stars.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true,"chunk_16":true,"chunk_17":true,"chunk_18":true,"chunk_19":true,"chunk_20":true,"chunk_21":true,"chunk_22":true,"chunk_23":true,"chunk_24":true,"chunk_25":true,"chunk_26":true,"chunk_27":true,"chunk_28":true,"chunk_29":true,"chunk_30":true,"chunk_31":true,"chunk_32":true,"chunk_33":true},"done":34,"assembled":true},"14_Cosmology.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true,"chunk_16":true,"chunk_17":true,"chunk_18":true,"chunk_19":true,"chunk_20":true,"chunk_21":true,"chunk_22":true},"done":23,"assembled":true},"15_Frontiers_of_Physics.txt":{"chunks":{"chunk_0":true,"chunk_1":true,"chunk_2":true,"chunk_3":true,"chunk_4":true,"chunk_5":true,"chunk_6":true,"chunk_7":true,"chunk_8":true,"chunk_9":true,"chunk_10":true,"chunk_11":true,"chunk_12":true,"chunk_13":true,"chunk_14":true,"chunk_15":true,"chunk_16":true,"chunk_17":true,"chunk_18":true,"chunk_19":true,"chunk_20":true,"chunk_21":true,"chunk_22":true,"chunk_23":true,"chunk_24":true,"chunk_25":true,"chunk_26":true,"chunk_27":true,"chunk_28":true},"done":29,"assembled":true}}</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io/2026/05/02/misc/translation/progress/">http://hebangwen.github.io/2026/05/02/misc/translation/progress/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://hebangwen.github.io" target="_blank">Yet Another 何榜文's Blog</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/05/02/misc/translation/output/Preface_cn/" title=""><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2"></div></div><div class="info-2"><div class="info-item-1">Preface序言撰写这本书是一大乐事。它使我们有机会深入思考物理学的所有主要分支，以及它们如何联合起来，构成一幅关于物理世界的连贯图景。最终呈现的，是一部既简明扼要又全面透彻的物理学全景观览。数学是描述我们周围世界诸多现象的自然语言，正如理查德·费曼(Richard Feynman)和吉姆·阿尔-哈利利(Jim Al Khalili)等众多评论者所强调的，数学对于真正理解物理学至关重要。因此，我们的叙述必然是数学化的。我们清晰阐释了支撑现代基础物理的数学推理，并毫不回避地给出了关键方程及其解。 人们对宇宙的科学解释，从未有过如此强烈的求知欲。我们的目标是为基础物理学提供一次启迪人心的巡礼，任何至少学过高中物理和数学的人都能理解。对于那些刚刚走出校门的读者，这本书可以让他们一窥大学物理课程中的大部分内容。本书也适合那些在大学修读过科学或工程数学课程，并希望了解基础物理学直至当前研究前沿的读者。它或许也会吸引那些希望更多了解物理的数学家和计算机科学家。 解释物理世界是许多代人共同努力的成果。今天最优秀的理论，是建立在过去伟大理论的基础之上的。因此，若对牛顿(Newton)、麦克斯韦...</div></div></div></a><a class="pagination-related" href="/2026/04/29/edge-ai-inference-weekly-2026-04-22-2026-04-29/" title="端侧 AI 推理框架周报（2026-04-22 ~ 2026-04-29）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">端侧 AI 推理框架周报（2026-04-22 ~ 2026-04-29）</div></div><div class="info-2"><div class="info-item-1">本周跟踪了 15 个主流端侧 AI 推理框架的开源仓库，其中 9 个有显著更新，共产生 170 次提交。以下是各仓库的重点变化分析。 1. alibaba&#x2F;MNN — 4 commitsVulkan 后端 no-subgroup 降级分支MNN 本周在 Vulkan 后端的 VulkanLinearAttention 和 Conv1x1-Decode 的 gemv 操作中引入了 no-subgroup 降级分支。这是一个非常实用的兼容性改进：  背景：Vulkan subgroup（子组）操作是现代 GPU 做 warp-level 协作的高效方式，但并非所有 Vulkan 实现都支持（特别是 Mesa 驱动的某些 Intel GPU、部分移动端 Mali GPU）。 实现思路：为主路径保留 subgroup 优化的高性能路径，同时为不支持的设备提供了纯线程级替代实现。使得 LLM decode 阶段的注意力计算在更广泛的 Vulkan 设备上可用。  这种”高性能路径 + 通用降级”的架构思路值得借鉴，尤其对于需要跨平台部署的推理框架而言。 CPU ARMv8.2&#...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">65</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">75</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/10/%E7%AB%AF%E4%BE%A7AI%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-05-03-2026-05-10/" title="端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）">端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）</a><time datetime="2026-05-10T01:00:00.000Z" title="发表于 2026-05-10 09:00:00">2026-05-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/05/misc/translation/output/book_with_images_final/" title="无标题">无标题</a><time datetime="2026-05-05T05:27:10.670Z" title="发表于 2026-05-05 13:27:10">2026-05-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/05/misc/translation/images/rendered/render_mapping/" title="无标题">无标题</a><time datetime="2026-05-05T01:46:51.017Z" title="发表于 2026-05-05 09:46:51">2026-05-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/03/misc/translation/output/2_Motions_of_Bodies-Newton's_Laws_cn/" title="无标题">无标题</a><time datetime="2026-05-03T01:02:34.931Z" title="发表于 2026-05-03 09:02:34">2026-05-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/03/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-04-26-2026-05-03/" title="端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）">端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）</a><time datetime="2026-05-03T01:00:00.000Z" title="发表于 2026-05-03 09:00:00">2026-05-03</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
