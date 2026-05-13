@@ -1,0 +1,432 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>MNN Vision Encoder 内存泄漏修复与性能分析 | Yet Another 何榜文's Blog</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="问题背景在 MNN LLM 的 multimodal 推理场景中，当多次调用视觉编码器（vision encoder）时，观察到两个严重问题：  推理延迟随调用次数持续增长（内存泄漏 + 延迟增加） OpenCL 后端下延迟增长尤其严重，15 次调用后延迟膨胀 2.6 倍  本文详细分析三个根因及修复方案，并给出修复前后的真实性能对比数据。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MNN Vision Encoder 内存泄漏修复与性能分析">
+<meta property="og:url" content="http://hebangwen.github.io/2026/05/13/mnn-vision-encoder-memory-leak-fix/index.html">
+<meta property="og:site_name" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:description" content="问题背景在 MNN LLM 的 multimodal 推理场景中，当多次调用视觉编码器（vision encoder）时，观察到两个严重问题：  推理延迟随调用次数持续增长（内存泄漏 + 延迟增加） OpenCL 后端下延迟增长尤其严重，15 次调用后延迟膨胀 2.6 倍  本文详细分析三个根因及修复方案，并给出修复前后的真实性能对比数据。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2026-05-13T15:50:00.000Z">
+<meta property="article:modified_time" content="2026-05-13T16:57:56.061Z">
+<meta property="article:author" content="何榜文">
+<meta property="article:tag" content="MNN">
+<meta property="article:tag" content="性能优化">
+<meta property="article:tag" content="Vision Encoder">
+<meta property="article:tag" content="内存泄漏">
+<meta property="article:tag" content="深度学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MNN Vision Encoder 内存泄漏修复与性能分析",
+  "url": "http://hebangwen.github.io/2026/05/13/mnn-vision-encoder-memory-leak-fix/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2026-05-13T15:50:00.000Z",
+  "dateModified": "2026-05-13T16:57:56.061Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "http://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="http://hebangwen.github.io/2026/05/13/mnn-vision-encoder-memory-leak-fix/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'MNN Vision Encoder 内存泄漏修复与性能分析',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">Yet Another 何榜文's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">MNN Vision Encoder 内存泄漏修复与性能分析</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">MNN Vision Encoder 内存泄漏修复与性能分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-05-13T15:50:00.000Z" title="发表于 2026-05-13 23:50:00">2026-05-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-05-13T16:57:56.061Z" title="更新于 2026-05-14 00:57:56">2026-05-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI-%E7%B3%BB%E7%BB%9F/">AI 系统</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><h2 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h2><p>在 MNN LLM 的 multimodal 推理场景中，当多次调用视觉编码器（vision encoder）时，观察到两个严重问题：</p>
+<ol>
+<li><strong>推理延迟随调用次数持续增长</strong>（内存泄漏 + 延迟增加）</li>
+<li><strong>OpenCL 后端下延迟增长尤其严重，15 次调用后延迟膨胀 2.6 倍</strong></li>
+</ol>
+<p>本文详细分析三个根因及修复方案，并给出修复前后的真实性能对比数据。</p>
+<span id="more"></span>
+
+<h2 id="根因一：Vision-Encoder-错误共享-LLM-的-KVCache"><a href="#根因一：Vision-Encoder-错误共享-LLM-的-KVCache" class="headerlink" title="根因一：Vision Encoder 错误共享 LLM 的 KVCache"></a>根因一：Vision Encoder 错误共享 LLM 的 KVCache</h2><h3 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h3><p>MNN 的 multimodal 架构中，LLM backbone 和 vision&#x2F;audio processor 各自维护独立的 <code>RuntimeManager</code>。然而在 <code>Omni::load()</code> 中，processor 的 runtime manager 会调用 <code>setRuntimeHint()</code>，该方法设置了 <code>KVCACHE_INFO</code> hint 指向 LLM 的 <code>KVMeta</code>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// llm.cpp - setRuntimeHint</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">Llm::setRuntimeHint</span><span class="params">(std::shared_ptr&lt;RuntimeManager&gt; &amp;rtg)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    rtg-&gt;<span class="built_in">setHintPtr</span>(Interpreter::KVCACHE_INFO, mMeta.<span class="built_in">get</span>());  <span class="comment">// ← 指向 LLM 的 KVMeta</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这导致 vision encoder 的 self-attention 层（<code>matmul_qk_div_mask</code>）读取到了 LLM 的 <code>pastKVLen</code> 和 <code>kvLen</code> 参数。随着 LLM 每次推理的进行，这些参数不断增长，vision encoder 的 attention 计算量也随之持续膨胀。</p>
+<h3 id="修复方案"><a href="#修复方案" class="headerlink" title="修复方案"></a>修复方案</h3><p><strong>步骤一</strong>：在 <code>Omni::load()</code> 中，processor runtime manager 不再调用完整的 <code>setRuntimeHint()</code>，仅对非 CPU 后端设置编译缓存文件：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 旧代码：调用 setRuntimeHint，设置了包含 KVCACHE_INFO 在内的所有 LLM hint</span></span><br><span class="line"><span class="built_in">setRuntimeHint</span>(mProcessorRuntimeManager);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 新代码：仅设置编译缓存，跳过 LLM 专属的 KVCACHE_INFO</span></span><br><span class="line"><span class="keyword">if</span> (config.type != MNN_FORWARD_CPU) &#123;</span><br><span class="line">    std::string cacheFilePath = mConfig-&gt;<span class="built_in">tmp_path</span>();</span><br><span class="line">    <span class="keyword">if</span> (cacheFilePath.<span class="built_in">length</span>() == <span class="number">0</span>) cacheFilePath = <span class="string">&quot;.&quot;</span>;</span><br><span class="line">    mProcessorRuntimeManager-&gt;<span class="built_in">setCache</span>(cacheFilePath + <span class="string">&quot;/mnn_cachefile.bin&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>步骤二</strong>：在 <code>visionProcess()</code> 和 <code>audioProcess()</code> 每次前向前，显式重置 <code>KVCACHE_INFO</code> 为 nullptr：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mProcessorRuntimeManager-&gt;<span class="built_in">setHintPtr</span>(Interpreter::KVCACHE_INFO, <span class="literal">nullptr</span>);</span><br></pre></td></tr></table></figure>
+
+<p><strong>步骤三</strong>：重构 <code>setRuntimeHint()</code> 以支持 <code>mllm</code> 参数，使其能读取 <code>mllm_config_</code> 中的 <code>backend_type</code>，而非始终读取 LLM 的 <code>backend_type</code>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">setRuntimeHint</span><span class="params">(std::shared_ptr&lt;RuntimeManager&gt; &amp;rtg, <span class="type">bool</span> mllm = <span class="literal">false</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="根因二：Raster-算子统计变量未及时清空"><a href="#根因二：Raster-算子统计变量未及时清空" class="headerlink" title="根因二：Raster 算子统计变量未及时清空"></a>根因二：Raster 算子统计变量未及时清空</h2><h3 id="问题分析-1"><a href="#问题分析-1" class="headerlink" title="问题分析"></a>问题分析</h3><p>在动态图模式下，每次推理都会创建新的回调链。Raster（数据重排）算子的执行类中，部分成员变量仅在构造时初始化一次，在 <code>onEncode()</code> 或 <code>onResize()</code> 中持续追加数据。由于动态图的回调链在每次推理时重新构建，这些变量未能清空，导致 <code>mCombineInfo</code>（OpenCL）、<code>mFastBlit</code>（CUDA）、<code>mDatas</code>（NNAPI）无限累积。</p>
+<h3 id="修复方案-1"><a href="#修复方案-1" class="headerlink" title="修复方案"></a>修复方案</h3><p>在三个后端的 Raster 执行类中添加 <code>clear()</code> 操作：</p>
+<table>
+<thead>
+<tr>
+<th>后端</th>
+<th>文件</th>
+<th>位置</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OpenCL (buffer)</td>
+<td><code>RasterBufExecution.cpp</code></td>
+<td><code>onEncode()</code></td>
+<td><code>mCombineInfo.clear()</code></td>
+</tr>
+<tr>
+<td>CUDA</td>
+<td><code>RasterExecution.cpp</code></td>
+<td><code>onResize()</code></td>
+<td><code>mFastBlit.clear()</code></td>
+</tr>
+<tr>
+<td>NNAPI</td>
+<td><code>NNAPIRaster.cpp</code></td>
+<td><code>onResize()</code></td>
+<td><code>mDatas.clear()</code></td>
+</tr>
+</tbody></table>
+<h2 id="根因三：Vision-Runtime-使用错误的-Cache-File"><a href="#根因三：Vision-Runtime-使用错误的-Cache-File" class="headerlink" title="根因三：Vision Runtime 使用错误的 Cache File"></a>根因三：Vision Runtime 使用错误的 Cache File</h2><h3 id="问题分析-2"><a href="#问题分析-2" class="headerlink" title="问题分析"></a>问题分析</h3><p>当 LLM backbone 使用 CPU，而 vision encoder 使用 OpenCL 等不同后端时，<code>setRuntimeHint()</code> 始终使用 <code>mConfig-&gt;backend_type()</code>（LLM 的 backend）来决定是否设置 cache file。这导致 vision 的 runtime manager 未能获得正确的 OpenCL 编译缓存文件，每次推理都需要重新编译 OpenCL kernel，产生额外开销。</p>
+<h3 id="修复方案-2"><a href="#修复方案-2" class="headerlink" title="修复方案"></a>修复方案</h3><p>在 <code>setRuntimeHint()</code> 中添加 <code>mllm</code> 参数，当为 processor 设置 hint 时，使用 <code>mConfig-&gt;backend_type(true)</code> 读取 <code>mllm.backend_type</code>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="built_in">backend_type_convert</span>(mConfig-&gt;<span class="built_in">backend_type</span>(mllm)) != <span class="number">0</span>) &#123;</span><br><span class="line">    std::string cacheFilePath = tmpPath.<span class="built_in">length</span>() != <span class="number">0</span> ? tmpPath : <span class="string">&quot;.&quot;</span>;</span><br><span class="line">    rtg-&gt;<span class="built_in">setCache</span>(cacheFilePath + <span class="string">&quot;/mnn_cachefile.bin&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h2><h3 id="测试环境"><a href="#测试环境" class="headerlink" title="测试环境"></a>测试环境</h3><ul>
+<li><strong>硬件</strong>: Rockchip ARM64 (aarch64) @ ~1.8-2.7 GHz</li>
+<li><strong>模型</strong>: Qwen3.5-0.8B-MNN (336×336 visual input)</li>
+<li><strong>测试工具</strong>: <code>bench_vision</code>（自定义 benchmark，支持多后端 × 多尺寸）</li>
+<li><strong>测试方法</strong>: 每个后端预热 3 次后连续 benchmark 15-20 次</li>
+</ul>
+<h3 id="CPU-后端"><a href="#CPU-后端" class="headerlink" title="CPU 后端"></a>CPU 后端</h3><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>修复前</th>
+<th>修复后</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Mean ± Std</td>
+<td>2613 ± 234 ms</td>
+<td>2639 ± 208 ms</td>
+</tr>
+<tr>
+<td>Min</td>
+<td>1734 ms (异常)</td>
+<td>1730 ms (异常)</td>
+</tr>
+<tr>
+<td>Max</td>
+<td>2693 ms</td>
+<td>2697 ms</td>
+</tr>
+</tbody></table>
+<p>修复前 CPU 端存在<strong>间歇性异常低延迟</strong>（~1740ms，比正常值快 35%），这是 KVCACHE 污染导致 vision encoder 使用了 LLM 的错误 pastKVLen，跳过了部分计算，结果不可靠。</p>
+<h3 id="OpenCL-后端（关键对比）"><a href="#OpenCL-后端（关键对比）" class="headerlink" title="OpenCL 后端（关键对比）"></a>OpenCL 后端（关键对比）</h3><table>
+<thead>
+<tr>
+<th align="center">Run #</th>
+<th align="center">修复前</th>
+<th align="center">修复后</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">702 ms</td>
+<td align="center">802 ms</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">723 ms</td>
+<td align="center">830 ms</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">773 ms</td>
+<td align="center">849 ms</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">959 ms</td>
+<td align="center">882 ms</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">1023 ms</td>
+<td align="center">858 ms</td>
+</tr>
+<tr>
+<td align="center">6</td>
+<td align="center">1128 ms</td>
+<td align="center">866 ms</td>
+</tr>
+<tr>
+<td align="center">7</td>
+<td align="center">1163 ms</td>
+<td align="center">860 ms</td>
+</tr>
+<tr>
+<td align="center">8</td>
+<td align="center">1219 ms</td>
+<td align="center">865 ms</td>
+</tr>
+<tr>
+<td align="center">9</td>
+<td align="center">1358 ms</td>
+<td align="center">865 ms</td>
+</tr>
+<tr>
+<td align="center">10</td>
+<td align="center">1510 ms</td>
+<td align="center">870 ms</td>
+</tr>
+<tr>
+<td align="center">11</td>
+<td align="center">1575 ms</td>
+<td align="center">866 ms</td>
+</tr>
+<tr>
+<td align="center">12</td>
+<td align="center">1646 ms</td>
+<td align="center">864 ms</td>
+</tr>
+<tr>
+<td align="center">13</td>
+<td align="center">1732 ms</td>
+<td align="center">868 ms</td>
+</tr>
+<tr>
+<td align="center">14</td>
+<td align="center">1805 ms</td>
+<td align="center">869 ms</td>
+</tr>
+<tr>
+<td align="center">15</td>
+<td align="center"><strong>1848 ms</strong></td>
+<td align="center"><strong>868 ms</strong></td>
+</tr>
+</tbody></table>
+<p><strong>修复前</strong>：延迟从 702ms 持续增长至 1848ms，<strong>15 次调用后膨胀 2.6 倍</strong>，呈近似线性增长趋势。</p>
+<p><strong>修复后</strong>：延迟稳定在 <strong>862 ± 16 ms</strong>（StdDev 仅 1.9%），无增长趋势。</p>
+<h3 id="多尺寸支持"><a href="#多尺寸支持" class="headerlink" title="多尺寸支持"></a>多尺寸支持</h3><p>修复后的 benchmark 工具支持同时测试多个尺寸：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bench_vision -c config.json -i img.jpg -B cpu,opencl -S 336x336,448x448</span><br></pre></td></tr></table></figure>
+
+<p>输出示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">| model | image | size | backend | runs | mean ± std (ms) | min (ms) | max (ms) |</span><br><span class="line">|c.json|bus.jpg|336x336|cpu|10|938.11 ± 3.58|935.35|943.17|</span><br><span class="line">|c.json|bus.jpg|224x224|cpu|10|333.59 ± 0.29|333.30|333.88|</span><br><span class="line">|c.json|bus.jpg|336x336|opencl|10|1137.87 ± 23.32|1114.54|1161.19|</span><br><span class="line">|c.json|bus.jpg|224x224|opencl|10|448.91 ± 10.90|438.01|459.81|</span><br></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>三个修复分别针对：</p>
+<ol>
+<li><strong>KVCACHE 错误共享</strong>（核心）：vision encoder self-attention 错用 LLM 的 pastKVLen，导致 attention 计算量持续膨胀——这是延迟增长的<strong>主要原因</strong></li>
+<li><strong>Raster 累积</strong>：辅助问题，在 OpenCL 后端运行时叠加影响了内存使用</li>
+<li><strong>Cache File 后端不匹配</strong>：OpenCL 后端需要正确的编译缓存文件，否则每次推理额外编译 kernel</li>
+</ol>
+<p>修复后 vision encoder 的延迟<strong>在任何后端下均不随调用次数增长</strong>，OpenCL 端从 2.6x 膨胀降至稳定 ~860ms。同时修复后的代码还同步修复了 audio encoder 的相同问题，并增添了异步模式的 readMap 保护。</p>
+<h2 id="相关-PR"><a href="#相关-PR" class="headerlink" title="相关 PR"></a>相关 PR</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/alibaba/MNN/pull/4441">https://github.com/alibaba/MNN/pull/4441</a></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io/2026/05/13/mnn-vision-encoder-memory-leak-fix/">http://hebangwen.github.io/2026/05/13/mnn-vision-encoder-memory-leak-fix/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://hebangwen.github.io" target="_blank">Yet Another 何榜文's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/MNN/">MNN</a><a class="post-meta__tags" href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化</a><a class="post-meta__tags" href="/tags/Vision-Encoder/">Vision Encoder</a><a class="post-meta__tags" href="/tags/%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/">内存泄漏</a><a class="post-meta__tags" href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">深度学习</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/05/13/analysis-of-magic-number-33377335/" title="魔法数字 33377335（0x01FD4C37）的真相"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">魔法数字 33377335（0x01FD4C37）的真相</div></div><div class="info-2"><div class="info-item-1">真相：DEEPSEEK 的 T9 九宫格编码33377335 在九宫格手机键盘上对应 DEEPSEEK 这 8 个字母。 在传统 T9 手机键盘（九键输入法）上，字母与数字的映射为：    按键 字母    2 ABC   3 DEF   4 GHI   5 JKL   6 MNO   7 PQRS   8 TUV   9 WXYZ   逐字母解码：    字母 按键 在按键上的位置    D 3 第 1 个（DEF → D）   E 3 第 2 个（DEF → E）   E 3 第 2 个   P 7 第 1 个（PQRS → P）   S 7 第 4 个（PQRS → S）   E 3 第 2 个   E 3 第 2 个   K 5 第 2 个（JKL → K）   所以 D-E-E-P-S-E-E-K &#x3D; 3-3-3-7-7-3-3-5 &#x3D; 33377335 ✅  这不是一个 IEEE 754 浮点数常量，不是 GPU 工作组大小，而是一个彩蛋数字 🥚 （不过说回来，这个数字的质因数分解 5 × 1931 × 3457 倒是货真价实的——就跟你把 DE...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/05/03/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-04-26-2026-05-03/" title="端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-03</div><div class="info-item-2">端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）</div></div><div class="info-2"><div class="info-item-1">本周（2026-04-26 ~ 2026-05-03）共跟踪 15 个仓库，其中 9 个仓库有更新，合计 165 次提交。以下是对各仓库关键变化的详细解读。  本周无更新的仓库： tencent&#x2F;ncnn、airockchip&#x2F;rknn-toolkit2、airockchip&#x2F;rknn-llm、futz12&#x2F;ncnn_llm、mlc-ai&#x2F;mlc-llm、ml-explore&#x2F;mlx-lm   ggml-org&#x2F;llama.cpp（30 commits）本周 llama.cpp 依然保持了最高的活动量，涵盖后端优化、新硬件支持和用户界面重构。 CUDA &#x2F; GPU 后端 多 GPU PCI Bus ID 去重修复（#22533）：修复了当多个 GPU 共享 PCI Bus ID 时，CUDA 设备检测 OOM 导致仅发现 1 张卡而忽略其他 3 张的严重 bug。同时同步更新了 HIP 和 MUSA 宏的支持。 Flash Attention Pascal 架构修复（#22541）：Tile-base...</div></div></div></a><a class="pagination-related" href="/2026/05/10/%E7%AB%AF%E4%BE%A7AI%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-05-03-2026-05-10/" title="端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-10</div><div class="info-item-2">端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）</div></div><div class="info-2"><div class="info-item-1">本周（5月3日~5月10日），15 个开源仓库中有 9 个产生了更新，共计 168 次提交。以下是各仓库的关键变化及技术分析。 tencent&#x2F;ncnn：Vulkan 管线缓存、PNNX 功能增强与 x86 修复本周 ncnn 共有 13 次提交，涵盖 Vulkan 后端、PNNX 工具链及 x86 优化等多个方面。 Vulkan 管线持久化缓存最值得关注的变化是 Vulkan 后端新增了管线缓存持久化支持（PR #6702）。此前 ncnn 的 Vulkan 后端每次运行时都需要重新编译 SPIR-V 着色器，这在移动端 GPU（如 Adreno、Mali）上可能导致数秒的启动延迟。新的实现按着色器哈希缓存编译后的管线对象，并附带严格的设备&#x2F;驱动&#x2F;着色器校验，确保缓存不会在不同 GPU 间误用。这对生产环境中需要快速冷启动的场景意义重大。 同时，PR #6705 修复了 Vulkan 扩展依赖链的处理——某些扩展存在传递依赖（如 VK_KHR_16bit_storage 依赖 VK_KHR_storage_buffer_storage_class）...</div></div></div></a><a class="pagination-related" href="/2024/05/21/MNN-OP-AnyNet/" title="MNN 自定义算子，以 AnyNet 为例"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-05-21</div><div class="info-item-2">MNN 自定义算子，以 AnyNet 为例</div></div><div class="info-2"><div class="info-item-1">1. 介绍本文主要介绍如何在 MNN 中添加自定义算子，以 AnyNet 为例。AnyNet 添加了一个自定义算子，虽然可以用 pytorch 表达，并且导出 ONNX 和 MNN，但是节点过多，可视化工具无法很好的展示，因此本文尝试将 AnyNet 中的自定义算子添加到 MNN 中。 自定义 MNN 算子需要先将 pytorch 计算逻辑导出成 ONNX 节点，并且由 MNN 来解释。这需要首先将 pytorch 计算包装成 torch.autograd.Function，然后通过 torch.onnx.export 导出 ONNX 节点。然后通过 MNN 的 MNN::OpConverter 来解释 ONNX 节点。 2. AnyNet AnyNet 自定义了一个 SPNet 算子，并且使用 CUDA 实现了这个算子。SPN的结构，分为两种，分别是单路连接和三路连接：  实际上就是通过一个权重矩阵，上一个点迭代地给下一个点权重，对于单路连接和三路连接，有： $$\begin{align}h_{k,t} &amp;&#x3D; (1 - p_{k,t}) \cdot x_{k,...</div></div></div></a><a class="pagination-related" href="/2026/04/29/edge-ai-inference-weekly-2026-04-22-2026-04-29/" title="端侧 AI 推理框架周报（2026-04-22 ~ 2026-04-29）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-29</div><div class="info-item-2">端侧 AI 推理框架周报（2026-04-22 ~ 2026-04-29）</div></div><div class="info-2"><div class="info-item-1">本周跟踪了 15 个主流端侧 AI 推理框架的开源仓库，其中 9 个有显著更新，共产生 170 次提交。以下是各仓库的重点变化分析。 1. alibaba&#x2F;MNN — 4 commitsVulkan 后端 no-subgroup 降级分支MNN 本周在 Vulkan 后端的 VulkanLinearAttention 和 Conv1x1-Decode 的 gemv 操作中引入了 no-subgroup 降级分支。这是一个非常实用的兼容性改进：  背景：Vulkan subgroup（子组）操作是现代 GPU 做 warp-level 协作的高效方式，但并非所有 Vulkan 实现都支持（特别是 Mesa 驱动的某些 Intel GPU、部分移动端 Mali GPU）。 实现思路：为主路径保留 subgroup 优化的高性能路径，同时为不支持的设备提供了纯线程级替代实现。使得 LLM decode 阶段的注意力计算在更广泛的 Vulkan 设备上可用。  这种”高性能路径 + 通用降级”的架构思路值得借鉴，尤其对于需要跨平台部署的推理框架而言。 CPU ARMv8.2&#...</div></div></div></a><a class="pagination-related" href="/2026/03/19/torch-chunked-gated-delta-rule-optimization/" title="Torch Chunked Gated Delta Rule 并行优化指南"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-19</div><div class="info-item-2">Torch Chunked Gated Delta Rule 并行优化指南</div></div><div class="info-2"><div class="info-item-1">引言在实现 Chunked Gated Delta Rule 时，原始代码中存在两个明显的性能瓶颈，阻碍了 GPU 并行计算的高效执行。本文将详细分析这两个问题，并提供针对性的优化方案。 原始代码分析以下是原始实现中的关键代码片段： 12345678910111213141516171819202122232425262728293031323334def torch_chunk_gated_delta_rule(    query, key, value, g, beta,    chunk_size=64, initial_state=None,    output_final_state=False, use_qk_l2norm_in_kernel=False,):    # ... 省略初始化和 reshape 代码 ...        mask = torch.triu(torch.ones(chunk_size, chunk_size, dtype=torch.bool, device=query.device), diagonal=0)        # chun...</div></div></div></a><a class="pagination-related" href="/2026/03/18/SonicMoE-Accelerating-MoE/" title="SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-18</div><div class="info-item-2">SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化</div></div><div class="info-2"><div class="info-item-1">SonicMoE: 加速 MoE 模型的 IO 与 Tile 感知优化 论文地址: https://arxiv.org/abs/2512.14080代码开源: https://github.com/Dao-AILab/sonic-moe作者: Wentao Guo, Mayank Mishra, Xinle Cheng, Ion Stoica, Tri Dao  背景：MoE 模型的趋势与挑战近年来，混合专家模型 (Mixture of Experts, MoE) 已成为扩展大语言模型的主流架构。与 Dense 模型相比，MoE 可以在不显著增加计算成本的前提下大幅提升参数量。 MoE 的两个核心趋势从最新的开源模型（如 DeepSeek-V3、Qwen3 MoE、Kimi K2）可以看出两个明显的趋势：  细粒度 (Fine-grained): 专家的中间维度越来越小  Mixtral 8x22B: d&#x2F;n &#x3D; 0.38 DeepSeek-V3: d&#x2F;n &#x3D; 3.50 Qwen3-Next: d&#x2F;n &#x3D; 4.00   ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">46</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">81</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E8%83%8C%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text">问题背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B9%E5%9B%A0%E4%B8%80%EF%BC%9AVision-Encoder-%E9%94%99%E8%AF%AF%E5%85%B1%E4%BA%AB-LLM-%E7%9A%84-KVCache"><span class="toc-number">2.</span> <span class="toc-text">根因一：Vision Encoder 错误共享 LLM 的 KVCache</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90"><span class="toc-number">2.1.</span> <span class="toc-text">问题分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%A1%88"><span class="toc-number">2.2.</span> <span class="toc-text">修复方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B9%E5%9B%A0%E4%BA%8C%EF%BC%9ARaster-%E7%AE%97%E5%AD%90%E7%BB%9F%E8%AE%A1%E5%8F%98%E9%87%8F%E6%9C%AA%E5%8F%8A%E6%97%B6%E6%B8%85%E7%A9%BA"><span class="toc-number">3.</span> <span class="toc-text">根因二：Raster 算子统计变量未及时清空</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90-1"><span class="toc-number">3.1.</span> <span class="toc-text">问题分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%A1%88-1"><span class="toc-number">3.2.</span> <span class="toc-text">修复方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B9%E5%9B%A0%E4%B8%89%EF%BC%9AVision-Runtime-%E4%BD%BF%E7%94%A8%E9%94%99%E8%AF%AF%E7%9A%84-Cache-File"><span class="toc-number">4.</span> <span class="toc-text">根因三：Vision Runtime 使用错误的 Cache File</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90-2"><span class="toc-number">4.1.</span> <span class="toc-text">问题分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%A1%88-2"><span class="toc-number">4.2.</span> <span class="toc-text">修复方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94"><span class="toc-number">5.</span> <span class="toc-text">性能对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83"><span class="toc-number">5.1.</span> <span class="toc-text">测试环境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CPU-%E5%90%8E%E7%AB%AF"><span class="toc-number">5.2.</span> <span class="toc-text">CPU 后端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OpenCL-%E5%90%8E%E7%AB%AF%EF%BC%88%E5%85%B3%E9%94%AE%E5%AF%B9%E6%AF%94%EF%BC%89"><span class="toc-number">5.3.</span> <span class="toc-text">OpenCL 后端（关键对比）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E5%B0%BA%E5%AF%B8%E6%94%AF%E6%8C%81"><span class="toc-number">5.4.</span> <span class="toc-text">多尺寸支持</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">6.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3-PR"><span class="toc-number">7.</span> <span class="toc-text">相关 PR</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/13/mnn-vision-encoder-memory-leak-fix/" title="MNN Vision Encoder 内存泄漏修复与性能分析">MNN Vision Encoder 内存泄漏修复与性能分析</a><time datetime="2026-05-13T15:50:00.000Z" title="发表于 2026-05-13 23:50:00">2026-05-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/13/analysis-of-magic-number-33377335/" title="魔法数字 33377335（0x01FD4C37）的真相">魔法数字 33377335（0x01FD4C37）的真相</a><time datetime="2026-05-13T10:00:00.000Z" title="发表于 2026-05-13 18:00:00">2026-05-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/10/%E7%AB%AF%E4%BE%A7AI%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-05-03-2026-05-10/" title="端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）">端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）</a><time datetime="2026-05-10T01:00:00.000Z" title="发表于 2026-05-10 09:00:00">2026-05-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/03/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-04-26-2026-05-03/" title="端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）">端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）</a><time datetime="2026-05-03T01:00:00.000Z" title="发表于 2026-05-03 09:00:00">2026-05-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/29/edge-ai-inference-weekly-2026-04-22-2026-04-29/" title="端侧 AI 推理框架周报（2026-04-22 ~ 2026-04-29）">端侧 AI 推理框架周报（2026-04-22 ~ 2026-04-29）</a><time datetime="2026-04-29T14:00:00.000Z" title="发表于 2026-04-29 22:00:00">2026-04-29</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
