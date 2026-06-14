@@ -1,0 +1,433 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>端侧 AI 推理框架周报（2026-06-07 ~ 2026-06-14） | Yet Another 何榜文's Blog</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本周（2026-06-07 ~ 2026-06-14）共追踪 15 个开源推理框架&#x2F;工具链仓库，其中 11 个有更新，总计 182 次提交。以下是各仓库的关键变化与技术分析。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="端侧 AI 推理框架周报（2026-06-07 ~ 2026-06-14）">
+<meta property="og:url" content="http://hebangwen.github.io/2026/06/14/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-06-07-2026-06-14/index.html">
+<meta property="og:site_name" content="Yet Another 何榜文&#39;s Blog">
+<meta property="og:description" content="本周（2026-06-07 ~ 2026-06-14）共追踪 15 个开源推理框架&#x2F;工具链仓库，其中 11 个有更新，总计 182 次提交。以下是各仓库的关键变化与技术分析。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2026-06-14T01:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-14T01:02:18.027Z">
+<meta property="article:author" content="何榜文">
+<meta property="article:tag" content="MNN">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="周报">
+<meta property="article:tag" content="推理框架">
+<meta property="article:tag" content="llama.cpp">
+<meta property="article:tag" content="TVM">
+<meta property="article:tag" content="ONNX Runtime">
+<meta property="article:tag" content="ExecuTorch">
+<meta property="article:tag" content="端侧推理">
+<meta property="article:tag" content="WebGPU">
+<meta property="article:tag" content="Vulkan">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "端侧 AI 推理框架周报（2026-06-07 ~ 2026-06-14）",
+  "url": "http://hebangwen.github.io/2026/06/14/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-06-07-2026-06-14/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2026-06-14T01:00:00.000Z",
+  "dateModified": "2026-06-14T01:02:18.027Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "http://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="http://hebangwen.github.io/2026/06/14/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-06-07-2026-06-14/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '端侧 AI 推理框架周报（2026-06-07 ~ 2026-06-14）',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">Yet Another 何榜文's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">端侧 AI 推理框架周报（2026-06-07 ~ 2026-06-14）</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">端侧 AI 推理框架周报（2026-06-07 ~ 2026-06-14）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-14T01:00:00.000Z" title="发表于 2026-06-14 09:00:00">2026-06-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-14T01:02:18.027Z" title="更新于 2026-06-14 09:02:18">2026-06-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI-%E7%B3%BB%E7%BB%9F/">AI 系统</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><p>本周（2026-06-07 ~ 2026-06-14）共追踪 15 个开源推理框架&#x2F;工具链仓库，其中 11 个有更新，总计 182 次提交。以下是各仓库的关键变化与技术分析。</p>
+<span id="more"></span>
+
+<h2 id="alibaba-MNN-—-8-commits"><a href="#alibaba-MNN-—-8-commits" class="headerlink" title="alibaba&#x2F;MNN — 8 commits"></a>alibaba&#x2F;MNN — 8 commits</h2><p><strong>Wan2.1 视频生成模型支持</strong></p>
+<p>MNN 本周合并了对 Wan2.1-T2V-1.3B 视频生成模型的导出和推理支持（#4469）。这是继之前支持的 Wan2.1 文生图模型之后的进一步扩展，将 MNN 的 Diffusion 推理能力从图像扩展到视频生成领域。SD1.5 的 resize cache warmup bug 也在同一波修复中（#4530）。</p>
+<p><strong>LLM 核心修复</strong></p>
+<ul>
+<li><strong>Qwen2.5-Omni 音频预处理</strong>（#4459）：修复了多模态音频输入在预处理中的边界情况，这对于 Omni 模型在实际场景中的部署至关重要。</li>
+<li><strong>gapLen 计算 bug</strong>（#4527）：修复了 <code>_maskQK</code> 中 <code>mask</code> 为空时提前返回导致的 <code>gapLen</code> 未初始化问题，这个 patch 来自阿里内部代码审查（Merge-Request 27957084）。</li>
+</ul>
+<p><strong>后端优化</strong></p>
+<ul>
+<li><strong>CPU int4 重排加速</strong>（#4511）：优化 Reducer 非 fast path 下的 int4 数据重排，减少不必要的路径分支。</li>
+<li><strong>Metal Convolution1x1</strong>（#4520）：优化分支选择逻辑，提升 Apple GPU 上的推理性能。</li>
+<li><strong>CUDA FP16FP32Mix Softmax&#x2F;MatMul</strong>（#4476）：修复了混合精度模式下 Softmax 的回显伪影（echo artifact）和 MatMul 精度类型问题。</li>
+</ul>
+<h2 id="sophgo-tpu-mlir-—-2-commits"><a href="#sophgo-tpu-mlir-—-2-commits" class="headerlink" title="sophgo&#x2F;tpu-mlir — 2 commits"></a>sophgo&#x2F;tpu-mlir — 2 commits</h2><p>本周主要是<strong>构建系统清理</strong>：将 PPL（算能的底层计算库）从源码内建改为外部下载引用，大幅缩减仓库体积。同时优化了 release 脚本，移除了不再使用的发布文件。这表明 TPU-MLIR 正在往更模块化、更易于 CI&#x2F;CD 的方向演进。</p>
+<h2 id="sophgo-LLM-TPU-—-2-commits"><a href="#sophgo-LLM-TPU-—-2-commits" class="headerlink" title="sophgo&#x2F;LLM-TPU — 2 commits"></a>sophgo&#x2F;LLM-TPU — 2 commits</h2><p><strong>Qwen3.5 历史对话支持</strong>：为 Qwen3.5 增加了 history 上下文能力，同时上传了 Qwen3.5-35B 的 bmodel 模型文件。另外修复了 C++ demo 中 <code>prefill_mask</code> 的初始化问题。随着 Qwen3.5 系列模型的发布，算能平台上的部署需求明显在增加。</p>
+<h2 id="ggml-org-llama-cpp-—-30-commits"><a href="#ggml-org-llama-cpp-—-30-commits" class="headerlink" title="ggml-org&#x2F;llama.cpp — 30 commits"></a>ggml-org&#x2F;llama.cpp — 30 commits</h2><p>本周 llama.cpp 迎来了大量重要更新。</p>
+<p><strong>ggml 0.15.0 版本发布</strong></p>
+<p>ggml 版本号连续跳跃：先是 6 月 11 日升级到 <strong>0.15.0</strong>（#1539），次日又发布 <strong>0.15.1</strong> 补丁（#1541）。伴随版本更新同步了多个底层优化。</p>
+<p><strong>EAGLE3 投机解码支持</strong>（#18039）</p>
+<p>这是本周最重大的功能更新。EAGLE3 是 EAGLE 系列投机解码框架的第三代，相比标准自回归解码，投机解码通过小模型预草拟多个 token 再经大模型验证，能显著降低推理延迟。llama.cpp 的 EAGLE3 实现支持从目标模型中提取 layer 输入，配合 Gemma4 等模型使用。</p>
+<p><strong>cohere2-MoE 架构支持</strong>（#24260）</p>
+<p>为 MoE（混合专家）架构的 cohere2 模型添加了完整的架构支持，包括路由、共享 expert 的 lookup 逻辑适配。</p>
+<p><strong>mtmd 多模态 batching API</strong>（#24384）</p>
+<p><code>mtmd</code>（multi-modal transformer decoder）新增了 batching API，支持批量多模态输入处理，已通过 Gemma4 视觉模型验证。这是向生产级多模态部署迈出的重要一步。</p>
+<p><strong>Vulkan 后端大幅增强</strong></p>
+<ul>
+<li><strong>非连续 unary&#x2F;GLU 算子支持</strong>（#24215）：将 unary 和 GLU 操作重写为支持非连续张量，使用 fastdiv 进行索引计算。</li>
+<li><strong>Adreno q5_0&#x2F;q5_1 内核</strong>（#24319）：为 Qualcomm Adreno GPU 增加了 q5_0 和 q5_1 量化格式的 GEMM&#x2F;GEMV 内核，这是对移动端 GPU 推理的重要补充。</li>
+<li><strong>Pipeline barrier 修复</strong>（#23770）：为 memcpy 读操作添加 barrier，确保 Vulkan 后端的正确性。</li>
+<li><strong>连续 buffer 传输 fast path</strong>（#23973）：为 Vulkan 增加连续 buffer 传输的优化路径。</li>
+</ul>
+<p><strong>WebUI &#x2F; PWA 支持</strong>（#23871）</p>
+<p>llama.cpp 的 WebUI 正式支持 PWA（Progressive Web App），包括离线缓存、Service Worker、启动屏和自动更新检测，使其更像原生应用。</p>
+<p><strong>JPEG EXIF 方向处理</strong>（#24196）</p>
+<p>修复了多模态场景下智能手机照片因 EXIF 旋转方向信息被忽略而导致图片显示异常的问题——浏览器解码时自动应用旋转，mtmd 不再需要关心 EXIF 标签。</p>
+<p><strong>其他重要变更</strong></p>
+<ul>
+<li><strong>OpenCL q5_0&#x2F;q5_1</strong>：Adreno GPU 的额外 OpenCL 后端支持。</li>
+<li><strong>SYCL CI 修复</strong>：恢复 Intel SYCL 后端的构建与发布。</li>
+<li><strong>推理预算配置修复</strong>（#24517）：修复了 WebUI 的 <code>thinking_budget_tokens</code> 请求被 <code>model.ini</code> 配置覆盖的优先级问题。</li>
+<li><strong>CUDA Docker GCC 版本支持</strong>（#24447）：Docker 构建时可指定 CUDA 编译器的 GCC 版本。</li>
+</ul>
+<h2 id="qualcomm-ai-hub-models-—-30-commits"><a href="#qualcomm-ai-hub-models-—-30-commits" class="headerlink" title="qualcomm&#x2F;ai-hub-models — 30 commits"></a>qualcomm&#x2F;ai-hub-models — 30 commits</h2><p>高通 AI Hub 模型库本周主要是<strong>持续集成与质量保障</strong>方向的改进。</p>
+<p><strong>LLM 模型迁移与新 Driver</strong></p>
+<ul>
+<li>Llama 3.2 1B&#x2F;3B 和 Qwen 2.5 VL 7B 迁移到新 driver（#3479）。</li>
+<li>Llama 3.2 3B 模型代码重构为统一格式，提取共享代码到 <code>_shared/llama3/model.py</code>（#3464）。</li>
+<li>QDC（Qualcomm Device Cloud）任务改进：增加 sleep 和非 burst 模式以稳定完成 100 prompt 测试（#3514）。</li>
+</ul>
+<p><strong>评测体系改进</strong></p>
+<ul>
+<li><strong>MMMU 评测数据集</strong>（#3445）：添加了 MMMU（Massive Multi-discipline Multimodal Understanding）多模态理解基准评测。注意 baseline 需在 FP32 下运行，FP16 会显著降低分数。</li>
+<li><strong>Scorecard 负载均衡</strong>（#3505）：基于历史逐阶段运行时间对 scorecard 分片进行动态负载均衡，解决了部分分片耗时 14h 而其它仅 2h 的严重不均衡问题。</li>
+<li><strong>BERT 精度修复</strong>（#3527）：发现所有 BERT 模型因错误的 dataset cache key 共享了同一个 ground truth，导致多模型评测结果完全错误。</li>
+</ul>
+<p><strong>技术基础设施</strong></p>
+<ul>
+<li><strong>ONNX EP 全设备强制启用</strong>（#3520）。</li>
+<li><strong>S26 设备支持</strong>（#3509），同时清理了 <code>-for-galaxy</code> 后缀的处理逻辑。</li>
+<li><strong>GPU 集群迁移</strong>（#3454）：LLM 性能测试迁移到 GPU 集群。</li>
+<li><strong>qai_hub 0.49 适配</strong>（#3511）：替换 <code>Model.producer</code> 弃用属性为 <code>Model.get_producer()</code>。</li>
+<li><strong>CI 安全检查</strong>（#3486）：添加 PreToolUse hook 以约束 shell 命令执行安全。</li>
+</ul>
+<h2 id="microsoft-onnxruntime-—-30-commits"><a href="#microsoft-onnxruntime-—-30-commits" class="headerlink" title="microsoft&#x2F;onnxruntime — 30 commits"></a>microsoft&#x2F;onnxruntime — 30 commits</h2><p><strong>CUDA EP 核心改进</strong></p>
+<ul>
+<li><strong>QMoE SoftmaxTopK 小批量优化</strong>（#28980）：使用 CUB 和 warp-level top-k 内核替换旧的一线程一行热路径，显著提升 MoE 路由在自回归解码小批量场景的性能。</li>
+<li><strong>QMoE int4&#x2F;int8 weight prepack 统一</strong>（#28978 &#x2F; #28749）：强制 QMoE INT4&#x2F;INT8 权重始终使用 SM80（Ampere）CUTLASS layout 进行预处理，修复了 Hopper（SM90）上输出错误的 bug。同时在 PrePack hook 中完成 layout 转换，与 <code>MatMulNBits</code> 保持对称。</li>
+<li><strong>CUDA 插件 EP 兼容性扩展</strong>（#28824）：将最低支持运行时版本降至 1.24.4，通过 version-gated callback 保证新特性在旧运行时上优雅降级。</li>
+<li><strong>cuDNN SDPA 集成</strong>（#28849）：升级 <code>cudnn_frontend</code> 从 1.12.0 → 1.24.0，并在 Hopper&#x2F;Blackwell（SM≥90）上为 MHA&#x2F;GQA 开启 cuDNN SDPA 内核，结合 Flash Attention 与 cutlass FMHA 的优势提升 prefill 吞吐。</li>
+</ul>
+<p><strong>WebGPU 重大改进</strong></p>
+<ul>
+<li><strong>FlashAttention decode 融合内核</strong>（#28389）：将 QKT 和 SplitVx 两个 shader 融合为单个 QKV 内核，使用 online softmax 消除中间 <code>qk</code> 张量。扩展为支持任意序列长度（不只是 seq_len&#x3D;1），并加入 m_tile 优化（m_tile&#x3D;1&#x2F;2&#x2F;4）来摊销 K&#x2F;V 加载。</li>
+<li><strong>Session 级 buffer pool</strong>（#28761）：引入 <code>SessionBufferPool</code>，允许 session 持有已回收的 generator buffer cache（storage + uniform），并注入新创建的 generator。通过 <code>sessionBufferPoolGenerations</code> 选项控制保留代数。</li>
+<li><strong>Qwen3 风格 Q&#x2F;K RMSNorm 融合</strong>（#28484）：为 WebGPU <code>GroupQueryAttention</code> 添加 per-head Q&#x2F;K RMS 归一化 prologue，将 Attention 前的 <code>SimplifiedLayerNormalization</code> 折叠到内核内部。</li>
+</ul>
+<p><strong>MLAS &#x2F; RISC-V</strong></p>
+<ul>
+<li><strong>RVV INT8 GEMM&#x2F;GEMV</strong>（#28308）：为 RISC-V Vector（RVV）添加 INT8 GEMM、M&#x3D;1 SGEMM routing 和激活函数内核，这是 MLAS 在 RISC-V 端侧芯片部署的重要进展。</li>
+<li><strong>NHWC Depthwise Convolution</strong>（#28565）：扩展无 transpose 的 NHWC 卷积路径以支持 Depthwise 卷积。</li>
+</ul>
+<p><strong>算子与模型优化</strong></p>
+<ul>
+<li><strong>Softplus&#x2F;Softsign opset 22 BF16 支持</strong>（#28982）：补齐 CUDA EP 的 opset 22 BFloat16 支持缺口。</li>
+<li><strong>Name-based partitioning</strong>（#28903）：实现基于节点名称子串匹配的设备分配机制，作为 annotation 匹配的替代方案。</li>
+<li><strong>LoRA 安全性改进</strong>（#28801）：修复 Python 绑定和 adapter 文件导入导出中的 use-after-free 和异常安全性问题。</li>
+<li><strong>STFT 复杂输入修复</strong>（#28961）：修复 STFT frame 指针在复值输入下的偏移计算。</li>
+<li><strong>QMoE weights_prepacked 安全检测</strong>（#28965）：当 <code>weights_prepacked=0</code> 但 session 禁用了 prepacking 时给出明确错误，防止静默错误。</li>
+</ul>
+<h2 id="microsoft-onnxruntime-genai-—-8-commits"><a href="#microsoft-onnxruntime-genai-—-8-commits" class="headerlink" title="microsoft&#x2F;onnxruntime-genai — 8 commits"></a>microsoft&#x2F;onnxruntime-genai — 8 commits</h2><p><strong>Hunyuan Dense V1 导出支持</strong>（#2189）：支持 Hunyuan Dense V1 模型的导出，将动态 NTK-alpha RoPE 烘焙到 <code>rope_theta</code> 中，并清理了泛型 RoPE scaling 元数据以避免 double scaling。</p>
+<p><strong>工具调用与 Harmony&#x2F;GPT-OSS</strong>（#2200）：更新了对 Harmony 和 GPT-OSS 聊天模板的工具调用支持。</p>
+<p><strong>Bug 修复</strong></p>
+<ul>
+<li><strong>TopK NaN 崩溃</strong>（#2195）：当视觉模型因 corrupt 图像产生全 NaN logits 时，CUDA TopK kernel 会导致 illegal memory access 并摧毁 GPU 状态。修复方案：将 <code>TopK_Pair.p</code> 初始值从 <code>INT_MAX</code> 改为正无穷语义，避免 NaN 比较导致越界。</li>
+<li><strong>CPU provider 回归</strong>（#2179）：修复 0.13.x 版本中 <code>append_provider(&#39;cpu&#39;)</code> 因 provider 解耦重构导致的回归问题。</li>
+<li><strong>WebGPU allocator 选项传递</strong>（#2177）：确保用户设置的 provider 选项正确传递到 allocator initialization session。</li>
+<li><strong>Qwen 视觉 pipeline 网格维度校验</strong>（#2219）：增加 <code>grid_t/grid_h/grid_w</code> 的正值校验，防止整数溢出。</li>
+</ul>
+<h2 id="pytorch-executorch-—-30-commits"><a href="#pytorch-executorch-—-30-commits" class="headerlink" title="pytorch&#x2F;executorch — 30 commits"></a>pytorch&#x2F;executorch — 30 commits</h2><p><strong>WebGPU 后端大爆发</strong></p>
+<p>这是 ExecuTorch WebGPU 后端的里程碑周。Julian Ng-Thow-Hing 贡献了一组密切相关的 PR，为 WebGPU 部署 LLM 补齐关键能力：</p>
+<ol>
+<li><p><strong>Fused SDPA（sdpa_with_kv_cache）</strong>（#20086&#x2F;#20259）：实现融合的 scaled dot-product attention 算子，包含 QK attention weights、softmax 和 attention output 三个子 kernel，支持动态 <code>input_pos</code> 和 in-graph KV cache。这是 WebGPU 上运行 LLM 的核心算子。</p>
+</li>
+<li><p><strong>4-bit weight-only 量化 Linear（linear_q4gsw）</strong>（#20226&#x2F;#20227）：支持 Int4 分组对称量化线性层的 WebGPU 计算。weight 以 <code>[N, K/2]</code> uint8 格式序列化存储，在 WGSL 中通过 <code>(q-8)*scale</code> 反量化后计算。配套的测试套件覆盖 Llama-3.2-1B 的真实线性层形状（q&#x2F;o-proj、k&#x2F;v-proj、gate&#x2F;up-proj、down-proj、lm_head）及 4k&#x2F;8k 大 token prefill。</p>
+</li>
+<li><p><strong>GPU timestamp query profiling</strong>（#20201&#x2F;#20258）：实现了后端无关的 GPU 时间戳查询基础设施，包括 <code>WebGPUQueryPool</code> 和 <code>ShaderDuration</code> 数据结构。</p>
+</li>
+</ol>
+<p><strong>CUDA 后端优化</strong></p>
+<ul>
+<li><strong>Int4&#x2F;Int8 matvec 向量化 activation 加载</strong>（#20144）：通过将 Q8Block 对齐到 16 字节、使用向量化加载替代标量加载，提升 decode-only 场景下 matvec 的指令吞吐。</li>
+<li><strong>SDPA 实现选择的 L_kv 阈值优化</strong>（#20142）：重新 benchmark 了 <code>splited_sdpa</code> 与 <code>regular_sdpa</code> 的选择阈值，修复了此前只适配 Qwen SDPA 配置导致 Gemma4 场景下选择错误的问题。新阈值为 <code>L_kv == 128</code>。</li>
+<li><strong>Gemma4 31B TurboQuant</strong>（#19891）：为 Gemma4 启用 TurboQuant 量化路径。</li>
+</ul>
+<p><strong>Arm 后端进展</strong></p>
+<ul>
+<li><strong>TOSA dialect 算子扩展</strong>：新增 ARGMAX（#20112）、FFT2D&#x2F;RFFT2D（#20111）。</li>
+<li><strong>Adaptive Pooling</strong>（#20220）：添加 <code>DecomposeAdaptiveMaxPool2dPass</code> 到 pass manager。</li>
+<li><strong>FP8 conv&#x2F;matmul TOSA lowering 修复</strong>（#20219）：FP16 累加的 FP8 MATMUL 正确 lowering 到 TOSA 1.0。</li>
+<li><strong>Dim mapping helpers</strong>（#20222）：处理 permute&#x2F;view 操作后 reduction dim 的映射转换。</li>
+<li><strong>Cortex-M CI 完善</strong>（#20224）：补齐 DSP 和 Scalar 目标的 CI 覆盖。</li>
+</ul>
+<p><strong>基础设施与 CI</strong></p>
+<ul>
+<li><strong>VMA 共享修复</strong>（#20225）：修复 <code>etvk.vma_dep=instantiated</code> 模式下与 IGL 等其他 VMA 消费者的符号冲突。</li>
+<li><strong>Samsung backend 修复</strong>（#20228）：修复因 PassManager 迁移导致的导入崩溃。</li>
+<li><strong>A100 CI 迁移 OSDC</strong>（#20212）：从 AWS 迁移到 OSDC（Open Source Developer Cloud）runner。</li>
+<li><strong>Cadence Xtensa CI</strong>（#20208）：添加 Cadence Xtensa DSP 后端的 OSS CI 交叉编译支持。</li>
+<li><strong>QNN Windows 原生构建</strong>（#20052）：支持 QNN ExecuTorch 组件的 Windows .dll&#x2F;.exe 原生构建。</li>
+</ul>
+<h2 id="futz12-ncnn-llm-—-7-commits"><a href="#futz12-ncnn-llm-—-7-commits" class="headerlink" title="futz12&#x2F;ncnn_llm — 7 commits"></a>futz12&#x2F;ncnn_llm — 7 commits</h2><p>ncnn_llm 本周最值得注意的是 <strong>GLM 的 OCR 支持</strong>：为 ChatGLM 视觉模型增加了 OCR（光学字符识别）能力。此外清理了一些错误的 router 实现，并调整了 README 的排版和内容。</p>
+<h2 id="apache-tvm-—-30-commits"><a href="#apache-tvm-—-30-commits" class="headerlink" title="apache&#x2F;tvm — 30 commits"></a>apache&#x2F;tvm — 30 commits</h2><p>本周 TVM 的提交非常密集，主要是测试修复和 TIRx 集成后的遗留问题清理。</p>
+<p><strong>TIRx 集成清理（#19581 的后继工作）</strong></p>
+<p>TIRx 的 bringup（<code>tvm.tirx</code> 命名空间）引入了大量变更，本周的工作集中在修复其后遗症：</p>
+<ul>
+<li><strong>Software Pipeline offset 修复</strong>（#19742）：修复了 legacy PTX MMA 指令（<code>ptx_ldmatrix_legacy</code>、<code>ptx_mma_legacy</code>、<code>mma_store_legacy</code>、<code>mma_fill_legacy</code>）在 <code>InjectSoftwarePipeline</code> 中的 opaque buffer offset 重写问题。此前导致 GEMM 测试的数值误差高达 40.2%。</li>
+<li><strong>s_tir transform 测试修复</strong>（#19735 &#x2F; #19737）：修复了 11 个因 TIRx 引入导致失败的 transform 测试，同时将这些测试正式纳入 CI 的 python-unittest 阶段。</li>
+<li><strong>Triton call_kernel compile options 保留</strong>（#19728）：确保用户传入 <code>num_warps</code> 等参数不会被内部的 constexpr dict 覆盖。</li>
+<li><strong>PTX async script API 更新</strong>（#19739）：将测试中的旧 API 迁移到 <code>T.ptx.cp_async.commit_group()</code> 命名空间。</li>
+</ul>
+<p><strong>PyTorch 前端扩展</strong></p>
+<ul>
+<li>添加 <code>logical_or</code> &#x2F; <code>logical_xor</code> 的 ExportedProgram 和 FX 前端转换器（#19756）。</li>
+<li>修复 <code>aten.index.Tensor</code> 多索引 tensor 无 None entry 时 lower 到 CUDA 的路径（#19732）。</li>
+</ul>
+<p><strong>Python 基础设施重构</strong></p>
+<ul>
+<li><strong>Autoload backends</strong>（#19727）：类似 PyTorch 的 device backend autoload 机制，外部包可在 <code>tvm.backends</code> entry-point 注册回掉函数，在 <code>import tvm</code> 时自动加载。</li>
+<li><strong>移除 TVMError</strong>（#19727）：替换为原生 Python 异常。</li>
+<li><strong>Diagnostic 系统迁移</strong>（#19722）：用 tvm-ffi 的 <code>visit_error_context</code> 机制替换旧的 <code>Diagnostic</code>&#x2F;<code>DiagnosticContext</code>。验证器直接抛出带 offending node 的 <code>ffi::Error</code>，pass 执行器捕获后追加 pass 名称和 TVMScript 源码位置。</li>
+<li><strong>pyproject.toml 依赖清理</strong>（#19723）：删除冗余依赖项。</li>
+<li><strong>Disco session attribute 修复</strong>（#19736）：修复因 <code>__slots__ = ()</code> object 元类变更导致 Disco Python wrapper 无法存储实例属性、每个 session 构造都失败的问题。同时修复了 NVSHMEM 构建。</li>
+</ul>
+<p><strong>CI&#x2F;CD 改进</strong></p>
+<ul>
+<li><strong>cibuildwheel 4.1.0 升级</strong>（#19754）：Build CUDA wheels 的 Docker 镜像切换到 <code>quay.io/manylinux_cuda/</code>，不再额外下载 CUDA toolkit。</li>
+<li><strong>cuda-python 12.9.4</strong>（#19738）：对齐 PyTorch 2.10.0 的 <code>cuda-bindings</code> 要求。</li>
+<li><strong>LLVM 版本兼容性修复</strong>（#19752&#x2F;#19753&#x2F;#19744&#x2F;#19745）：修复 SVE 代码生成、vectorized lround、+v9a vscale_range 和 stepvector intrinsic 在 LLVM 19&#x2F;20 上的测试断言。</li>
+</ul>
+<h2 id="ml-explore-mlx-lm-—-5-commits"><a href="#ml-explore-mlx-lm-—-5-commits" class="headerlink" title="ml-explore&#x2F;mlx-lm — 5 commits"></a>ml-explore&#x2F;mlx-lm — 5 commits</h2><p><strong>功能增强</strong></p>
+<ul>
+<li><strong>batch_generate 扩展</strong>（#1359）：<code>batch_generate</code> 接口新增 <code>return_logprobs</code> 和 <code>return_token_ids</code> 参数，使批量推理能同时返回对数概率和 token ID，对评估和采样策略调试非常有用。</li>
+<li><strong>transformers&gt;&#x3D;5.7</strong>（#1356）：更新 transformers 依赖到 5.7+，适配最新的 HuggingFace 模型定义。</li>
+</ul>
+<p><strong>安全与 Bug 修复</strong></p>
+<ul>
+<li><strong>CVE-2026-5843 修复</strong>（#1385）：<code>trust_remote_code</code> 不再默认启用，<code>model_file</code> 的执行需要用户显式授权，防止远程代码执行的供应链安全漏洞。</li>
+<li><strong>Server 404 修复</strong>（#1327）：修复短 prompt（&lt;11 tokens）下 <code>rfind_think_start</code> 的负索引导致 IndexError、表现为 HTTP 404 的问题。</li>
+<li><strong>top_k 错误信息修正</strong>（#1377）：纠正了 <code>top_k</code> 参数绑定的描述文案。</li>
+</ul>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本周技术亮点：</p>
+<ol>
+<li><strong>WebGPU 推理框架竞争白热化</strong>：Microsoft ONNX Runtime 的 FlashAttention decode 融合 + buffer pool，与 PyTorch ExecuTorch 的 SDPA + int4 量化 linear 同时发力，WebGPU 端到端的 LLM 推理管道正在成型。</li>
+<li><strong>llama.cpp EAGLE3 + cohere2-MoE</strong>：投机解码和 MoE 架构的加入，让 llama.cpp 不仅是”跑得动的框架”，更是技术上持续领先的探索者。</li>
+<li><strong>TVM TIRx 整合进入收尾阶段</strong>：大量测试修复表明 TIRx 的引入是一个大规模的底层重构，后续将释放更灵活的 S-TIR 编程能力。</li>
+<li><strong>安全与鲁棒性被重视</strong>：MLX CVE 修复、ORT GenAI NaN TopK 崩溃修复、ORT LoRA use-after-free 修复，说明框架项目方在加速功能开发的同时也在收紧安全防线。</li>
+<li><strong>RISC-V 生态初见端倪</strong>：ONNX Runtime MLAS 的 RVV INT8 GEMM 支持，标志着主流推理框架开始关注 RISC-V 平台。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://hebangwen.github.io/2026/06/14/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-06-07-2026-06-14/">http://hebangwen.github.io/2026/06/14/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-06-07-2026-06-14/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://hebangwen.github.io" target="_blank">Yet Another 何榜文's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/MNN/">MNN</a><a class="post-meta__tags" href="/tags/LLM/">LLM</a><a class="post-meta__tags" href="/tags/CUDA/">CUDA</a><a class="post-meta__tags" href="/tags/%E5%91%A8%E6%8A%A5/">周报</a><a class="post-meta__tags" href="/tags/%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/">推理框架</a><a class="post-meta__tags" href="/tags/llama-cpp/">llama.cpp</a><a class="post-meta__tags" href="/tags/TVM/">TVM</a><a class="post-meta__tags" href="/tags/ONNX-Runtime/">ONNX Runtime</a><a class="post-meta__tags" href="/tags/ExecuTorch/">ExecuTorch</a><a class="post-meta__tags" href="/tags/%E7%AB%AF%E4%BE%A7%E6%8E%A8%E7%90%86/">端侧推理</a><a class="post-meta__tags" href="/tags/WebGPU/">WebGPU</a><a class="post-meta__tags" href="/tags/Vulkan/">Vulkan</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/05/24/2026-05-24-ai-inference-weekly-20260517/" title="端侧 AI 推理框架周报（2026-05-17 ~ 2026-05-23）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">端侧 AI 推理框架周报（2026-05-17 ~ 2026-05-23）</div></div><div class="info-2"><div class="info-item-1">本周（2026-05-17 ~ 2026-05-23）9 个仓库共产生 196 次提交，涵盖端侧推理、量化、后端优化、新模型支持等多个方向。    tencent&#x2F;ncnn — 18 commits本周 ncnn 在 ARM&#x2F;NEON 优化、RISC-V 后端和工具链方面持续发力。 ARM SDPA（Scaled Dot-Product Attention）Layer新增 ARM 后端 SDPA 层实现（#6698），这是 ncnn 在 LLM 推理方向的重要进展。SDPA 将 QKV 投影后的 attention 计算融合为单一算子，避免了多次 kernel launch 和中间 tensor 的读写开销，对端侧 LLM 的 decode 阶段延迟改善明显。 ARM SIMD 激活函数与量化風的彷徨 贡献了 erf、elu、gelu、selu 在 ARM 上的 SIMD 实现（#6605），补齐了 ARM NEON 后端在激活函数方面的性能短板。Justin Fung 提交了两项 RISC-V Vector 1.0 的量化&#x2F;反量化实现（#6695,...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/05/03/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-04-26-2026-05-03/" title="端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-03</div><div class="info-item-2">端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）</div></div><div class="info-2"><div class="info-item-1">本周（2026-04-26 ~ 2026-05-03）共跟踪 15 个仓库，其中 9 个仓库有更新，合计 165 次提交。以下是对各仓库关键变化的详细解读。  本周无更新的仓库： tencent&#x2F;ncnn、airockchip&#x2F;rknn-toolkit2、airockchip&#x2F;rknn-llm、futz12&#x2F;ncnn_llm、mlc-ai&#x2F;mlc-llm、ml-explore&#x2F;mlx-lm   ggml-org&#x2F;llama.cpp（30 commits）本周 llama.cpp 依然保持了最高的活动量，涵盖后端优化、新硬件支持和用户界面重构。 CUDA &#x2F; GPU 后端 多 GPU PCI Bus ID 去重修复（#22533）：修复了当多个 GPU 共享 PCI Bus ID 时，CUDA 设备检测 OOM 导致仅发现 1 张卡而忽略其他 3 张的严重 bug。同时同步更新了 HIP 和 MUSA 宏的支持。 Flash Attention Pascal 架构修复（#22541）：Tile-base...</div></div></div></a><a class="pagination-related" href="/2026/05/10/%E7%AB%AF%E4%BE%A7AI%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-05-03-2026-05-10/" title="端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-10</div><div class="info-item-2">端侧 AI 推理框架周报（2026-05-03 ~ 2026-05-10）</div></div><div class="info-2"><div class="info-item-1">本周（5月3日~5月10日），15 个开源仓库中有 9 个产生了更新，共计 168 次提交。以下是各仓库的关键变化及技术分析。 tencent&#x2F;ncnn：Vulkan 管线缓存、PNNX 功能增强与 x86 修复本周 ncnn 共有 13 次提交，涵盖 Vulkan 后端、PNNX 工具链及 x86 优化等多个方面。 Vulkan 管线持久化缓存最值得关注的变化是 Vulkan 后端新增了管线缓存持久化支持（PR #6702）。此前 ncnn 的 Vulkan 后端每次运行时都需要重新编译 SPIR-V 着色器，这在移动端 GPU（如 Adreno、Mali）上可能导致数秒的启动延迟。新的实现按着色器哈希缓存编译后的管线对象，并附带严格的设备&#x2F;驱动&#x2F;着色器校验，确保缓存不会在不同 GPU 间误用。这对生产环境中需要快速冷启动的场景意义重大。 同时，PR #6705 修复了 Vulkan 扩展依赖链的处理——某些扩展存在传递依赖（如 VK_KHR_16bit_storage 依赖 VK_KHR_storage_buffer_storage_class）...</div></div></div></a><a class="pagination-related" href="/2026/05/17/edge-ai-weekly-2026-05-17/" title="端侧 AI 推理框架周报（2026-05-10 ~ 2026-05-17）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-17</div><div class="info-item-2">端侧 AI 推理框架周报（2026-05-10 ~ 2026-05-17）</div></div><div class="info-2"><div class="info-item-1">本周（2026&#x2F;05&#x2F;10 ~ 2026&#x2F;05&#x2F;17）15 个跟踪仓库中有 10 个产生更新，总计 157 次提交。重点关注 llama.cpp 的 MTP 推测解码支持、ONNX Runtime 的 FlashAttention 20x 加速、ncnn 的 ARM BF16 全线优化以及 ExecuTorch 的 RISC-V 基础设施落地。  tencent&#x2F;ncnn — 12 commits本周 ncnn 的核心主题是 BF16 存储与计算的深度优化，围绕 ARMv8.4 BF16 指令集展开了一系列 GEMM&#x2F;卷积&#x2F;全连接层的优化。 ARMv8.4 BF16 GEMM 优化（#6714）PR #6714 针对 ARMv8.4 架构下的 BF16 GEMM 进行了深度实现。ARMv8.4 引入了 BFMMLA 指令（即 BFloat16 Matrix Multiply-Accumulate），每条指令可完成 2×4×8 的 BF16 矩阵乘加操作。ncnn 此次将 GEMM 核心路径切换至 BFMMLA，...</div></div></div></a><a class="pagination-related" href="/2026/04/29/edge-ai-inference-weekly-2026-04-22-2026-04-29/" title="端侧 AI 推理框架周报（2026-04-22 ~ 2026-04-29）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-29</div><div class="info-item-2">端侧 AI 推理框架周报（2026-04-22 ~ 2026-04-29）</div></div><div class="info-2"><div class="info-item-1">本周跟踪了 15 个主流端侧 AI 推理框架的开源仓库，其中 9 个有显著更新，共产生 170 次提交。以下是各仓库的重点变化分析。 1. alibaba&#x2F;MNN — 4 commitsVulkan 后端 no-subgroup 降级分支MNN 本周在 Vulkan 后端的 VulkanLinearAttention 和 Conv1x1-Decode 的 gemv 操作中引入了 no-subgroup 降级分支。这是一个非常实用的兼容性改进：  背景：Vulkan subgroup（子组）操作是现代 GPU 做 warp-level 协作的高效方式，但并非所有 Vulkan 实现都支持（特别是 Mesa 驱动的某些 Intel GPU、部分移动端 Mali GPU）。 实现思路：为主路径保留 subgroup 优化的高性能路径，同时为不支持的设备提供了纯线程级替代实现。使得 LLM decode 阶段的注意力计算在更广泛的 Vulkan 设备上可用。  这种”高性能路径 + 通用降级”的架构思路值得借鉴，尤其对于需要跨平台部署的推理框架而言。 CPU ARMv8.2&#...</div></div></div></a><a class="pagination-related" href="/2026/05/24/2026-05-24-ai-inference-weekly-20260517/" title="端侧 AI 推理框架周报（2026-05-17 ~ 2026-05-23）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-24</div><div class="info-item-2">端侧 AI 推理框架周报（2026-05-17 ~ 2026-05-23）</div></div><div class="info-2"><div class="info-item-1">本周（2026-05-17 ~ 2026-05-23）9 个仓库共产生 196 次提交，涵盖端侧推理、量化、后端优化、新模型支持等多个方向。    tencent&#x2F;ncnn — 18 commits本周 ncnn 在 ARM&#x2F;NEON 优化、RISC-V 后端和工具链方面持续发力。 ARM SDPA（Scaled Dot-Product Attention）Layer新增 ARM 后端 SDPA 层实现（#6698），这是 ncnn 在 LLM 推理方向的重要进展。SDPA 将 QKV 投影后的 attention 计算融合为单一算子，避免了多次 kernel launch 和中间 tensor 的读写开销，对端侧 LLM 的 decode 阶段延迟改善明显。 ARM SIMD 激活函数与量化風的彷徨 贡献了 erf、elu、gelu、selu 在 ARM 上的 SIMD 实现（#6605），补齐了 ARM NEON 后端在激活函数方面的性能短板。Justin Fung 提交了两项 RISC-V Vector 1.0 的量化&#x2F;反量化实现（#6695,...</div></div></div></a><a class="pagination-related" href="/2024/10/29/llamacpp-q-quants/" title="llama.cpp Q 量化方式总结"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-10-29</div><div class="info-item-2">llama.cpp Q 量化方式总结</div></div><div class="info-2"><div class="info-item-1">llama.cpp Q 量化方式总结TheBloke 里有许多不同量化方式的模型，如下： 123456789CapybaraHermes-2.5-Mistral-7B-GGUF  | - capybarahemers-2.5-mistral-7b.Q2_K.gguf  | - capybarahemers-2.5-mistral-7b.Q3_K_L.gguf  | - capybarahemers-2.5-mistral-7b.Q3_K_M.gguf  | - capybarahemers-2.5-mistral-7b.Q3_K_S.gguf  | - capybarahemers-2.5-mistral-7b.Q4_0.gguf  | - capybarahemers-2.5-mistral-7b.Q4_K_M.gguf  | - capybarahemers-2.5-mistral-7b.Q4_K_S.gguf  | ...  它们都属于 llama.cpp 中 Q 量化定义的范围。llama.cpp 里的 Q 量化有两个格式：QX_Y 和 QX_K，第一种是对称量化和非对称...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">49</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">85</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#alibaba-MNN-%E2%80%94-8-commits"><span class="toc-number">1.</span> <span class="toc-text">alibaba&#x2F;MNN — 8 commits</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sophgo-tpu-mlir-%E2%80%94-2-commits"><span class="toc-number">2.</span> <span class="toc-text">sophgo&#x2F;tpu-mlir — 2 commits</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sophgo-LLM-TPU-%E2%80%94-2-commits"><span class="toc-number">3.</span> <span class="toc-text">sophgo&#x2F;LLM-TPU — 2 commits</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ggml-org-llama-cpp-%E2%80%94-30-commits"><span class="toc-number">4.</span> <span class="toc-text">ggml-org&#x2F;llama.cpp — 30 commits</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#qualcomm-ai-hub-models-%E2%80%94-30-commits"><span class="toc-number">5.</span> <span class="toc-text">qualcomm&#x2F;ai-hub-models — 30 commits</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#microsoft-onnxruntime-%E2%80%94-30-commits"><span class="toc-number">6.</span> <span class="toc-text">microsoft&#x2F;onnxruntime — 30 commits</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#microsoft-onnxruntime-genai-%E2%80%94-8-commits"><span class="toc-number">7.</span> <span class="toc-text">microsoft&#x2F;onnxruntime-genai — 8 commits</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pytorch-executorch-%E2%80%94-30-commits"><span class="toc-number">8.</span> <span class="toc-text">pytorch&#x2F;executorch — 30 commits</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#futz12-ncnn-llm-%E2%80%94-7-commits"><span class="toc-number">9.</span> <span class="toc-text">futz12&#x2F;ncnn_llm — 7 commits</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#apache-tvm-%E2%80%94-30-commits"><span class="toc-number">10.</span> <span class="toc-text">apache&#x2F;tvm — 30 commits</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ml-explore-mlx-lm-%E2%80%94-5-commits"><span class="toc-number">11.</span> <span class="toc-text">ml-explore&#x2F;mlx-lm — 5 commits</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">12.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/14/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-06-07-2026-06-14/" title="端侧 AI 推理框架周报（2026-06-07 ~ 2026-06-14）">端侧 AI 推理框架周报（2026-06-07 ~ 2026-06-14）</a><time datetime="2026-06-14T01:00:00.000Z" title="发表于 2026-06-14 09:00:00">2026-06-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/24/2026-05-24-ai-inference-weekly-20260517/" title="端侧 AI 推理框架周报（2026-05-17 ~ 2026-05-23）">端侧 AI 推理框架周报（2026-05-17 ~ 2026-05-23）</a><time datetime="2026-05-24T01:00:00.000Z" title="发表于 2026-05-24 09:00:00">2026-05-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/17/edge-ai-weekly-2026-05-17/" title="端侧 AI 推理框架周报（2026-05-10 ~ 2026-05-17）">端侧 AI 推理框架周报（2026-05-10 ~ 2026-05-17）</a><time datetime="2026-05-17T01:00:00.000Z" title="发表于 2026-05-17 09:00:00">2026-05-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/13/mnn-vision-encoder-memory-leak-fix/" title="MNN Vision Encoder 内存泄漏修复与性能分析">MNN Vision Encoder 内存泄漏修复与性能分析</a><time datetime="2026-05-13T15:50:00.000Z" title="发表于 2026-05-13 23:50:00">2026-05-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/13/analysis-of-magic-number-33377335/" title="魔法数字 33377335（0x01FD4C37）的真相">魔法数字 33377335（0x01FD4C37）的真相</a><time datetime="2026-05-13T10:00:00.000Z" title="发表于 2026-05-13 18:00:00">2026-05-13</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
