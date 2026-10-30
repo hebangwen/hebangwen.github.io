@@ -19,6 +19,40 @@
   var FONT_STACK =
     '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
 
+  /* 圆点 + 软边 + 大气雾化：比 PointsMaterial 的方块点更接近油墨/光点 */
+  var VERT = [
+    'attribute float aSize;',
+    'attribute vec3 aColor;',
+    'attribute float aFog;',
+    'uniform float uFocal;',
+    'uniform float uPixelRatio;',
+    'varying vec3 vColor;',
+    'varying float vFog;',
+    'void main() {',
+    '  vColor = aColor;',
+    '  vFog = aFog;',
+    '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+    '  gl_PointSize = aSize * uFocal * uPixelRatio / max(0.001, -mv.z);',
+    '  gl_Position = projectionMatrix * mv;',
+    '}'
+  ].join('\n');
+
+  var FRAG = [
+    'uniform float uOpacity;',
+    'uniform vec3 uFog;',
+    'varying vec3 vColor;',
+    'varying float vFog;',
+    'void main() {',
+    '  vec2 d = gl_PointCoord - vec2(0.5);',
+    '  float r = length(d);',
+    '  if (r > 0.5) discard;',
+    '  float a = smoothstep(0.5, 0.08, r);',
+    '  vec3 c = mix(vColor, uFog, vFog);',
+    '  gl_FragColor = vec4(c, a * uOpacity);',
+    '  #include <colorspace_fragment>',
+    '}'
+  ].join('\n');
+
   var header = document.getElementById('page-header');
   if (!header || !header.classList.contains('full_page')) return;
 
@@ -125,10 +159,24 @@
     var points = null;
     var base = null;
     var dirs = null;
-    var spreads = null;
+    var cellsOf = null;
+    var cellCenter = null;
+    var cellDelay = null;
+    var cellSpin = null;
+    var cellSpread = null;
+    var cellCos = null;
+    var cellSin = null;
+    var cellLp = null;
     var count = 0;
     var material = null;
     var geometry = null;
+
+    var uniforms = {
+      uOpacity: { value: 1 },
+      uFocal: { value: 1000 },
+      uPixelRatio: { value: 1 },
+      uFog: { value: new THREE.Color(0x39474f) }
+    };
 
     var scaleFactor = 1;
     var p = 0;
@@ -199,59 +247,105 @@
       g.fillText(text, W / 2, H * 0.4);
 
       var data = g.getImageData(0, 0, W, H).data;
-      var step = Math.max(2, Math.round(W / 520));
+      var step = Math.max(2, Math.round(W / 620));
 
       var pos = [];
       var col = [];
+      var sizes = [];
+      var fogs = [];
       var dz = [];
-      var spread = [];
+      var cellIds = [];
 
-      var accent = new THREE.Color(0x4ea8de);
-      var paper = new THREE.Color(0xf4f7f8);
+      var CELL_X = 16;
+      var CELL_Y = 10;
+      var cellW = W / CELL_X;
+      var cellH = H / CELL_Y;
+
+      var edgeColor = new THREE.Color(0xf2f8f9);
+      var bodyColor = new THREE.Color(0xd2dadb);
 
       for (var y = 0; y < H; y += step) {
         for (var x = 0; x < W; x += step) {
-          var idx = (y * W + x) * 4 + 3;
-          if (data[idx] < 140) continue;
+          if (data[(y * W + x) * 4 + 3] < 140) continue;
 
-          pos.push(x - W / 2, -(y - H / 2), (Math.random() - 0.5) * 34);
+          /* 四邻采样判断字形边缘：边缘粒子提亮并加大，字形靠这层光浮起来 */
+          var isEdge =
+            data[(y * W + Math.max(0, x - step * 2)) * 4 + 3] < 140 ||
+            data[(y * W + Math.min(W - 1, x + step * 2)) * 4 + 3] < 140 ||
+            data[(Math.max(0, y - step * 2) * W + x) * 4 + 3] < 140 ||
+            data[(Math.min(H - 1, y + step * 2) * W + x) * 4 + 3] < 140;
 
-          var c = Math.random() < 0.06 ? accent : paper;
+          var z = (Math.random() - 0.5) * 34;
+          pos.push(x - W / 2, -(y - H / 2), z);
+
+          var c;
+          var sz;
+          if (isEdge) {
+            c = edgeColor;
+            sz = 0.66;
+          } else {
+            c = bodyColor;
+            sz = 0.46;
+          }
           col.push(c.r, c.g, c.b);
+          sizes.push(sz);
 
-          /* 同一小格里的粒子共享方向，碎开时是块状碎片而不是均匀尘埃 */
-          var cellX = Math.floor(x / (W / 16));
-          var cellY = Math.floor(y / (H * 0.5 / 9));
-          var seed = cellX * 131 + cellY * 37 + 1;
+          /* 越往屏幕深处越向雾色收敛；边缘留一点雾，让它像被光照到的轮廓 */
+          var fogDepth = (z + 17) / 34;
+          fogs.push(fogDepth * (isEdge ? 0.14 : 0.52));
+
+          var gx = Math.floor(x / cellW);
+          var gy = Math.floor(y / cellH);
+          cellIds.push(gy * CELL_X + gx);
+
+          var seed = gx * 131 + gy * 37 + 1;
           var ang = pseudo(seed) * Math.PI * 2;
           var ring = 0.55 + pseudo(seed + 11) * 0.6;
-
           dz.push(
             Math.cos(ang) * ring,
             Math.sin(ang) * ring * 0.7 - (0.3 + pseudo(seed + 23) * 0.6),
             0.35 + pseudo(seed + 41) * 1.2
           );
-          spread.push(20 + pseudo(seed + 57) * 90);
         }
       }
 
       count = pos.length / 3;
       if (!count) return;
 
+      var cells = CELL_X * CELL_Y;
+      cellCenter = new Float32Array(cells * 2);
+      cellDelay = new Float32Array(cells);
+      cellSpin = new Float32Array(cells);
+      cellCos = new Float32Array(cells);
+      cellSin = new Float32Array(cells);
+      cellLp = new Float32Array(cells);
+      cellSpread = new Float32Array(cells);
+
+      for (var k = 0; k < cells; k++) {
+        var cx = k % CELL_X;
+        var cy = Math.floor(k / CELL_X);
+        cellCenter[k * 2] = (cx + 0.5) * cellW - W / 2;
+        cellCenter[k * 2 + 1] = -((cy + 0.5) * cellH - H / 2);
+        cellDelay[k] = pseudo(k * 7 + 3) * 0.35;
+        cellSpin[k] = (pseudo(k * 13 + 5) - 0.5) * 2.4;
+        cellSpread[k] = 26 + pseudo(k * 3 + 1) * 92;
+      }
+
       base = new Float32Array(pos);
       dirs = new Float32Array(dz);
-      spreads = new Float32Array(spread);
+      cellsOf = new Uint16Array(cellIds);
 
       geometry = new THREE.BufferGeometry();
       geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
-      geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(col), 3));
+      geometry.setAttribute('aColor', new THREE.BufferAttribute(new Float32Array(col), 3));
+      geometry.setAttribute('aSize', new THREE.BufferAttribute(new Float32Array(sizes), 1));
+      geometry.setAttribute('aFog', new THREE.BufferAttribute(new Float32Array(fogs), 1));
 
-      material = new THREE.PointsMaterial({
-        size: 0.42,
-        sizeAttenuation: true,
-        vertexColors: true,
+      material = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: VERT,
+        fragmentShader: FRAG,
         transparent: true,
-        opacity: 1,
         depthWrite: false
       });
 
@@ -273,6 +367,8 @@
       var visH = 2 * Math.tan(vFov / 2) * camera.position.z;
       var visW = visH * camera.aspect;
       scaleFactor = visW / w;
+      uniforms.uFocal.value = (0.5 * h) / Math.tan(vFov / 2);
+      uniforms.uPixelRatio.value = Math.min(window.devicePixelRatio || 1, 2);
 
       applyPositions(p);
 
@@ -284,16 +380,48 @@
 
     function applyPositions(progress) {
       if (!geometry) return;
+
       var arr = geometry.attributes.position.array;
-      var k = progress * progress;
-      for (var i = 0; i < count; i++) {
-        var s = Math.pow(progress, 1.55) * spreads[i];
-        arr[i * 3] = base[i * 3] * scaleFactor + dirs[i * 3] * s;
-        arr[i * 3 + 1] = base[i * 3 + 1] * scaleFactor + dirs[i * 3 + 1] * s - k * 62;
-        arr[i * 3 + 2] = base[i * 3 + 2] * scaleFactor + dirs[i * 3 + 2] * s;
+      var sf = scaleFactor;
+      var cells = cellLp.length;
+      var c;
+
+      /* 每簇算一次旋转，粒子共享，避免上万个三角函数 */
+      for (c = 0; c < cells; c++) {
+        var d = cellDelay[c];
+        var lp = (progress - d) / (1 - d);
+        lp = lp < 0 ? 0 : lp > 1 ? 1 : lp;
+        cellLp[c] = lp;
+        var ang = lp * cellSpin[c];
+        cellCos[c] = Math.cos(ang);
+        cellSin[c] = Math.sin(ang);
       }
+
+      for (var i = 0; i < count; i++) {
+        var id = cellsOf[i];
+        var lpv = cellLp[id];
+        var cos = cellCos[id];
+        var sin = cellSin[id];
+
+        var px = base[i * 3];
+        var py = base[i * 3 + 1];
+
+        /* 碎片绕各自格心旋转，是"碎"而不是"整体平移" */
+        var dx = px - cellCenter[id * 2];
+        var dy = py - cellCenter[id * 2 + 1];
+        var rx = dx * cos - dy * sin;
+        var ry = dx * sin + dy * cos;
+
+        var s = Math.pow(lpv, 1.6) * cellSpread[id];
+        var k = lpv * lpv;
+
+        arr[i * 3] = (cellCenter[id * 2] + rx) * sf + dirs[i * 3] * s;
+        arr[i * 3 + 1] = (cellCenter[id * 2 + 1] + ry) * sf + dirs[i * 3 + 1] * s - k * 70;
+        arr[i * 3 + 2] = base[i * 3 + 2] * sf + dirs[i * 3 + 2] * s;
+      }
+
       geometry.attributes.position.needsUpdate = true;
-      if (material) material.opacity = Math.max(0, 1 - progress * 1.12);
+      uniforms.uOpacity.value = Math.max(0, 1 - progress * 1.12);
     }
 
     function onScroll() {
