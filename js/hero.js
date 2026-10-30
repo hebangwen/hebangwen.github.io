@@ -11,12 +11,18 @@
 
   /* 可改的文案 */
   var COPY = {
+    prelude: 'Yet Another Blog',
     lede: '把读过、写过、调过的东西记下来。',
     entryLabel: '最新一篇'
   };
 
   var header = document.getElementById('page-header');
   if (!header || !header.classList.contains('full_page')) return;
+
+  /* 归档/标签/分类页在 Butterfly 里同样带 full_page，
+     只有真正的首页才有 #recent-posts；用它区分并把样式作用域锁在首页 */
+  if (!document.getElementById('recent-posts')) return;
+  document.body.classList.add('is-home');
 
   var info = document.getElementById('site-info');
   var title = document.getElementById('site-title');
@@ -25,22 +31,17 @@
 
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* 1. 标题拆成修饰行与主行 */
-  var raw = (title.textContent || '').trim();
-  var match = raw.match(/^(Yet Another)\s+/i);
+  /* 1. 标题拆成修饰行与主行：英文刊名在上，中文名在下 */
+  var raw = (title.textContent || '').trim().replace(/^Yet Another\s+/i, '');
   var name = document.createElement('span');
   name.className = 'hero-name';
 
   title.textContent = '';
-  if (match) {
-    var prelude = document.createElement('span');
-    prelude.className = 'hero-prelude';
-    prelude.textContent = match[1];
-    title.appendChild(prelude);
-    name.textContent = raw.slice(match[0].length);
-  } else {
-    name.textContent = raw;
-  }
+  var prelude = document.createElement('span');
+  prelude.className = 'hero-prelude';
+  prelude.textContent = COPY.prelude;
+  title.appendChild(prelude);
+  name.textContent = raw;
   title.appendChild(name);
 
   /* 2. 左栏容器 */
@@ -128,6 +129,11 @@
     var last = 0;
 
     resize();
+    /* body.is-home 刚加上，首帧布局可能还没重算，下一帧再量一次 */
+    window.requestAnimationFrame(function () {
+      resize();
+      if (reduce) render(0);
+    });
 
     if (reduce) {
       render(0);
@@ -173,6 +179,13 @@
     }
 
     window.addEventListener('resize', resize, { passive: true });
+
+    /* header 高度在字体与首屏样式就位后才稳定，跟随它的实际尺寸 */
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(function () {
+        resize();
+      }).observe(header);
+    }
 
     loop(0);
 

@@ -1,13 +1,13 @@
 /* =========================================================
    Homepage hero —— 首页开场
    入口：_config.butterfly.yml -> inject.head
-   作用域仅 #page-header.full_page，其它页面零影响
+   作用域仅 body.is-home #page-header.full_page，其它页面零影响
    ---------------------------------------------------------
    设计主张：一个视觉资产（结构图）+ 巨大而安静的标题。
    不用霓虹、不用渐变文字、不用打字机。
    ========================================================= */
 
-#page-header.full_page {
+body.is-home #page-header.full_page {
   --hero-ink: #0b1116;
   --hero-paper: #f4f7f8;
   --hero-accent: #4ea8de;
@@ -21,7 +21,7 @@
 }
 
 /* 底图彻底退成暗场，只留极淡的顶部空气光 */
-#page-header.full_page:before {
+body.is-home #page-header.full_page:before {
   content: '';
   position: absolute;
   inset: 0;
@@ -32,7 +32,7 @@
 }
 
 /* ---------- 舞台 ---------- */
-#page-header.full_page #site-info {
+body.is-home #page-header.full_page #site-info {
   position: absolute;
   inset: 0;
   z-index: 10;
@@ -47,7 +47,7 @@
   will-change: transform, opacity;
 }
 
-/* 三维点云画布 */
+/* 三维点云画布：全幅绘制，缩到右侧并渐隐，退成一层纹理 */
 .hero-scene {
   position: absolute;
   inset: 0;
@@ -55,14 +55,27 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+  opacity: 0.55;
+  transform: scale(0.86);
+  transform-origin: 78% 46%;
+  -webkit-mask-image: radial-gradient(
+    ellipse 40% 54% at 76% 47%,
+    #000 10%,
+    transparent 66%
+  );
+  mask-image: radial-gradient(
+    ellipse 40% 54% at 76% 47%,
+    #000 10%,
+    transparent 66%
+  );
 }
 
-#page-header.full_page #site-subtitle {
+body.is-home #page-header.full_page #site-subtitle {
   display: none;
 }
 
 /* 开场页不重复导航里的站点名，只留标识 */
-#page-header.full_page #nav .site-name {
+body.is-home #page-header.full_page #nav .site-name {
   display: none;
 }
 
@@ -74,7 +87,7 @@
   max-width: min(620px, 100%);
 }
 
-#page-header.full_page #site-title {
+body.is-home #page-header.full_page #site-title {
   display: block;
   max-width: 100%;
   margin: 0;
@@ -106,12 +119,13 @@
 }
 
 .hero-lede {
-  max-width: 26ch;
+  max-width: 34ch;
   margin: 26px 0 0;
   color: rgba(244, 247, 248, 0.62);
   font-size: clamp(0.95rem, 1.5vw, 1.08rem);
   font-weight: 400;
   line-height: 1.75;
+  text-wrap: pretty;
   animation: hero-rise 0.9s cubic-bezier(0.19, 1, 0.22, 1) 0.42s both;
 }
 
@@ -182,7 +196,7 @@
 }
 
 /* ---------- 滚动提示：一根下落的线 ---------- */
-#page-header.full_page #scroll-down {
+body.is-home #page-header.full_page #scroll-down {
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -245,7 +259,7 @@
 }
 
 @media (max-height: 720px) {
-  #page-header.full_page #site-title {
+  body.is-home #page-header.full_page #site-title {
     font-size: clamp(2rem, min(6.4vw, 8vh), 4rem);
   }
 
@@ -262,11 +276,21 @@
 }
 
 @media (max-width: 768px) {
-  #page-header.full_page #site-info {
+  /* 窄屏里点云只会变成一块噪点，直接退场，留顶部空气光 */
+  .hero-scene {
+    display: none;
+  }
+
+  body.is-home #page-header.full_page {
+    height: 86vh;
+    height: 86svh;
+  }
+
+  body.is-home #page-header.full_page #site-info {
     padding: 0 22px;
   }
 
-  #page-header.full_page #site-title {
+  body.is-home #page-header.full_page #site-title {
     font-size: clamp(2.2rem, 11vw, 3.2rem);
   }
 
@@ -278,7 +302,7 @@
     margin-top: 34px;
   }
 
-  #page-header.full_page #scroll-down {
+  body.is-home #page-header.full_page #scroll-down {
     right: 22px;
     height: 96px;
   }
@@ -289,16 +313,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #page-header.full_page #site-title,
+  body.is-home #page-header.full_page #site-title,
   .hero-lede,
   .hero-entry,
-  #page-header.full_page #scroll-down {
+  body.is-home #page-header.full_page #scroll-down {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
   }
 
-  #page-header.full_page #site-info {
+  body.is-home #page-header.full_page #site-info {
     transform: none !important;
     opacity: 1 !important;
   }
