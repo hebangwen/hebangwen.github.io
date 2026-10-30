@@ -359,8 +359,38 @@ a:hover {
 
 /* 与主页重复或没有信息量的部件 */
 #aside-content .card-announcement,
-#aside-content .card-webinfo,
 #aside-content .card-recent-post {
+  display: none;
+}
+
+/* 网站资讯：只保留访问量两行，其余交给 pv.js 注入 */
+#aside-content .card-webinfo .webinfo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#aside-content .card-webinfo .webinfo-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#aside-content .card-webinfo .item-name {
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+#aside-content .card-webinfo .item-count {
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 统计接口没数据时整栏不占位 */
+#aside-content .card-webinfo:has(.webinfo:empty) {
   display: none;
 }
 
