@@ -272,95 +272,110 @@ a:hover {
 /* ---------------------------------------------------------
    6. 文章页
    --------------------------------------------------------- */
-#post-meta .post-meta-pv {
+#page-header.post-bg #post-info #post-meta .post-meta-pv {
   display: inline;
 }
 
-/* 文章页头：抬高层级、压暗底图，保证长标题始终可读 */
+/* 文章页头：与首页 hero 同一套深墨底与排版语言 */
 #page-header.post-bg {
-  height: min(56vh, 520px);
-  background-position: center 42%;
+  display: flex;
+  align-items: center;
+  height: min(52vh, 500px);
+  background-color: #0b1116;
 }
 
+/* 底图退成暗场，只留右上角一层空气光，与首页一致 */
 #page-header.post-bg:before {
   background:
-    linear-gradient(
-      180deg,
-      rgba(9, 12, 14, 0.08) 0%,
-      rgba(9, 12, 14, 0.26) 34%,
-      rgba(9, 12, 14, 0.62) 68%,
-      rgba(9, 12, 14, 0.88) 100%
-    );
+    radial-gradient(120% 78% at 76% 6%, rgba(78, 168, 222, 0.13), transparent 58%),
+    linear-gradient(180deg, #0b1116 0%, #0a1015 62%, #080d11 100%);
 }
 
-#post-info {
-  bottom: 48px;
+/* 主题用 #page-header.post-bg #post-info 的绝对定位压在这里，必须对齐特异性 */
+#page-header.post-bg #post-info {
+  position: static !important;
+  top: auto !important;
+  bottom: auto !important;
+  width: 100%;
   z-index: 3;
+  text-align: left;
+}
+
+.post-eyebrow {
+  margin-bottom: 18px;
+  color: rgba(244, 247, 248, 0.5);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
 }
 
 #post-info .post-title {
-  max-width: 1000px;
-  font-size: clamp(1.7rem, 3.3vw, 2.65rem);
-  font-weight: 700;
-  line-height: 1.26;
-  letter-spacing: -0.022em;
-  text-shadow: 0 2px 28px rgba(9, 12, 14, 0.55);
+  max-width: 1080px;
+  margin: 0;
+  color: #f4f7f8;
+  font-size: clamp(2rem, 4.4vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+  text-shadow: none;
+  text-wrap: balance;
 }
 
-/* 两行 meta 合并成一条，别再折行散开 */
-#post-meta {
+/* 元信息：一条细线 + 等宽日期，对应首页「最新一篇」的处理 */
+/* 主题给 #post-info 的每个直接子元素都套了 max-width + 居中 + 15px 内边距，
+   这里必须保持一致，否则元信息会跑到页面最左边 */
+#page-header.post-bg #post-info #post-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-start;
   gap: 0;
-  margin-top: 20px;
+  margin: 24px auto 0;
+  padding: 0 15px;
+  max-width: 1200px;
 }
 
-#post-meta .meta-firstline,
-#post-meta .meta-secondline {
+#page-header.post-bg #post-info #post-meta .meta-firstline,
+#page-header.post-bg #post-info #post-meta .meta-secondline {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
 }
 
 #post-meta span,
-#post-meta time,
 #post-meta a {
-  font-size: 13px;
-  letter-spacing: 0.01em;
+  color: rgba(244, 247, 248, 0.62);
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+}
+
+#post-meta time {
+  color: rgba(244, 247, 248, 0.82);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
 }
 
 #post-meta i {
-  font-size: 12.5px;
+  color: rgba(244, 247, 248, 0.4);
+  font-size: 12px;
 }
 
-#post-meta .post-meta-separator {
-  margin: 0 12px;
-  opacity: 0.45;
+#page-header.post-bg #post-info #post-meta .post-meta-separator {
+  margin: 0 10px;
+  color: rgba(244, 247, 248, 0.24);
 }
 
-/* 窄屏换行时不要把「AI 系统」这种词组拆开 */
-#post-meta .post-meta-date,
-#post-meta .post-meta-categories,
-#post-meta .post-meta-pv {
+#page-header.post-bg #post-info #post-meta .post-meta-date,
+#page-header.post-bg #post-info #post-meta .post-meta-categories,
+#page-header.post-bg #post-info #post-meta .post-meta-pv {
   white-space: nowrap;
 }
 
-/* 第二行内容并排到第一行后，统一由这里补分隔符 */
-#post-meta .meta-secondline:not(:empty):before {
+#page-header.post-bg #post-info #post-meta .meta-secondline:not(:empty):before {
   content: '|';
-  margin: 0 12px;
-  opacity: 0.45;
-}
-
-/* 亮色插画上，导航文字需要一点托底才稳 */
-#page-header.post-bg #nav {
-  background: linear-gradient(
-    180deg,
-    rgba(9, 12, 14, 0.5) 0%,
-    rgba(9, 12, 14, 0.22) 60%,
-    rgba(9, 12, 14, 0) 100%
-  );
+  margin: 0 10px;
+  color: rgba(244, 247, 248, 0.24);
 }
 
 #post {
@@ -946,15 +961,24 @@ a:hover {
   }
 
   #post-info .post-title {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
+    line-height: 1.3;
   }
 
   #page-header.post-bg {
-    height: 320px;
+    height: 420px;
   }
 
-  #post-info {
-    bottom: 30px;
+
+
+  .post-eyebrow {
+    margin-bottom: 14px;
+    font-size: 11px;
+  }
+
+  #post-info #post-meta {
+    margin-top: 18px;
+    padding-top: 14px;
   }
 
   #nav {

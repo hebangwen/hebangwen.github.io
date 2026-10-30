@@ -1,5 +1,5 @@
 /* =========================================================
-   文章页：顶部阅读进度 + 窄屏 header 精简
+   文章页头：分类上提、窄屏精简、顶部阅读进度
    入口：_config.butterfly.yml -> inject.bottom
    只在带 banner 的文章页生效
    ========================================================= */
@@ -9,8 +9,36 @@
   var header = document.getElementById('page-header');
   if (!header || !header.classList.contains('post-bg')) return;
 
+  liftCategory();
   trimMetaOnNarrow();
   initProgress();
+
+  /* 分类从 meta 里提到标题上方，形成「分类 / 标题 / 线 / 元信息」的层级 */
+  function liftCategory() {
+    var meta = document.getElementById('post-meta');
+    var title = document.querySelector('#post-info .post-title');
+    if (!meta || !title) return;
+
+    var wrap = meta.querySelector('.post-meta-categories');
+    if (!wrap) return;
+
+    var names = [].map
+      .call(wrap.querySelectorAll('a'), function (a) {
+        return (a.textContent || '').trim();
+      })
+      .filter(Boolean);
+
+    if (names.length) {
+      var eyebrow = document.createElement('div');
+      eyebrow.className = 'post-eyebrow';
+      eyebrow.textContent = names.join(' / ');
+      title.parentNode.insertBefore(eyebrow, title);
+    }
+
+    var prev = wrap.previousElementSibling;
+    if (prev && prev.classList.contains('post-meta-separator')) prev.remove();
+    wrap.remove();
+  }
 
   /* 窄屏里「更新于」会把 meta 挤成两行并裁切，直接收掉 */
   function trimMetaOnNarrow() {
