@@ -247,7 +247,7 @@
       g.fillText(text, W / 2, H * 0.4);
 
       var data = g.getImageData(0, 0, W, H).data;
-      var step = Math.max(2, Math.round(W / 620));
+      var step = W < 700 ? 1 : Math.max(2, Math.round(W / 620));
 
       var pos = [];
       var col = [];
