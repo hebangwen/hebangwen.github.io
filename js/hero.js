@@ -1,19 +1,23 @@
 /* =========================================================
-   Homepage hero —— 首页开场
+   Homepage hero —— 三维粒子文字
    入口：_config.butterfly.yml -> inject.bottom
-   仅在首页 #page-header.full_page 生效，其余页面直接退出
    ---------------------------------------------------------
-   主视觉是一个三维点云网络：手写 3D 投影 + 距离连线，
-   缓慢自转，鼠标可倾斜；不依赖 Three.js。
+   流程：先把站点标题画到离屏 canvas → 按像素采样成粒子 →
+        three.js 渲染为 Points → 滚动时粒子向外爆散并淡出，
+        同时 DOM 层的导语与「最新一篇」退场，让位给文章列表。
+   降级：WebGL 不可用 / 减少动效 / three 加载失败时，
+        保留原始 DOM 标题，布局回落到左对齐。
    ========================================================= */
 (function () {
   'use strict';
 
-  /* 可改的文案 */
   var COPY = {
     lede: '把读过、写过、调过的东西记下来。',
     entryLabel: '最新一篇'
   };
+
+  var FONT_STACK =
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
 
   var header = document.getElementById('page-header');
   if (!header || !header.classList.contains('full_page')) return;
@@ -25,7 +29,7 @@
 
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* 1. 标题拆成修饰行与主行 */
+  /* 1. 标题拆分 */
   var raw = (title.textContent || '').trim();
   var match = raw.match(/^(Yet Another)\s+/i);
   var name = document.createElement('span');
@@ -43,6 +47,8 @@
   }
   title.appendChild(name);
 
+  var displayText = (name.textContent || raw).trim();
+
   /* 2. 左栏容器 */
   var copy = document.createElement('div');
   copy.className = 'hero-copy';
@@ -57,10 +63,7 @@
   var entry = buildEntry(COPY.entryLabel);
   if (entry) copy.appendChild(entry);
 
-  /* 3. 三维场景 */
-  initScene();
-
-  /* 4. 滚动提示 */
+  /* 3. 滚动提示 */
   var cue = document.getElementById('scroll-down');
   if (cue) {
     cue.setAttribute('role', 'button');
@@ -82,228 +85,266 @@
     });
   }
 
-  /* 5. 滚动时淡出，把位置让给文章列表 */
-  var ticking = false;
-  window.addEventListener(
-    'scroll',
-    function () {
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(function () {
-        ticking = false;
-        var y = window.scrollY || window.pageYOffset || 0;
-        var h = header.offsetHeight || 1;
-        var p = Math.min(1, y / (h * 0.85));
-        header.style.setProperty('--hero-shift', (-p * 40).toFixed(1) + 'px');
-        header.style.setProperty('--hero-fade', (1 - p).toFixed(3));
+  /* 4. 三维文字 */
+  if (!reduce) loadThree();
+
+  function loadThree() {
+    if (!window.WebGLRenderingContext) return;
+    import('/js/three.module.min.js')
+      .then(function (mod) {
+        var THREE = mod.default || mod;
+        try {
+          buildScene(THREE);
+        } catch (err) {
+          /* 保持 DOM 降级 */
+        }
+      })
+      .catch(function () {
+        /* 保持 DOM 降级 */
       });
-    },
-    { passive: true }
-  );
+  }
 
-  /* ---------------- 三维点云 ---------------- */
-
-  function initScene() {
+  function buildScene(THREE) {
     var canvas = document.createElement('canvas');
-    canvas.className = 'hero-scene';
+    canvas.className = 'hero-webgl';
     canvas.setAttribute('aria-hidden', 'true');
     header.insertBefore(canvas, info);
 
-    var ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    var renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
-    var nodes = buildSphere(40);
-    var edges = buildEdges(nodes, 0.72, 3);
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(50, 1, 0.1, 2000);
+    camera.position.set(0, 0, 120);
 
-    var w = 0;
-    var h = 0;
+    var points = null;
+    var base = null;
+    var dirs = null;
+    var spreads = null;
+    var count = 0;
+    var material = null;
+    var geometry = null;
+
+    var scaleFactor = 1;
+    var p = 0;
+    var targetP = 0;
+    var mouseX = 0;
+    var mouseY = 0;
+    var camX = 0;
+    var camY = 0;
     var raf = 0;
-    var running = true;
+    var visible = true;
+    var ready = false;
 
-    var spin = 0;
-    var tiltX = -0.16;
-    var tiltY = 0;
-    var targetTiltX = -0.16;
-    var targetTiltY = 0;
-    var last = 0;
-
+    buildParticles();
     resize();
+    loop();
 
-    if (reduce) {
-      render(0);
-      window.addEventListener('resize', function () {
-        resize();
-        render(0);
-      });
-      return;
-    }
+    window.addEventListener('resize', debounce(resize, 200), { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    header.addEventListener(
+      'mousemove',
+      function (e) {
+        var r = header.getBoundingClientRect();
+        mouseX = ((e.clientX - r.left) / r.width - 0.5) * 2;
+        mouseY = ((e.clientY - r.top) / r.height - 0.5) * 2;
+      },
+      { passive: true }
+    );
+    header.addEventListener('mouseleave', function () {
+      mouseX = 0;
+      mouseY = 0;
+    });
 
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(
         function (records) {
-          var visible = records[0].isIntersecting;
-          if (visible && !running) {
-            running = true;
-            last = 0;
-            loop(0);
-          } else if (!visible) {
-            running = false;
-            if (raf) window.cancelAnimationFrame(raf);
-            raf = 0;
-          }
+          visible = records[0].isIntersecting;
+          if (visible && !raf) loop();
         },
         { threshold: 0 }
       ).observe(header);
     }
 
-    if (window.matchMedia('(hover: hover)').matches) {
-      header.addEventListener(
-        'mousemove',
-        function (e) {
-          var r = header.getBoundingClientRect();
-          targetTiltY = ((e.clientX - r.left) / r.width - 0.5) * 0.55;
-          targetTiltX = -0.16 + ((e.clientY - r.top) / r.height - 0.5) * 0.35;
-        },
-        { passive: true }
-      );
-      header.addEventListener('mouseleave', function () {
-        targetTiltX = -0.16;
-        targetTiltY = 0;
-      });
-    }
+    function buildParticles() {
+      var W = Math.max(320, header.clientWidth);
+      var H = Math.max(300, header.clientHeight);
 
-    window.addEventListener('resize', resize, { passive: true });
+      var off = document.createElement('canvas');
+      off.width = W;
+      off.height = H;
+      var g = off.getContext('2d');
+      if (!g) return;
 
-    loop(0);
+      var text = displayText || 'Blog';
+      var fontSize = Math.min(H * 0.3, W * 0.34);
+      g.font = '800 ' + fontSize + 'px ' + FONT_STACK;
 
-    function resize() {
-      var dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = header.clientWidth;
-      h = header.clientHeight;
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(h * dpr);
-      canvas.style.width = w + 'px';
-      canvas.style.height = h + 'px';
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
-    function loop(ts) {
-      if (!running) return;
-      var dt = last ? Math.min((ts - last) / 1000, 0.05) : 0;
-      last = ts;
-
-      spin += dt * 0.16;
-      tiltX += (targetTiltX - tiltX) * 0.06;
-      tiltY += (targetTiltY - tiltY) * 0.06;
-
-      render(spin);
-      raf = window.requestAnimationFrame(loop);
-    }
-
-    function render(baseSpin) {
-      ctx.clearRect(0, 0, w, h);
-      if (!w || !h) return;
-
-      var rx = tiltX;
-      var ry = baseSpin + tiltY;
-      var cosX = Math.cos(rx);
-      var sinX = Math.sin(rx);
-      var cosY = Math.cos(ry);
-      var sinY = Math.sin(ry);
-
-      var narrow = w <= 1024;
-      var cx = w * (narrow ? 0.5 : 0.7);
-      var cy = h * (narrow ? 0.46 : 0.5);
-      var radius = Math.min(w, h) * (narrow ? 0.4 : 0.29);
-      var fov = 2.8;
-
-      var projected = nodes.map(function (n) {
-        var x1 = n.x * cosY - n.z * sinY;
-        var z1 = n.x * sinY + n.z * cosY;
-        var y1 = n.y * cosX - z1 * sinX;
-        var z2 = n.y * sinX + z1 * cosX;
-        var s = fov / (fov + z2);
-        return {
-          x: cx + x1 * radius * s,
-          y: cy + y1 * radius * s,
-          z: z2,
-          s: s
-        };
-      });
-
-      /* 连线：先画，按深度衰减 */
-      ctx.lineWidth = 1;
-      for (var i = 0; i < edges.length; i++) {
-        var a = projected[edges[i][0]];
-        var b = projected[edges[i][1]];
-        var depth = (a.z + b.z) / 2;
-        var alpha = 0.17 - depth * 0.135;
-        if (alpha <= 0.012) continue;
-        ctx.strokeStyle = 'rgba(244, 247, 248, ' + alpha.toFixed(3) + ')';
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.stroke();
+      var measured = g.measureText(text).width;
+      var maxW = W * (W < 700 ? 0.94 : 0.82);
+      if (measured > maxW) {
+        fontSize *= maxW / measured;
+        g.font = '800 ' + fontSize + 'px ' + FONT_STACK;
+        measured = g.measureText(text).width;
       }
 
-      /* 节点：近大远小，少数用强调色 */
-      for (var k = 0; k < projected.length; k++) {
-        var p = projected[k];
-        var d = (p.z + 1) / 2;
-        var r = Math.max(0.6, 2.6 * p.s - d * 0.9);
-        var nodeAlpha = 0.82 - d * 0.56;
-        if (nodeAlpha <= 0.04) continue;
-        ctx.fillStyle =
-          k % 7 === 3
-            ? 'rgba(78, 168, 222, ' + nodeAlpha.toFixed(3) + ')'
-            : 'rgba(244, 247, 248, ' + nodeAlpha.toFixed(3) + ')';
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-  }
+      g.fillStyle = '#ffffff';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText(text, W / 2, H * 0.4);
 
-  /* 斐波那契球面分布，比纯随机更匀 */
-  function buildSphere(count) {
-    var pts = [];
-    var golden = Math.PI * (3 - Math.sqrt(5));
-    for (var i = 0; i < count; i++) {
-      var y = count === 1 ? 0 : 1 - (i / (count - 1)) * 2;
-      var r = Math.sqrt(Math.max(0, 1 - y * y));
-      var theta = golden * i;
-      var jitter = 0.55 + Math.random() * 0.62;
-      pts.push({
-        x: Math.cos(theta) * r * jitter,
-        y: y * jitter,
-        z: Math.sin(theta) * r * jitter
-      });
-    }
-    return pts;
-  }
+      var data = g.getImageData(0, 0, W, H).data;
+      var step = Math.max(2, Math.round(W / 520));
 
-  function buildEdges(pts, maxDist, maxPerNode) {
-    var edges = [];
-    var deg = [];
-    for (var i = 0; i < pts.length; i++) deg.push(0);
+      var pos = [];
+      var col = [];
+      var dz = [];
+      var spread = [];
 
-    for (var a = 0; a < pts.length; a++) {
-      for (var b = a + 1; b < pts.length; b++) {
-        if (deg[a] >= maxPerNode || deg[b] >= maxPerNode) continue;
-        var dx = pts[a].x - pts[b].x;
-        var dy = pts[a].y - pts[b].y;
-        var dz = pts[a].z - pts[b].z;
-        if (dx * dx + dy * dy + dz * dz < maxDist * maxDist) {
-          edges.push([a, b]);
-          deg[a]++;
-          deg[b]++;
+      var accent = new THREE.Color(0x4ea8de);
+      var paper = new THREE.Color(0xf4f7f8);
+
+      for (var y = 0; y < H; y += step) {
+        for (var x = 0; x < W; x += step) {
+          var idx = (y * W + x) * 4 + 3;
+          if (data[idx] < 140) continue;
+
+          pos.push(x - W / 2, -(y - H / 2), (Math.random() - 0.5) * 34);
+
+          var c = Math.random() < 0.06 ? accent : paper;
+          col.push(c.r, c.g, c.b);
+
+          /* 同一小格里的粒子共享方向，碎开时是块状碎片而不是均匀尘埃 */
+          var cellX = Math.floor(x / (W / 16));
+          var cellY = Math.floor(y / (H * 0.5 / 9));
+          var seed = cellX * 131 + cellY * 37 + 1;
+          var ang = pseudo(seed) * Math.PI * 2;
+          var ring = 0.55 + pseudo(seed + 11) * 0.6;
+
+          dz.push(
+            Math.cos(ang) * ring,
+            Math.sin(ang) * ring * 0.7 - (0.3 + pseudo(seed + 23) * 0.6),
+            0.35 + pseudo(seed + 41) * 1.2
+          );
+          spread.push(20 + pseudo(seed + 57) * 90);
         }
       }
+
+      count = pos.length / 3;
+      if (!count) return;
+
+      base = new Float32Array(pos);
+      dirs = new Float32Array(dz);
+      spreads = new Float32Array(spread);
+
+      geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
+      geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(col), 3));
+
+      material = new THREE.PointsMaterial({
+        size: 0.42,
+        sizeAttenuation: true,
+        vertexColors: true,
+        transparent: true,
+        opacity: 1,
+        depthWrite: false
+      });
+
+      points = new THREE.Points(geometry, material);
+      scene.add(points);
     }
-    return edges;
+
+    function resize() {
+      var w = header.clientWidth;
+      var h = header.clientHeight;
+      if (!w || !h) return;
+
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+
+      /* 采样坐标是画布像素，这里换算成相机可见范围内的世界单位 */
+      var vFov = (camera.fov * Math.PI) / 180;
+      var visH = 2 * Math.tan(vFov / 2) * camera.position.z;
+      var visW = visH * camera.aspect;
+      scaleFactor = visW / w;
+
+      applyPositions(p);
+
+      if (!ready) {
+        ready = true;
+        header.classList.add('is-3d');
+      }
+    }
+
+    function applyPositions(progress) {
+      if (!geometry) return;
+      var arr = geometry.attributes.position.array;
+      var k = progress * progress;
+      for (var i = 0; i < count; i++) {
+        var s = Math.pow(progress, 1.55) * spreads[i];
+        arr[i * 3] = base[i * 3] * scaleFactor + dirs[i * 3] * s;
+        arr[i * 3 + 1] = base[i * 3 + 1] * scaleFactor + dirs[i * 3 + 1] * s - k * 62;
+        arr[i * 3 + 2] = base[i * 3 + 2] * scaleFactor + dirs[i * 3 + 2] * s;
+      }
+      geometry.attributes.position.needsUpdate = true;
+      if (material) material.opacity = Math.max(0, 1 - progress * 1.12);
+    }
+
+    function onScroll() {
+      var y = window.scrollY || window.pageYOffset || 0;
+      var h = header.offsetHeight || 1;
+      targetP = Math.min(1, Math.max(0, y / (h * 0.82)));
+    }
+
+    function loop() {
+      raf = window.requestAnimationFrame(loop);
+      if (!visible) {
+        if (raf) window.cancelAnimationFrame(raf);
+        raf = 0;
+        return;
+      }
+
+      p += (targetP - p) * 0.12;
+      camX += (mouseX * 6 - camX) * 0.06;
+      camY += (-mouseY * 4 - camY) * 0.06;
+
+      applyPositions(p);
+
+      /* 整块文字随鼠标轻微倾斜，透视本身产生立体感 */
+      if (points) {
+        points.rotation.y += (mouseX * 0.16 - points.rotation.y) * 0.06;
+        points.rotation.x += (-mouseY * 0.08 - points.rotation.x) * 0.06;
+      }
+
+      camera.position.x = camX;
+      camera.position.y = camY;
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
+    }
   }
 
-  /* 「最新一篇」入口，从首页文章列表里取第一条真实数据 */
+  /* ---------------- 工具 ---------------- */
+
+  function pseudo(seed) {
+    var v = Math.sin(seed * 12.9898) * 43758.5453;
+    return v - Math.floor(v);
+  }
+
+  function debounce(fn, wait) {
+    var t = 0;
+    return function () {
+      clearTimeout(t);
+      t = setTimeout(fn, wait);
+    };
+  }
+
   function buildEntry(label) {
     var item = document.querySelector('.recent-post-item');
     if (!item) return null;
