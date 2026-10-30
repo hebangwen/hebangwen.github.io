@@ -25,7 +25,7 @@
     var box = document.querySelector('.card-webinfo .webinfo');
     if (!box) return;
 
-    var cached = readJson('cfpv:stats', STATS_TTL);
+    var cached = readJson('cfpv:stats:v2', STATS_TTL);
     if (cached) {
       paintStats(box, cached);
       return;
@@ -36,7 +36,7 @@
       .then(function (data) {
         if (!data || typeof data.site !== 'number') return;
         paintStats(box, data);
-        writeJson('cfpv:stats', data);
+        writeJson('cfpv:stats:v2', data);
       })
       .catch(noop);
   }
@@ -45,6 +45,10 @@
     setItem(box, 'cf-site-pv', '总访问量', data.site);
     if (typeof data.today === 'number') {
       setItem(box, 'cf-site-today', '今日访问', data.today);
+    }
+    /* 昨日用来对照：只有一天数据时总数与今日必然相等，多一行能看出这是历史量而非重复查询 */
+    if (typeof data.yesterday === 'number') {
+      setItem(box, 'cf-site-yesterday', '昨日访问', data.yesterday);
     }
   }
 
