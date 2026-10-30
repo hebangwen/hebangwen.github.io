@@ -1178,13 +1178,8 @@ body:has(#post) #aside-content .card-info {
   display: none;
 }
 
-/* 目录只展开两级，三级以下会把侧栏撑成一面墙 */
-#card-toc .toc-level-3,
-#card-toc .toc-level-4,
-#card-toc .toc-level-5,
-#card-toc .toc-level-6 {
-  display: none;
-}
+/* 目录的展开/折叠交给主题脚本：它只展开当前活动分支，
+   这里不要用 display 去砍层级，否则折叠会失效 */
 
 #card-toc .toc-number {
   color: var(--ink-3);
