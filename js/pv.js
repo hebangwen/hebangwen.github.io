@@ -1,6 +1,8 @@
 /* =========================================================
    Page views —— Cloudflare Workers + D1
    入口：_config.butterfly.yml -> inject.bottom
+     · 文章页：上报并显示本篇阅读量
+     · 侧栏「网站资讯」：显示站点总访问量与今日访问
    未配置 ENDPOINT 时整个脚本静默退出，不会发出任何请求
    ========================================================= */
 (function () {
@@ -10,47 +12,93 @@
   var ENDPOINT = 'https://blog-pv.hebangwen.workers.dev';
 
   var DEDUPE_MS = 30 * 60 * 1000; // 同一路径 30 分钟内只计一次
+  var STATS_TTL = 5 * 60 * 1000; // 站点总量缓存 5 分钟
   var LABEL = '阅读';
 
   if (!ENDPOINT || ENDPOINT.indexOf('example.workers.dev') !== -1) return;
 
-  var meta = document.getElementById('post-meta');
-  if (!meta) return; // 只在文章页统计
+  initSiteStats();
+  initPageViews();
 
-  var path = normalize(location.pathname);
-  if (!path) return;
+  /* ---------------- 站点总量 ---------------- */
+  function initSiteStats() {
+    var box = document.querySelector('.card-webinfo .webinfo');
+    if (!box) return;
 
-  var slot = ensureSlot(meta);
-  if (!slot) return;
-  var value = slot.querySelector('.cf-pv-value');
+    var cached = readJson('cfpv:stats', STATS_TTL);
+    if (cached) {
+      paintStats(box, cached);
+      return;
+    }
 
-  var seen = readSeen(path);
-
-  if (seen) {
-    fetch(ENDPOINT + '/views?path=' + encodeURIComponent(path))
-      .then(toJson)
-      .then(render)
-      .catch(noop);
-  } else {
-    fetch(ENDPOINT + '/hit', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ path: path }),
-      keepalive: true
-    })
+    fetch(ENDPOINT + '/stats')
       .then(toJson)
       .then(function (data) {
-        render(data);
-        markSeen(path);
+        if (!data || typeof data.site !== 'number') return;
+        paintStats(box, data);
+        writeJson('cfpv:stats', data);
       })
       .catch(noop);
   }
 
-  function render(data) {
-    if (!data || typeof data.views !== 'number') return;
-    value.textContent = format(data.views);
-    // 用 !important 顶掉主题里未知来源的隐藏规则，确保计数一定可见
-    slot.style.setProperty('display', 'inline', 'important');
+  function paintStats(box, data) {
+    setItem(box, 'cf-site-pv', '总访问量', data.site);
+    if (typeof data.today === 'number') {
+      setItem(box, 'cf-site-today', '今日访问', data.today);
+    }
+  }
+
+  function setItem(box, id, name, count) {
+    var el = box.querySelector('#' + id);
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'webinfo-item';
+      el.innerHTML =
+        '<div class="item-name">' + name + ' :</div>' +
+        '<div class="item-count" id="' + id + '">—</div>';
+      box.appendChild(el);
+    }
+    el.querySelector('.item-count').textContent = format(count);
+  }
+
+  /* ---------------- 单篇阅读量 ---------------- */
+  function initPageViews() {
+    var meta = document.getElementById('post-meta');
+    if (!meta) return;
+
+    var path = normalize(location.pathname);
+    if (!path) return;
+
+    var slot = ensureSlot(meta);
+    if (!slot) return;
+    var value = slot.querySelector('.cf-pv-value');
+
+    if (readSeen(path)) {
+      fetch(ENDPOINT + '/views?path=' + encodeURIComponent(path))
+        .then(toJson)
+        .then(render)
+        .catch(noop);
+    } else {
+      fetch(ENDPOINT + '/hit', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ path: path }),
+        keepalive: true
+      })
+        .then(toJson)
+        .then(function (data) {
+          render(data);
+          markSeen(path);
+        })
+        .catch(noop);
+    }
+
+    function render(data) {
+      if (!data || typeof data.views !== 'number') return;
+      value.textContent = format(data.views);
+      // 用 !important 顶掉主题里未知来源的隐藏规则，确保计数一定可见
+      slot.style.setProperty('display', 'inline', 'important');
+    }
   }
 
   function ensureSlot(root) {
@@ -72,6 +120,7 @@
     return span;
   }
 
+  /* ---------------- 工具 ---------------- */
   function normalize(raw) {
     var p = String(raw || '').split('#')[0].split('?')[0];
     if (!p || p.charAt(0) !== '/') return null;
@@ -82,25 +131,53 @@
   }
 
   function readSeen(p) {
-    try {
-      var raw = sessionStorage.getItem('cfpv:' + p);
-      if (!raw) return false;
-      return Date.now() - Number(raw) < DEDUPE_MS;
-    } catch (e) {
-      return false;
-    }
+    var raw = readRaw('cfpv:' + p);
+    if (!raw) return false;
+    return Date.now() - Number(raw) < DEDUPE_MS;
   }
 
   function markSeen(p) {
+    writeRaw('cfpv:' + p, String(Date.now()));
+  }
+
+  function readJson(key, ttl) {
+    var raw = readRaw(key);
+    if (!raw) return null;
     try {
-      sessionStorage.setItem('cfpv:' + p, String(Date.now()));
+      var obj = JSON.parse(raw);
+      if (!obj || !obj.__t || Date.now() - obj.__t > ttl) return null;
+      return obj.data;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writeJson(key, data) {
+    try {
+      writeRaw(key, JSON.stringify({ __t: Date.now(), data: data }));
+    } catch (e) {
+      /* ignore */
+    }
+  }
+
+  function readRaw(key) {
+    try {
+      return sessionStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writeRaw(key, val) {
+    try {
+      sessionStorage.setItem(key, val);
     } catch (e) {
       /* 隐私模式下忽略 */
     }
   }
 
   function format(n) {
-    if (n >= 100000) return (n / 10000).toFixed(1) + ' 万';
+    if (typeof n !== 'number') return '—';
     if (n >= 10000) return (n / 10000).toFixed(1) + ' 万';
     return String(n);
   }
