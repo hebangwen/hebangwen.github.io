@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <!-- 首页 hero 的占位底图：实际视觉由 /css/hero.css 绘制，这里只为满足 top_img 结构并消除外部依赖 -->
+  <rect width="1600" height="900" fill="#0b1116"/>
+</svg>

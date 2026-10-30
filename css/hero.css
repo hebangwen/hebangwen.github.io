@@ -1,0 +1,450 @@
+/* =========================================================
+   Homepage hero —— 首页开场
+   入口：_config.butterfly.yml -> inject.head
+   作用域仅 #page-header.full_page，其它页面零影响
+   ---------------------------------------------------------
+   设计主张：一个视觉资产（结构图）+ 巨大而安静的标题。
+   不用霓虹、不用渐变文字、不用打字机。
+   ========================================================= */
+
+#page-header.full_page {
+  --hero-ink: #0b1116;
+  --hero-paper: #f4f7f8;
+  --hero-accent: #4ea8de;
+  --hero-fade: 1;
+  --hero-shift: 0px;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: var(--hero-ink);
+}
+
+/* 底图彻底退成暗场，只留极淡的顶部空气光 */
+#page-header.full_page:before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(120% 80% at 76% 8%, rgba(78, 168, 222, 0.13), transparent 58%),
+    linear-gradient(180deg, #0b1116 0%, #0a1015 62%, #080d11 100%);
+}
+
+/* ---------- 舞台 ---------- */
+#page-header.full_page #site-info {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: center;
+  align-content: center;
+  column-gap: clamp(24px, 4vw, 64px);
+  max-width: 1440px;
+  margin-inline: auto;
+  padding: 0 clamp(24px, 5vw, 80px);
+  text-align: left;
+  opacity: var(--hero-fade);
+  transform: translate3d(0, var(--hero-shift), 0);
+  will-change: transform, opacity;
+}
+
+#page-header.full_page #site-subtitle {
+  display: none;
+}
+
+/* 开场页不重复导航里的站点名，只留标识 */
+#page-header.full_page #nav .site-name {
+  display: none;
+}
+
+/* ---------- 左栏文案 ---------- */
+.hero-copy {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+#page-header.full_page #site-title {
+  display: block;
+  max-width: 100%;
+  margin: 0;
+  overflow: visible;
+  color: var(--hero-paper);
+  font-size: clamp(2.2rem, min(7.2vw, 11vh), 6.2rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.032em;
+  text-align: left;
+  text-shadow: none;
+  -webkit-line-clamp: unset;
+  text-wrap: balance;
+  animation: hero-rise 0.95s cubic-bezier(0.19, 1, 0.22, 1) 0.15s both;
+}
+
+.hero-prelude {
+  display: block;
+  margin-bottom: 0.85em;
+  color: rgba(244, 247, 248, 0.5);
+  font-size: clamp(0.82rem, 1.35vw, 1rem);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+}
+
+.hero-name {
+  display: block;
+}
+
+.hero-lede {
+  max-width: 26ch;
+  margin: 26px 0 0;
+  color: rgba(244, 247, 248, 0.62);
+  font-size: clamp(0.95rem, 1.5vw, 1.08rem);
+  font-weight: 400;
+  line-height: 1.75;
+  animation: hero-rise 0.9s cubic-bezier(0.19, 1, 0.22, 1) 0.42s both;
+}
+
+/* 最新一篇 */
+.hero-entry {
+  display: block;
+  max-width: 34ch;
+  margin-top: clamp(30px, 7vh, 76px);
+  padding-top: 18px;
+  border-top: 1px solid rgba(244, 247, 248, 0.16);
+  text-decoration: none;
+  animation: hero-rise 0.9s cubic-bezier(0.19, 1, 0.22, 1) 0.62s both;
+}
+
+.hero-entry-label {
+  display: block;
+  margin-bottom: 8px;
+  color: rgba(244, 247, 248, 0.46);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.hero-entry-title {
+  position: relative;
+  display: inline;
+  color: rgba(244, 247, 248, 0.92);
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.55;
+  background-image: linear-gradient(var(--hero-accent), var(--hero-accent));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size 0.45s cubic-bezier(0.19, 1, 0.22, 1), color 0.3s ease;
+}
+
+.hero-entry:hover .hero-entry-title,
+.hero-entry:focus-visible .hero-entry-title {
+  color: #ffffff;
+  background-size: 100% 1px;
+}
+
+.hero-entry:focus-visible {
+  outline: 2px solid var(--hero-accent);
+  outline-offset: 6px;
+}
+
+.hero-entry-date {
+  display: block;
+  margin-top: 10px;
+  color: rgba(244, 247, 248, 0.42);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+}
+
+/* ---------- 右栏结构图 ---------- */
+.hero-graph {
+  grid-column: 2;
+  justify-self: center;
+  align-self: center;
+  height: min(82vh, 720px);
+  color: var(--hero-paper);
+  transition: transform 0.55s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.hero-graph svg {
+  display: block;
+  width: auto;
+  height: 100%;
+  overflow: visible;
+}
+
+.hero-graph .g-line {
+  fill: none;
+  stroke: rgba(244, 247, 248, 0.26);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: hero-draw 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.hero-graph .g-line.is-faint {
+  stroke: rgba(244, 247, 248, 0.1);
+  stroke-width: 1;
+}
+
+.hero-graph .g-node {
+  fill: var(--hero-paper);
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: hero-node 0.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+.hero-graph .g-node.is-accent {
+  fill: var(--hero-accent);
+}
+
+.hero-graph .g-ring {
+  fill: none;
+  stroke: var(--hero-accent);
+  stroke-width: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: hero-ring 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+@keyframes hero-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes hero-node {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes hero-ring {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+}
+
+/* 通电：一段光沿主干扫过 */
+.hero-graph .g-trace {
+  fill: none;
+  stroke: var(--hero-accent);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 1;
+  stroke-dashoffset: 0.1;
+  opacity: 0;
+  animation: hero-trace 2.6s cubic-bezier(0.45, 0, 0.55, 1) 1.45s 2;
+}
+
+@keyframes hero-trace {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 0.1;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    stroke-dashoffset: -1;
+  }
+}
+
+.hero-graph .g-ping {
+  fill: none;
+  stroke: var(--hero-accent);
+  stroke-width: 1.2;
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: hero-ping 2.6s cubic-bezier(0.2, 0.6, 0.3, 1) 1.5s 2;
+}
+
+@keyframes hero-ping {
+  0% {
+    opacity: 0.75;
+    transform: scale(0.7);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.8);
+  }
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- 滚动提示：一根下落的线 ---------- */
+#page-header.full_page #scroll-down {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  left: auto;
+  right: clamp(24px, 5vw, 80px);
+  bottom: 0;
+  width: auto;
+  height: 120px;
+  z-index: 12;
+  cursor: pointer;
+  opacity: 0;
+  animation: hero-rise 0.9s cubic-bezier(0.19, 1, 0.22, 1) 0.9s forwards;
+}
+
+.hero-scroll-line {
+  position: relative;
+  width: 1px;
+  height: 72px;
+  overflow: hidden;
+  background: rgba(244, 247, 248, 0.2);
+}
+
+.hero-scroll-line:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 34%;
+  background: linear-gradient(to bottom, transparent, var(--hero-accent));
+  animation: hero-scroll-trace 2.4s cubic-bezier(0.6, 0, 0.4, 1) infinite;
+}
+
+@keyframes hero-scroll-trace {
+  0% {
+    transform: translateY(-110%);
+  }
+  100% {
+    transform: translateY(300%);
+  }
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 1024px) {
+  #page-header.full_page #site-info {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-graph {
+    position: absolute;
+    right: -12%;
+    bottom: 1%;
+    height: min(62vh, 480px);
+    width: auto;
+    opacity: 0.28;
+    z-index: 0;
+    pointer-events: none;
+  }
+}
+
+@media (max-height: 720px) {
+  #page-header.full_page #site-title {
+    font-size: clamp(2rem, min(6.4vw, 8vh), 4rem);
+  }
+
+  .hero-lede {
+    margin-top: 18px;
+    line-height: 1.6;
+  }
+
+  .hero-entry {
+    margin-top: 28px;
+    padding-top: 14px;
+  }
+
+  .hero-graph {
+    height: min(64vh, 420px);
+  }
+}
+
+@media (max-width: 768px) {
+  #page-header.full_page #site-info {
+    padding: 0 22px;
+  }
+
+  #page-header.full_page #site-title {
+    font-size: clamp(2.2rem, 11vw, 3.2rem);
+  }
+
+  .hero-lede {
+    margin-top: 20px;
+  }
+
+  .hero-entry {
+    margin-top: 34px;
+  }
+
+  #page-header.full_page #scroll-down {
+    right: 22px;
+    height: 96px;
+  }
+
+  .hero-scroll-line {
+    height: 52px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #page-header.full_page #site-title,
+  .hero-lede,
+  .hero-entry,
+  #page-header.full_page #scroll-down {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  #page-header.full_page #site-info {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .hero-graph .g-line {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+
+  .hero-graph .g-node,
+  .hero-graph .g-ring {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .hero-graph .g-trace,
+  .hero-graph .g-ping {
+    display: none !important;
+  }
+
+  .hero-scroll-line:after {
+    animation: none !important;
+  }
+}
