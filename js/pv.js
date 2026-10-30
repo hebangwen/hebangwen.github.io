@@ -105,14 +105,11 @@
     var line = root.querySelector('.meta-secondline');
     if (!line) return null;
 
-    // 这一行已有内容时才补分隔符，避免出现孤零零的竖线
-    var needsSeparator = line.children.length > 0;
-
     var span = document.createElement('span');
     span.className = 'post-meta-pv';
     span.style.display = 'none';
+    // 分隔符由 CSS 的 .meta-secondline::before 提供，避免与主题 wordcount 重复
     span.innerHTML =
-      (needsSeparator ? '<span class="post-meta-separator">|</span>' : '') +
       '<i class="far fa-eye fa-fw post-meta-icon"></i>' +
       '<span class="post-meta-label">' + LABEL + ':</span>' +
       '<span class="cf-pv-value">—</span>';

@@ -276,10 +276,112 @@ a:hover {
   display: inline;
 }
 
+/* 文章页头：抬高层级、压暗底图，保证长标题始终可读 */
+#page-header.post-bg {
+  height: min(56vh, 520px);
+  background-position: center 42%;
+}
+
+#page-header.post-bg:before {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(9, 12, 14, 0.08) 0%,
+      rgba(9, 12, 14, 0.26) 34%,
+      rgba(9, 12, 14, 0.62) 68%,
+      rgba(9, 12, 14, 0.88) 100%
+    );
+}
+
+#post-info {
+  bottom: 48px;
+  z-index: 3;
+}
+
+#post-info .post-title {
+  max-width: 1000px;
+  font-size: clamp(1.7rem, 3.3vw, 2.65rem);
+  font-weight: 700;
+  line-height: 1.26;
+  letter-spacing: -0.022em;
+  text-shadow: 0 2px 28px rgba(9, 12, 14, 0.55);
+}
+
+/* 两行 meta 合并成一条，别再折行散开 */
+#post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  margin-top: 20px;
+}
+
+#post-meta .meta-firstline,
+#post-meta .meta-secondline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+#post-meta span,
+#post-meta time,
+#post-meta a {
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+
+#post-meta i {
+  font-size: 12.5px;
+}
+
+#post-meta .post-meta-separator {
+  margin: 0 12px;
+  opacity: 0.45;
+}
+
+/* 窄屏换行时不要把「AI 系统」这种词组拆开 */
+#post-meta .post-meta-date,
+#post-meta .post-meta-categories,
+#post-meta .post-meta-pv {
+  white-space: nowrap;
+}
+
+/* 第二行内容并排到第一行后，统一由这里补分隔符 */
+#post-meta .meta-secondline:not(:empty):before {
+  content: '|';
+  margin: 0 12px;
+  opacity: 0.45;
+}
+
+/* 亮色插画上，导航文字需要一点托底才稳 */
+#page-header.post-bg #nav {
+  background: linear-gradient(
+    180deg,
+    rgba(9, 12, 14, 0.5) 0%,
+    rgba(9, 12, 14, 0.22) 60%,
+    rgba(9, 12, 14, 0) 100%
+  );
+}
+
 #post {
   background: var(--paper);
   border: 1px solid var(--line);
   padding: 8px var(--card-pad) 32px;
+}
+
+/* 顶部阅读进度线 */
+.read-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  opacity: 0.85;
+  z-index: 9999;
+  pointer-events: none;
 }
 
 #post-info {
@@ -845,6 +947,14 @@ a:hover {
 
   #post-info .post-title {
     font-size: 1.5rem;
+  }
+
+  #page-header.post-bg {
+    height: 320px;
+  }
+
+  #post-info {
+    bottom: 30px;
   }
 
   #nav {
