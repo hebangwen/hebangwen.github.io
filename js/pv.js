@@ -107,6 +107,23 @@
     }
   }
 
+  /* 文章页 meta 里的阅读数槽位，不存在就建一个 */
+  function ensureSlot(root) {
+    var line = root.querySelector('.meta-secondline');
+    if (!line) return null;
+
+    var span = document.createElement('span');
+    span.className = 'post-meta-pv';
+    span.style.display = 'none';
+    // 分隔符由 CSS 的 .meta-secondline::before 提供，避免与主题 wordcount 重复
+    span.innerHTML =
+      '<i class="far fa-eye fa-fw post-meta-icon"></i>' +
+      '<span class="post-meta-label">' + LABEL + ':</span>' +
+      '<span class="cf-pv-value">—</span>';
+    line.appendChild(span);
+    return span;
+  }
+
   /* ---------------- 工具 ---------------- */
   function normalize(raw) {
     var p = String(raw || '').split('#')[0].split('?')[0];
