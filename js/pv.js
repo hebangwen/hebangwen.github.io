@@ -1,8 +1,9 @@
 /* =========================================================
    Page views —— Cloudflare Workers + D1
    入口：_config.butterfly.yml -> inject.bottom
-     · 文章页：上报并显示本篇阅读量
-     · 侧栏「网站资讯」：显示站点总访问量与今日访问
+     · 所有页面：上报一次浏览（首页、归档、标签、分类都算）
+     · 文章页：额外显示本篇阅读量
+     · 侧栏「网站资讯」：显示站点总访问量与今日/昨日访问
    未配置 ENDPOINT 时整个脚本静默退出，不会发出任何请求
    ========================================================= */
 (function () {
@@ -18,7 +19,7 @@
   if (!ENDPOINT || ENDPOINT.indexOf('example.workers.dev') !== -1) return;
 
   initSiteStats();
-  initPageViews();
+  initPageView();
 
   /* ---------------- 站点总量 ---------------- */
   function initSiteStats() {
@@ -65,60 +66,45 @@
     el.querySelector('.item-count').textContent = format(count);
   }
 
-  /* ---------------- 单篇阅读量 ---------------- */
-  function initPageViews() {
-    var meta = document.getElementById('post-meta');
-    if (!meta) return;
-
+  /* ---------------- 页面浏览 ---------------- */
+  function initPageView() {
     var path = normalize(location.pathname);
     if (!path) return;
 
-    var slot = ensureSlot(meta);
-    if (!slot) return;
-    var value = slot.querySelector('.cf-pv-value');
+    /* 文章页既计数也渲染阅读量，其他页面只计数 */
+    var meta = document.getElementById('post-meta');
+    var isPost = !!meta;
+    var slot = isPost ? ensureSlot(meta) : null;
+    var value = slot ? slot.querySelector('.cf-pv-value') : null;
 
     if (readSeen(path)) {
+      if (!isPost) return;
       fetch(ENDPOINT + '/views?path=' + encodeURIComponent(path))
         .then(toJson)
         .then(render)
         .catch(noop);
-    } else {
-      fetch(ENDPOINT + '/hit', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ path: path }),
-        keepalive: true
-      })
-        .then(toJson)
-        .then(function (data) {
-          render(data);
-          markSeen(path);
-        })
-        .catch(noop);
+      return;
     }
 
+    fetch(ENDPOINT + '/hit', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ path: path, type: isPost ? 'post' : 'page' }),
+      keepalive: true
+    })
+      .then(toJson)
+      .then(function (data) {
+        render(data);
+        markSeen(path);
+      })
+      .catch(noop);
+
     function render(data) {
-      if (!data || typeof data.views !== 'number') return;
+      if (!value || !data || typeof data.views !== 'number') return;
       value.textContent = format(data.views);
       // 用 !important 顶掉主题里未知来源的隐藏规则，确保计数一定可见
       slot.style.setProperty('display', 'inline', 'important');
     }
-  }
-
-  function ensureSlot(root) {
-    var line = root.querySelector('.meta-secondline');
-    if (!line) return null;
-
-    var span = document.createElement('span');
-    span.className = 'post-meta-pv';
-    span.style.display = 'none';
-    // 分隔符由 CSS 的 .meta-secondline::before 提供，避免与主题 wordcount 重复
-    span.innerHTML =
-      '<i class="far fa-eye fa-fw post-meta-icon"></i>' +
-      '<span class="post-meta-label">' + LABEL + ':</span>' +
-      '<span class="cf-pv-value">—</span>';
-    line.appendChild(span);
-    return span;
   }
 
   /* ---------------- 工具 ---------------- */
