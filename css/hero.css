@@ -47,46 +47,14 @@
   will-change: transform, opacity;
 }
 
-/* 三维粒子文字的渲染画布 */
-.hero-webgl {
+/* 三维点云画布 */
+.hero-scene {
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: 2;
   width: 100%;
   height: 100%;
   pointer-events: none;
-}
-
-/* 3D 接管后：标题交给 canvas，DOM 内容沉到底部居中 */
-#page-header.full_page.is-3d #site-info {
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  padding-bottom: clamp(48px, 9vh, 112px);
-  text-align: center;
-}
-
-#page-header.full_page.is-3d #site-title {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
-
-#page-header.full_page.is-3d .hero-copy {
-  max-width: min(680px, 100%);
-}
-
-#page-header.full_page.is-3d .hero-lede {
-  margin-left: auto;
-  margin-right: auto;
-}
-
-#page-header.full_page.is-3d .hero-entry {
-  margin-left: auto;
-  margin-right: auto;
 }
 
 #page-header.full_page #site-subtitle {
@@ -258,6 +226,24 @@
 }
 
 /* ---------- 响应式 ---------- */
+@media (max-width: 1024px) {
+  /* 窄屏点云会压住文字，用径向遮罩把中间挖空，只留四周的线条 */
+  .hero-scene {
+    opacity: 0.6;
+    -webkit-mask-image: radial-gradient(
+      ellipse 78% 34% at 50% 52%,
+      transparent 42%,
+      #000 88%
+    );
+    mask-image: radial-gradient(
+      ellipse 78% 34% at 50% 52%,
+      transparent 42%,
+      #000 88%
+    );
+  }
+
+}
+
 @media (max-height: 720px) {
   #page-header.full_page #site-title {
     font-size: clamp(2rem, min(6.4vw, 8vh), 4rem);
