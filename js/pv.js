@@ -49,7 +49,8 @@
   function render(data) {
     if (!data || typeof data.views !== 'number') return;
     value.textContent = format(data.views);
-    slot.hidden = false;
+    // 用 !important 顶掉主题里未知来源的隐藏规则，确保计数一定可见
+    slot.style.setProperty('display', 'inline', 'important');
   }
 
   function ensureSlot(root) {
@@ -58,7 +59,7 @@
 
     var span = document.createElement('span');
     span.className = 'post-meta-pv';
-    span.hidden = true;
+    span.style.display = 'none';
     span.innerHTML =
       '<span class="post-meta-separator">|</span>' +
       '<i class="far fa-eye fa-fw post-meta-icon"></i>' +

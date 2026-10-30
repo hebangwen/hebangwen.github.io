@@ -272,6 +272,10 @@ a:hover {
 /* ---------------------------------------------------------
    6. 文章页
    --------------------------------------------------------- */
+#post-meta .post-meta-pv {
+  display: inline;
+}
+
 #post {
   background: var(--paper);
   border: 1px solid var(--line);
