@@ -36,11 +36,8 @@
   position: absolute;
   inset: 0;
   z-index: 10;
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  display: flex;
   align-items: center;
-  align-content: center;
-  column-gap: clamp(24px, 4vw, 64px);
   max-width: 1440px;
   margin-inline: auto;
   padding: 0 clamp(24px, 5vw, 80px);
@@ -48,6 +45,16 @@
   opacity: var(--hero-fade);
   transform: translate3d(0, var(--hero-shift), 0);
   will-change: transform, opacity;
+}
+
+/* 三维点云画布 */
+.hero-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 #page-header.full_page #site-subtitle {
@@ -64,6 +71,7 @@
   position: relative;
   z-index: 1;
   min-width: 0;
+  max-width: min(620px, 100%);
 }
 
 #page-header.full_page #site-title {
@@ -161,137 +169,7 @@
 }
 
 /* ---------- 右栏结构图 ---------- */
-.hero-graph {
-  grid-column: 2;
-  justify-self: center;
-  align-self: center;
-  height: min(82vh, 720px);
-  color: var(--hero-paper);
-  transition: transform 0.55s cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.hero-graph svg {
-  display: block;
-  width: auto;
-  height: 100%;
-  overflow: visible;
-}
-
-.hero-graph .g-line {
-  fill: none;
-  stroke: rgba(244, 247, 248, 0.26);
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: hero-draw 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.hero-graph .g-line.is-faint {
-  stroke: rgba(244, 247, 248, 0.1);
-  stroke-width: 1;
-}
-
-.hero-graph .g-node {
-  fill: var(--hero-paper);
-  transform-box: fill-box;
-  transform-origin: center;
-  opacity: 0;
-  animation: hero-node 0.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-}
-
-.hero-graph .g-node.is-accent {
-  fill: var(--hero-accent);
-}
-
-.hero-graph .g-ring {
-  fill: none;
-  stroke: var(--hero-accent);
-  stroke-width: 1;
-  transform-box: fill-box;
-  transform-origin: center;
-  opacity: 0;
-  animation: hero-ring 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-}
-
-@keyframes hero-draw {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes hero-node {
-  from {
-    opacity: 0;
-    transform: scale(0.2);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes hero-ring {
-  from {
-    opacity: 0;
-    transform: scale(0.4);
-  }
-  to {
-    opacity: 0.55;
-    transform: scale(1);
-  }
-}
-
 /* 通电：一段光沿主干扫过 */
-.hero-graph .g-trace {
-  fill: none;
-  stroke: var(--hero-accent);
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-dasharray: 0.1 1;
-  stroke-dashoffset: 0.1;
-  opacity: 0;
-  animation: hero-trace 2.6s cubic-bezier(0.45, 0, 0.55, 1) 1.45s 2;
-}
-
-@keyframes hero-trace {
-  0% {
-    opacity: 0;
-    stroke-dashoffset: 0.1;
-  }
-  12% {
-    opacity: 1;
-  }
-  88% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    stroke-dashoffset: -1;
-  }
-}
-
-.hero-graph .g-ping {
-  fill: none;
-  stroke: var(--hero-accent);
-  stroke-width: 1.2;
-  transform-box: fill-box;
-  transform-origin: center;
-  opacity: 0;
-  animation: hero-ping 2.6s cubic-bezier(0.2, 0.6, 0.3, 1) 1.5s 2;
-}
-
-@keyframes hero-ping {
-  0% {
-    opacity: 0.75;
-    transform: scale(0.7);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(2.8);
-  }
-}
-
 @keyframes hero-rise {
   from {
     opacity: 0;
@@ -349,20 +227,21 @@
 
 /* ---------- 响应式 ---------- */
 @media (max-width: 1024px) {
-  #page-header.full_page #site-info {
-    grid-template-columns: 1fr;
+  /* 窄屏点云会压住文字，用径向遮罩把中间挖空，只留四周的线条 */
+  .hero-scene {
+    opacity: 0.6;
+    -webkit-mask-image: radial-gradient(
+      ellipse 78% 34% at 50% 52%,
+      transparent 42%,
+      #000 88%
+    );
+    mask-image: radial-gradient(
+      ellipse 78% 34% at 50% 52%,
+      transparent 42%,
+      #000 88%
+    );
   }
 
-  .hero-graph {
-    position: absolute;
-    right: -12%;
-    bottom: 1%;
-    height: min(62vh, 480px);
-    width: auto;
-    opacity: 0.28;
-    z-index: 0;
-    pointer-events: none;
-  }
 }
 
 @media (max-height: 720px) {
@@ -380,9 +259,6 @@
     padding-top: 14px;
   }
 
-  .hero-graph {
-    height: min(64vh, 420px);
-  }
 }
 
 @media (max-width: 768px) {
@@ -425,23 +301,6 @@
   #page-header.full_page #site-info {
     transform: none !important;
     opacity: 1 !important;
-  }
-
-  .hero-graph .g-line {
-    animation: none !important;
-    stroke-dashoffset: 0 !important;
-  }
-
-  .hero-graph .g-node,
-  .hero-graph .g-ring {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-
-  .hero-graph .g-trace,
-  .hero-graph .g-ping {
-    display: none !important;
   }
 
   .hero-scroll-line:after {
