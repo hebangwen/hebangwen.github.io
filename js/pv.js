@@ -9,14 +9,16 @@
 (function () {
   'use strict';
 
-  /* 改成你的 Worker 域名（部署后 wrangler 会打印） */
-  var ENDPOINT = 'https://blog-pv.hebangwen.workers.dev';
+  /* 主用自定义域名（workers.dev 在国内被阻断），后者作为海外兜底；首个探测成功的基址在会话内复用 */
+  var ENDPOINT = 'https://pv.99610105.xyz';
+  var FALLBACK = 'https://blog-pv.hebangwen.workers.dev';
 
+  var PROBE_TIMEOUT = 4000; // 单次请求上限：被阻断时快速失败，不拖住页面
   var DEDUPE_MS = 30 * 60 * 1000; // 同一路径 30 分钟内只计一次
   var STATS_TTL = 5 * 60 * 1000; // 站点总量缓存 5 分钟
   var LABEL = '阅读';
 
-  if (!ENDPOINT || ENDPOINT.indexOf('example.workers.dev') !== -1) return;
+  if (!ENDPOINT) return;
 
   initSiteStats();
   initPageView();
@@ -32,8 +34,7 @@
       return;
     }
 
-    fetch(ENDPOINT + '/stats')
-      .then(toJson)
+    getJson('/stats')
       .then(function (data) {
         if (!data || typeof data.site !== 'number') return;
         paintStats(box, data);
@@ -79,21 +80,15 @@
 
     if (readSeen(path)) {
       if (!isPost) return;
-      fetch(ENDPOINT + '/views?path=' + encodeURIComponent(path))
-        .then(toJson)
+      getJson('/views?path=' + encodeURIComponent(path))
         .then(render)
         .catch(noop);
       return;
     }
 
-    fetch(ENDPOINT + '/hit', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ path: path, type: isPost ? 'post' : 'page' }),
-      keepalive: true
-    })
-      .then(toJson)
+    postJson('/hit', JSON.stringify({ path: path, type: isPost ? 'post' : 'page' }))
       .then(function (data) {
+        if (!data) return; // 两个域名都不通时不标记已读，下次访问再试
         render(data);
         markSeen(path);
       })
@@ -122,6 +117,75 @@
       '<span class="cf-pv-value">—</span>';
     line.appendChild(span);
     return span;
+  }
+
+  /* ---------------- 网络：双域名 + 超时 ---------------- */
+  var BASE_KEY = 'cfpv:base';
+  var basePromise = null;
+
+  function withBase(make) {
+    return resolveBase().then(function (base) {
+      return base ? make(base) : null;
+    });
+  }
+
+  /* 自定义域名优先，不通再退到 workers.dev；结果写进 sessionStorage，同一次会话只探测一次 */
+  function resolveBase() {
+    if (basePromise) return basePromise;
+    var cached = readRaw(BASE_KEY);
+    if (cached) {
+      basePromise = Promise.resolve(cached === '-' ? null : cached);
+      return basePromise;
+    }
+    basePromise = probe(ENDPOINT).then(function (ok) {
+      if (ok) return ENDPOINT;
+      return probe(FALLBACK).then(function (ok2) {
+        return ok2 ? FALLBACK : null;
+      });
+    }).then(function (found) {
+      writeRaw(BASE_KEY, found || '-');
+      return found;
+    });
+    return basePromise;
+  }
+
+  function probe(base) {
+    if (!base) return Promise.resolve(false);
+    return fetchTimeout(base + '/stats', {}, PROBE_TIMEOUT)
+      .then(function (r) { return !!r && r.ok; })
+      .catch(function () { return false; });
+  }
+
+  function fetchTimeout(url, opts, ms) {
+    if (typeof AbortController === 'undefined') return fetch(url, opts);
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () { ctrl.abort(); }, ms);
+    var o = {};
+    for (var k in opts) {
+      if (Object.prototype.hasOwnProperty.call(opts, k)) o[k] = opts[k];
+    }
+    o.signal = ctrl.signal;
+    return fetch(url, o).then(
+      function (r) { clearTimeout(timer); return r; },
+      function (e) { clearTimeout(timer); throw e; }
+    );
+  }
+
+  function getJson(path) {
+    return withBase(function (base) {
+      return fetchTimeout(base + path, {}, PROBE_TIMEOUT);
+    }).then(function (r) { return r ? toJson(r) : null; });
+  }
+
+  function postJson(path, body) {
+    return withBase(function (base) {
+      return fetchTimeout(base + path, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: body,
+        keepalive: true
+      }, PROBE_TIMEOUT);
+    }).then(function (r) { return r ? toJson(r) : null; });
   }
 
   /* ---------------- 工具 ---------------- */
