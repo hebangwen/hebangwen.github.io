@@ -1,0 +1,615 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Qwen4 架构全解：把参数从显存里搬出去 | 何榜文</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="截至今天，Qwen4 家族的权重一个都没放出来。云栖大会上说的「11 月第一周」，到现在还停在「即将」。 但 Qwen4 的架构，其实已经在 Hugging Face 上躺了两个多月。 8 月 27 日，Qwen 开源了 Qwen3.8-Flash-Next，官方博客里有一句话说得非常直白：它是 “an early preview of the architecture used in Qwen4">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Qwen4 架构全解：把参数从显存里搬出去">
+<meta property="og:url" content="https://hebangwen.github.io/2026/11/03/qwen4-architecture/index.html">
+<meta property="og:site_name" content="何榜文">
+<meta property="og:description" content="截至今天，Qwen4 家族的权重一个都没放出来。云栖大会上说的「11 月第一周」，到现在还停在「即将」。 但 Qwen4 的架构，其实已经在 Hugging Face 上躺了两个多月。 8 月 27 日，Qwen 开源了 Qwen3.8-Flash-Next，官方博客里有一句话说得非常直白：它是 “an early preview of the architecture used in Qwen4">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2026-11-03T14:10:00.000Z">
+<meta property="article:modified_time" content="2026-11-03T14:11:25.978Z">
+<meta property="article:author" content="何榜文">
+<meta property="article:tag" content="MoE">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="Transformer">
+<meta property="article:tag" content="Attention">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="Qwen">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Qwen4 架构全解：把参数从显存里搬出去",
+  "url": "https://hebangwen.github.io/2026/11/03/qwen4-architecture/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2026-11-03T14:10:00.000Z",
+  "dateModified": "2026-11-03T14:11:25.978Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "https://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="https://hebangwen.github.io/2026/11/03/qwen4-architecture/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Qwen4 架构全解：把参数从显存里搬出去',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/fonts.css?v=20261031"><link rel="stylesheet" href="/css/site.css?v=20261031"><link rel="stylesheet" href="/css/hero.css?v=20261031"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">54</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">98</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-pen-nib"></i><span> 文章</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">何榜文</span></a><a class="nav-page-title" href="/"><span class="site-name">Qwen4 架构全解：把参数从显存里搬出去</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-pen-nib"></i><span> 文章</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Qwen4 架构全解：把参数从显存里搬出去</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-03T14:10:00.000Z" title="发表于 2026-11-03 22:10:00">2026-11-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-03T14:11:25.978Z" title="更新于 2026-11-03 22:11:25">2026-11-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI/">AI</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI/Deep-Learning/">Deep Learning</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><p>截至今天，Qwen4 家族的权重一个都没放出来。云栖大会上说的「11 月第一周」，到现在还停在「即将」。</p>
+<p>但 Qwen4 的架构，其实已经在 Hugging Face 上躺了两个多月。</p>
+<p>8 月 27 日，Qwen 开源了 <strong>Qwen3.8-Flash-Next</strong>，官方博客里有一句话说得非常直白：它是 <em>“an early preview of the architecture used in Qwen4”</em>。这和当年 Qwen3-Next 之于 Qwen3.5 是同一套玩法——先把骨架放出来让社区啃，再往上长整代模型。</p>
+<p>所以这篇不是「发布解读」，而是<strong>照着 config 和官方技术博客，把 Qwen4 的骨架拆一遍</strong>。好消息是这份骨架足够硬：<code>config.json</code> 里每个超参都是真的，算出来的参数量和官方口径对得上；坏消息是 Max、Plus、Flash 三档的规格一个字没公布，任何声称「Qwen4-Max 有 X 万亿参数」的说法都还是猜的。</p>
+<h2 id="先划一下证据边界"><a href="#先划一下证据边界" class="headerlink" title="先划一下证据边界"></a>先划一下证据边界</h2><p>这两年读模型架构，最容易踩的坑是把二手的推断当一手规格。这篇会反复回到三份材料：</p>
+<table>
+<thead>
+<tr>
+<th>材料</th>
+<th>性质</th>
+<th>能信到什么程度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Qwen3.8-Flash-Next 的 <code>config.json</code> 与权重</td>
+<td>官方，已开源</td>
+<td>硬事实，可复算</td>
+</tr>
+<tr>
+<td>阿里云官方博客《A New Architecture, Towards Ultimate Cost-Efficiency》</td>
+<td>官方</td>
+<td>硬事实，但有选择性披露</td>
+</tr>
+<tr>
+<td>同仓库的 tech report</td>
+<td>官方</td>
+<td>硬事实</td>
+</tr>
+<tr>
+<td>HF Transformers 里的 <code>qwen4_exp</code> 文档</td>
+<td>官方</td>
+<td>下一代实现的<strong>另一条分支</strong>，不等于最终形态</td>
+</tr>
+<tr>
+<td>llama.cpp &#x2F; vLLM 里合入的 Qwen4 图执行补丁</td>
+<td>第三方</td>
+<td>只到「算子契约」级别，权重逻辑没给</td>
+</tr>
+<tr>
+<td>Arena 上代号 Kalmia 的匿名模型、X 上的本地跑分</td>
+<td>社区</td>
+<td>传闻，本文只在最后提一句</td>
+</tr>
+</tbody></table>
+<p>记住一个数字关系，后面所有困惑都能解开：<strong>125B + 51B &#x3D; 176B</strong>。有的拆解文章说这个预览模型是 176B 总参，有的说 125B，其实是在算不算那 51B 查表参数。</p>
+<h2 id="规格速览"><a href="#规格速览" class="headerlink" title="规格速览"></a>规格速览</h2><table>
+<thead>
+<tr>
+<th>项</th>
+<th>Qwen3.8-Flash-Next</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>主模型参数</td>
+<td>125B</td>
+</tr>
+<tr>
+<td>N-gram 查表参数</td>
+<td>51B（不入矩阵乘）</td>
+</tr>
+<tr>
+<td>每 token 激活</td>
+<td>6B</td>
+</tr>
+<tr>
+<td>层数</td>
+<td>48</td>
+</tr>
+<tr>
+<td>注意力布局</td>
+<td>36 层 GDN + 12 层 QSA（3:1）</td>
+</tr>
+<tr>
+<td>Hidden &#x2F; Head dim</td>
+<td>2560 &#x2F; 256</td>
+</tr>
+<tr>
+<td>Q 头 &#x2F; KV 头</td>
+<td>24 &#x2F; 2（GQA 12:1）</td>
+</tr>
+<tr>
+<td>RoPE</td>
+<td>部分旋转，25%（64 维），$\theta&#x3D;10^7$，mRoPE 交错</td>
+</tr>
+<tr>
+<td>MoE</td>
+<td>512 专家，top-10，专家中间维 640，共享专家 1 个</td>
+</tr>
+<tr>
+<td>残差</td>
+<td>Gated Residual，4 分支（HC4）</td>
+</tr>
+<tr>
+<td>原生上下文</td>
+<td>262,144，YaRN 可扩到 1,000,000</td>
+</tr>
+<tr>
+<td>MTP</td>
+<td>1 层，混合模式</td>
+</tr>
+<tr>
+<td>视觉塔</td>
+<td>27 层，hidden 1152，patch 16，2×2 合并</td>
+</tr>
+<tr>
+<td>词表</td>
+<td>248,320</td>
+</tr>
+</tbody></table>
+<p>对照一下上一代的位置感：Qwen3.8-27B 是 64 层、hidden 5120 的稠密模型，这个 125B 的 MoE 每 token 只动用 6B——<strong>参数是它的 4.6 倍，算力只有它的零头</strong>。官方给的口径是训练成本约为 Qwen3.7-Plus 的 1&#x2F;9，能力还更强。</p>
+<p>上面这些数字不用信我，<code>config.json</code> 是公开的，五行代码就能自己数一遍：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> transformers <span class="keyword">import</span> AutoConfig</span><br><span class="line"></span><br><span class="line">cfg = AutoConfig.from_pretrained(<span class="string">&quot;Qwen/Qwen3.8-Flash-Next&quot;</span>).text_config</span><br><span class="line"><span class="built_in">print</span>(cfg.num_hidden_layers, cfg.layer_types.count(<span class="string">&quot;full_attention&quot;</span>))  <span class="comment"># 48 12</span></span><br><span class="line"><span class="built_in">print</span>(cfg.num_experts, cfg.num_experts_per_tok, cfg.indexer_budget)    <span class="comment"># 512 10 2048</span></span><br><span class="line"><span class="built_in">print</span>(cfg.ngram_vocab_size_base * cfg.ple_embed_dim / <span class="number">1e9</span>)             <span class="comment"># 51.2</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="三条扩容轴，一条搬运轴"><a href="#三条扩容轴，一条搬运轴" class="headerlink" title="三条扩容轴，一条搬运轴"></a>三条扩容轴，一条搬运轴</h2><p>把官方的四个改动点（attention &#x2F; residual &#x2F; embedding &#x2F; optimization）重新排一下，会发现它们各自解决的是完全不同的问题：</p>
+<ol>
+<li><strong>QSA</strong>：减少「看多少」——把注意力的检索范围从全序列压到 2048 个 token；</li>
+<li><strong>GDN</strong>：减少「记多少」——把历史压进固定大小的状态，KV cache 只存在于 1&#x2F;4 的层；</li>
+<li><strong>Gated Residual</strong>：改善「怎么传」——不省算力，省的是深层网络里的信号衰减；</li>
+<li><strong>N-gram 查表</strong>：增加「记了什么」——用几乎零 FLOPs 的方式扩容，代价是内存。</li>
+</ol>
+<p>前三条是省，第四条是加。而第四条才是这一代真正的分水岭：它第一次把「模型容量」和「HBM 容量」解耦了。</p>
+<h2 id="QSA：把-indexer-也一起压掉"><a href="#QSA：把-indexer-也一起压掉" class="headerlink" title="QSA：把 indexer 也一起压掉"></a>QSA：把 indexer 也一起压掉</h2><p>先看稀疏注意力这两年走过的路。</p>
+<p>DeepSeek 在 V3.2 里提出的 DSA 是 token 级的：用一个小号 indexer 给每个历史 token 打分，选出 top-k 再算注意力。注意力本身的成本从 $O(n^2)$ 掉到了 $O(nk)$，但 <strong>indexer 自己还是要把 $n$ 个位置全部打分一遍</strong>。上下文到 1M，这笔「索引税」就不再是零头了。</p>
+<p>Qwen 的 QSA（Qwen Sparse Attention）的做法是：连索引的粒度也一起压。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1,000,000 tokens</span><br><span class="line">      │  按 4 个 token 合并成 micro-block</span><br><span class="line">      ▼</span><br><span class="line"> 250,000 blocks</span><br><span class="line">      │  轻量 indexer 块级打分（4 头 / 1 KV 头 / 128 维）</span><br><span class="line">      ▼</span><br><span class="line">    top-512 块（= 2048 token）</span><br><span class="line">      │  只在这些块上做注意力</span><br><span class="line">      ▼</span><br><span class="line">   attention over 2048 tokens</span><br></pre></td></tr></table></figure>
+
+<p>对应到 config 就是四个数：<code>indexer_compress_ratio = 4</code>、<code>indexer_budget = 2048</code>、<code>indexer_n_heads = 4</code>、<code>indexer_kv_heads = 1</code>。在 1M 上下文下，每个 QSA 层实际只 attend 2048 个 token——**全序列的 0.2%**。</p>
+<p>这里有一个设计选择值得单独说：Qwen 明确不走跨层索引复用（IndexCache 那条路），而是<strong>每一层独立做序列压缩</strong>。理由写在博客里，翻译过来是：在 GDN 和注意力交替的混合架构里，层与层之间的表示差异太大，「相邻层选出同一批位置」这个假设站不住。代价是每层都要跑一次 indexer，换来的是不依赖跨层相似性的鲁棒性。</p>
+<p>官方给的数是：1M 上下文下，QSA 的 attention kernel 在 prefill 上最高 <strong>7.6×</strong>、decode 上 <strong>4.9×</strong> 的加速；在 90% 前缀缓存命中这种贴近线上服务的设定下，prefill 吞吐是 Qwen3.7-Plus 的 <strong>8.6 倍</strong>。</p>
+<p>最后那个数字比前面两个更值得关注——它说明收益不只来自算法，还来自和 prefix caching 的配合。</p>
+<h2 id="GDN-QSA：3-1-的分工"><a href="#GDN-QSA：3-1-的分工" class="headerlink" title="GDN + QSA：3:1 的分工"></a>GDN + QSA：3:1 的分工</h2><p>48 层里，每 4 层是一个循环：三层 GDN，一层 QSA。<code>layer_types</code> 数组写死了这个节奏。</p>
+<p><strong>GDN（Gated DeltaNet）</strong> 是线性注意力家族里的一员，用 delta rule 把历史压进一个固定大小的矩阵状态。它的关键性质是：<strong>状态大小与上下文长度无关</strong>。按 config 算一下这个状态有多大：</p>
+<p>$$48 \times 128 \times 128 \times 36\ \text{层} \approx 2.8\times10^{7}\ \text{个 fp32} \approx 113\ \text{MB}$$</p>
+<p>113MB，固定值，1K 上下文和 1M 上下文一样大。</p>
+<p><strong>QSA 层</strong> 则保留真正的 KV cache。每 token 每层的 KV 是 <code>2 头 × 256 维 × 2(K,V) × 2 字节 = 2KB</code>，12 层加起来 24KB&#x2F;token：</p>
+<table>
+<thead>
+<tr>
+<th>上下文</th>
+<th>QSA 层 KV cache</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>32K</td>
+<td>0.8 GB</td>
+</tr>
+<tr>
+<td>262K</td>
+<td>6.3 GB</td>
+</tr>
+<tr>
+<td>1M</td>
+<td>24.6 GB</td>
+</tr>
+</tbody></table>
+<p>换成 48 层全注意力的模型，这三个数要乘 4。这就是「3:1」的算术意义：<strong>绝大多数层用常数内存记住历史，少数层用线性内存精确定位</strong>。</p>
+<p>官方那句话总结得比我说得好：</p>
+<blockquote>
+<p><strong>GDN 高效地「记住」，QSA 精确地「检索」。</strong></p>
+</blockquote>
+<p>值得注意的是这个比例本身。Qwen3-Next 时代就是 3:1，一路沿用到 3.5&#x2F;3.6&#x2F;3.7&#x2F;3.8，到 Flash-Next 没动。这个比例大概率已经过了消融验证，属于「不要再调」的那类超参——同时也意味着，如果 Qwen4-Max 是同一个骨架长大，那它的「记忆&#x2F;检索」配比大概率也不会变。</p>
+<h2 id="Gated-Residual：把一条残差流劈成四条"><a href="#Gated-Residual：把一条残差流劈成四条" class="headerlink" title="Gated Residual：把一条残差流劈成四条"></a>Gated Residual：把一条残差流劈成四条</h2><p>残差连接是 2016 年到现在唯一没被真正重写过的结构。所有层不停地往同一条残差流里读和写，网络一深，早期特征就被反复稀释。</p>
+<p>Gated Residual（GR）做两件事：</p>
+<ul>
+<li>学 <strong>Hyper-Connections</strong>，把残差流从 1 条扩成 4 条并行分支（config 里的 <code>hc_count=4</code>）；</li>
+<li>学 <strong>GatedNorm</strong>，在读写的时候加逐元素的、依赖当前内容的动态门。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">           ┌──────────────────────────────────────┐</span><br><span class="line">x⁽¹⁾ ──────┤                                      │</span><br><span class="line">x⁽²⁾ ──────┤   read gate:  g_r(x) ⊙ x⁽ᵇ⁾          ├──► Attention / GDN</span><br><span class="line">x⁽³⁾ ──────┤                                      │</span><br><span class="line">x⁽⁴⁾ ──────┤   write gate: g_w(x) ⊙ Layer(x)      ├──► 回写四条分支</span><br><span class="line">           └──────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>写成式子大概是这样（我只保留主干）：</p>
+<p>$$\mathbf{x}_{b}^{\ell+1} &#x3D; g_{b}^{\text{read}}(\mathbf{h}_{\ell})\odot \mathbf{x}_{b}^{\ell} + g_{b}^{\text{write}}(\mathbf{h}_{\ell})\odot \mathrm{Layer}_{\ell}(\mathbf{h}_{\ell})$$</p>
+<p>有意思的是 Qwen 对 Hyper-Connections 做的<strong>减法</strong>：原版里分支之间还有一层混合矩阵 $B$，Qwen 直接把它删了。理由是——只要读门和写门足够表达，分支混合带来的收益不显著，反而多一次访存、多一个不稳定源。这和 DeepSeek-V4 的 mHC 恰好相反：DeepSeek 保留混合矩阵，但把它约束到双随机矩阵流形上换数值稳定；Qwen 干脆不要这个矩阵。</p>
+<p>同一个问题，两种解法，一家用数学约束，一家用结构简化。</p>
+<p>官方还披露了一个挺有意思的观测：四条分支里<strong>有一条会自发变成远程通路</strong>，从第一个注意力层一直连到中后段的大部分层。没人设计它，是训练自己长出来的。</p>
+<p>工程上还有两点：门本身抑制了激活离群值，训练更稳；残差状态可以存成 <strong>FP8</strong>，访存再省一半。</p>
+<h2 id="N-gram：51B-参数住在-CPU-内存里"><a href="#N-gram：51B-参数住在-CPU-内存里" class="headerlink" title="N-gram：51B 参数住在 CPU 内存里"></a>N-gram：51B 参数住在 CPU 内存里</h2><p>这是整篇文章里最值得慢慢看的部分，因为它改的是「模型参数必须待在显存里」这条十几年没动过的前提。</p>
+<p><strong>做法</strong>：标准 embedding 是一个 token 查一行。N-gram embedding 用当前 token 加前两个 token 组成的三元组去查表（<code>ngram_size = 3</code>），给常见短语和局部模式额外的表示。</p>
+<p><strong>地址怎么算</strong>：不是查一张大表，而是 16 张子表（8 张给 bigram，8 张给 trigram，<code>heads_per_ngram = 8</code>）。每张子表用一个混合哈希定位：</p>
+<p>$$h &#x3D; \Big(\bigoplus_{i&#x3D;0}^{n-1}\big(x_{t-i}\cdot m_i\big)\Big) \bmod 2^{64} \qquad \text{row} &#x3D; h \bmod p_h$$</p>
+<p>$m_i$ 是模型自己的层内乘子，$p_h$ 是这张子表的局部词表大小。序列开头或遇到 EOS 时，缺失的前驱会被补成 EOS id。含义很清楚：<strong>地址只依赖上下文本身，可以在生成开始前批量算好</strong>——这正是它能被异步预取的前提。</p>
+<p><strong>为什么能省</strong>：地址在 prefill 一开始就能全部算出来，于是这张表可以放在主机内存（DDR5），用异步预取和 GPU 计算重叠。官方口径是「不永久占用显存」。</p>
+<p><strong>到底多大</strong>：<code>ngram_vocab_size_base = 20000000</code>，<code>ple_embed_dim = 2560</code>，乘起来：</p>
+<p>$$2.0\times10^{7} \times 2560 \approx 5.12\times10^{10}$$</p>
+<p>正好是官方说的 51B。按不同精度折算：</p>
+<table>
+<thead>
+<tr>
+<th>存储</th>
+<th>体积</th>
+<th>能不能塞进单机</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>bf16</td>
+<td>~102 GB</td>
+<td>要 8 通道以上的服务器内存</td>
+</tr>
+<tr>
+<td>INT8</td>
+<td>~51 GB</td>
+<td>工作站可以</td>
+</tr>
+<tr>
+<td>IQ4_NL（GGUF 里的实际格式）</td>
+<td>~26 GB</td>
+<td>单条 64G 内存条就够</td>
+</tr>
+</tbody></table>
+<p>社区里流传的「51GB 表文件」，对应的就是 INT8。</p>
+<p><strong>放置位置</strong>：<code>ple_layer_ids = [2]</code>——只有第 3 层（0-based 的 2）挂了这张表，位置很靠前，紧跟在两层 GDN 之后。官方说这是一个「大规模局部模式记忆」，挂在开头最划算。</p>
+<p><strong>工程后果</strong>，我觉得比架构本身更重要：</p>
+<ul>
+<li><strong>带宽几乎不是问题。</strong> 每 token 只取 16 行 × 2560 维，bf16 下 80KB、int4 下 20KB。batch 64、100 tok&#x2F;s 的场景也就百来 MB&#x2F;s，PCIe 完全无感。</li>
+<li><strong>延迟才是问题。</strong> 每个 token 都要一次跨总线的随机访存，预取晚了就是一个 stall。这是「查表」和「算矩阵」在工程上的根本差异——前者对延迟敏感，后者对带宽敏感。</li>
+<li><strong>容量变成硬门槛。</strong> 26GB 的表意味着消费级显卡 + 64G 内存是这条路的入场券，而不是「跑得动跑不动」的问题。</li>
+</ul>
+<p>顺带说一句：这条路 DeepSeek 在 V4 里点过名但没落地（Engram，条件记忆），理由是留给下一代。Qwen 先把它做进了开源权重。<strong>2026 年两家在「记忆」这件事上分道了</strong>：一家继续在注意力内部压缩，一家把记忆搬到显存外面。</p>
+<h2 id="MoE：512-个-640-宽的专家"><a href="#MoE：512-个-640-宽的专家" class="headerlink" title="MoE：512 个 640 宽的专家"></a>MoE：512 个 640 宽的专家</h2><p>细粒度 MoE 大家都在做，但 Qwen 这里走得比多数人更极端：</p>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>数值</th>
+<th>对比</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>专家数</td>
+<td>512</td>
+<td>DeepSeek-V4 是 256&#x2F;384</td>
+</tr>
+<tr>
+<td>每 token 激活</td>
+<td>10</td>
+<td>6</td>
+</tr>
+<tr>
+<td>专家中间维</td>
+<td>640</td>
+<td>常见是 1408–2048</td>
+</tr>
+<tr>
+<td>共享专家</td>
+<td>1（同样 640 宽）</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<p>把参数量算一遍，验证一下 125B 是怎么来的：</p>
+<p>$$512 \times 3 \times 2560 \times 640 \approx 2.52\ \text{B &#x2F; 层}$$</p>
+<p>48 层全算 MoE 的话是 <strong>121B</strong>，加上共享专家（约 0.24B）、注意力和 GDN（约 1.7B 和 0.4B）、词表 embedding（约 0.64B），加起来 124B 出头——和 125B 对得上。</p>
+<p>每 token 激活的这 6B 也可以验：10 个专家 49M&#x2F;层 × 48 层 ≈ 2.4B，加共享专家 0.24B、注意力 0.4B、GDN 约 1.7B、词表 embedding 0.64B，合计 5.4B。剩下 0.6B 的差额，大概落在我没逐个数的门控和 norm 上。手算到 5B 量级、官方说 6B，量级对得上。</p>
+<p><strong>为什么专家要又小又多</strong>：单个专家越窄，路由器的分辨率就越高，专家的分工越细。代价是每 token 要 gather 10 份专家权重，通信和访存的开销都被放大。这套设计只有在 EP（专家并行）+ 高带宽互联下才成立——所以 Qwen 的路线图里始终有自研芯片的位置。</p>
+<p>稳定性上沿用了 Qwen3.5 以来的一整套：零中心 RMSNorm 且 norm 权重也吃 weight decay、注意力输出门控、MoE 路由器归一化初始化。</p>
+<h2 id="训练：Muon、去掉-warmup、重拟合-scaling-law"><a href="#训练：Muon、去掉-warmup、重拟合-scaling-law" class="headerlink" title="训练：Muon、去掉 warmup、重拟合 scaling law"></a>训练：Muon、去掉 warmup、重拟合 scaling law</h2><p>优化器换成了 <strong>Muon</strong>，但真正有意思的是三个实现细节，官方说这才是决定成败的地方：</p>
+<ol>
+<li><strong>正交化精度</strong>。Newton-Schulz 迭代的步数和系数要重新调。</li>
+<li><strong>哪些参数给 Muon</strong>。注意力、GDN、MoE 专家的主权重走 Muon；embedding、MoE 路由器、GR 的低秩参数继续走 AdamW。</li>
+<li><strong>融合矩阵要先拆开</strong>。QKV、SwiGLU、GDN 的各种投影在实现里是拼在一起的，Muon 要求按「独立的线性变换」分别正交化，所以得先拆再算。</li>
+</ol>
+<p>还有一个反直觉的结论：<strong>Batch Size Warmup 可以不要</strong>。</p>
+<p>从小 batch 慢慢爬到目标 batch，是过去几年大规模训练的标配操作。Qwen 的结论是它不仅没用，还多花 <strong>18.8% 的优化步数</strong>——因为前期的步数全浪费在小 batch 上了。新 recipe 直接上目标 batch，配合更大学习率。</p>
+<p>这是「架构换了，老经验就得重验」的典型例子。scaling law 也重拟合了一遍，结论是新架构能稳定吃更大的 LR 和 batch。</p>
+<h2 id="推理侧的经济账"><a href="#推理侧的经济账" class="headerlink" title="推理侧的经济账"></a>推理侧的经济账</h2><p>架构讲完，看钱。qwen3.8-flash 的官方定价是 <strong>每百万输入 token 0.16 美元、输出 0.47 美元</strong>。</p>
+<p>这个价位对应的能力，官方给的对比是「训练成本只有 Qwen3.7-Plus 的 1&#x2F;9，coding 和办公任务还更强」。落到推理上，能省的地方有三层：</p>
+<ul>
+<li><strong>算力</strong>：6B 激活，单 token FLOPs 是稠密模型的几十分之一；</li>
+<li><strong>显存</strong>：KV cache 只存在于 1&#x2F;4 的层，1M 上下文 24.6GB 而不是 100GB 级；</li>
+<li><strong>容量</strong>：51B 查表参数不占 HBM，把最贵的那块内存留给 KV cache 和专家。</li>
+</ul>
+<p>三条加起来，1M 上下文的单位成本才可能压到这个位置。这也解释了为什么官方敢把「1M 上下文」做成默认值而不是可选项。</p>
+<h2 id="27B：能下载的那个"><a href="#27B：能下载的那个" class="headerlink" title="27B：能下载的那个"></a>27B：能下载的那个</h2><p>Qwen4 四档里，27B 是唯一明确承诺开源的。而在它发布之前，社区已经从 llama.cpp 的一个补丁里把配置推出来了：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>推断值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>类型</td>
+<td>严格稠密（PR 里写死是 dense）</td>
+</tr>
+<tr>
+<td>Hidden</td>
+<td>5120</td>
+</tr>
+<tr>
+<td>骨架</td>
+<td>3:1 的 GDN + 注意力，第 4 层换成 QSA</td>
+</tr>
+<tr>
+<td>残差</td>
+<td>HC4</td>
+</tr>
+<tr>
+<td>MTP</td>
+<td>有，draft &#x3D; 4</td>
+</tr>
+<tr>
+<td>原生上下文</td>
+<td>未公布</td>
+</tr>
+</tbody></table>
+<p>注意 PR 自己的免责声明：它只验证了配置和算子契约，<strong>真实的 QSA 权重并没有提供</strong>。所以这张表是「架构能跑通」的证据，不是规格书。</p>
+<p>但它确认了一件重要的事：GDN 的头配置（QK 16 头、V 48 头、head_dim 128）和 Flash-Next 完全一致。<strong>骨架确实在往下传</strong>，27B 不是另起一套。</p>
+<h2 id="和-DeepSeek-V4-摆在一起看"><a href="#和-DeepSeek-V4-摆在一起看" class="headerlink" title="和 DeepSeek-V4 摆在一起看"></a>和 DeepSeek-V4 摆在一起看</h2><p>把这两家的选择并排放，会发现它们在同一个问题上给出了方向相反、但都能自洽的答案：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>DeepSeek-V4</th>
+<th>Qwen4（预览）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>长的部分怎么处理</td>
+<td>CSA + HCA 两种压缩注意力交替</td>
+<td>GDN + QSA，3:1 混合</td>
+</tr>
+<tr>
+<td>稀疏检索的粒度</td>
+<td>压缩块，再做 token 级 top-k</td>
+<td>micro-block（4 token）级</td>
+</tr>
+<tr>
+<td>残差怎么稳</td>
+<td>mHC，保留混合矩阵但约束到双随机矩阵流形</td>
+<td>GR，砍掉混合矩阵，靠门</td>
+</tr>
+<tr>
+<td>容量往哪扩</td>
+<td>Engram 点名留给下一代</td>
+<td>N-gram 查表，51B 已落地</td>
+</tr>
+<tr>
+<td>优化器</td>
+<td>Muon</td>
+<td>Muon</td>
+</tr>
+<tr>
+<td>上下文</td>
+<td>1M 原生</td>
+<td>262K 原生 &#x2F; YaRN 1M</td>
+</tr>
+</tbody></table>
+<p>有意思的是第三行和第四行正好互为镜像：DeepSeek 在残差上加数学约束、在记忆上按兵不动；Qwen 在残差上做减法、在记忆上先落一子。两家都用了 Muon，说明这个优化器在 2026 年已经从「Kimi 的独门配方」变成了行业默认。</p>
+<p>如果只记一句话：<strong>DeepSeek 把稀疏性花在注意力内部，Qwen 把稀疏性花在显存外面。</strong></p>
+<h2 id="还没答案的问题"><a href="#还没答案的问题" class="headerlink" title="还没答案的问题"></a>还没答案的问题</h2><p>写到这儿，能确认的都确认完了。剩下的是真问题，不是我懒得查：</p>
+<p><strong>Qwen4-Max 会有多大，会开源吗。</strong> Max 这条线从 2025 年 9 月起就是 API-only，没有一次例外。云栖的公开承诺只覆盖到「27B 优先开源」，没有一句话说 Max 会给权重。把 5–10 万亿参数的路线图往 Qwen4 头上套是错的——那个数字说的是 Qwen4.5 和 Qwen5。</p>
+<p><strong>125B 的比例能不能外推。</strong> 专家粒度、GDN:QSA 的 3:1、indexer 预算 2048，这些在 Flash 档验证过，但 Max 档是不是同一套配比，没人知道。稀疏度和模型宽度之间不是线性关系。</p>
+<p><strong>查表的 scaling 上限在哪。</strong> 这是我最想在技术报告里看到的章节。查表提供的是「记忆」，不是「组合泛化」。社区测试者在 X 上记录过一个现象：这个预览模型在复杂交互逻辑的代码任务上会翻车，五次都没写出能跑的循环，而稠密的 27B 一次就过。这个观察样本太小，不能当结论，但它指出的方向很明确——<strong>用内存换来的容量，和用算力换来的容量，不是同一种东西</strong>。51B 的表能扩到 200B 吗？扩到哪一步开始不划算？</p>
+<p><strong>1M 上下文的真实 recall。</strong> 论文给的是 kernel 加速比，不是检索准确率。只看 0.2% 的 token，长文档里的「大海捞针」还剩几根，得等第三方评测。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>把 Qwen4 的架构放回这两年的路线里看，主线其实只有一句话：</p>
+<blockquote>
+<p><strong>不要问模型有多大，要问哪些参数必须待在 HBM 里。</strong></p>
+</blockquote>
+<p>125B 主模型 + 51B 查表的组合，第一次把模型拆成了「必须算的」和「只需要查的」两类，然后给它们安排了两种不同的内存。配上 3:1 的 GDN&#x2F;QSA 混合和 4 分支残差，最终形态是：<strong>容量在涨，单 token 算力在降，长上下文的边际成本在降</strong>。</p>
+<p>这不像一次「架构创新」，更像一次<strong>内存层级的重新分工</strong>。真正的创新点不在某一层，而在于它敢把 30% 的参数放到 PCIe 的另一端去。</p>
+<p>风险也很清楚：查表的收益依赖命中率和延迟，稀疏检索的收益依赖索引质量，两者都还没有大规模的公开验证。等 27B 的权重下来，这些问号才会有第一个像样的答案——按目前的说法，那是「11 月第一周」的事，也就是这几天。</p>
+<p>我会盯着 Hugging Face 的 commit。</p>
+<hr>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ol>
+<li>Qwen3.8-Flash-Next 官方博客：<a target="_blank" rel="noopener" href="https://www.alibabacloud.com/blog/qwen3-8-flash-next-a-new-architecture-towardsultimate-cost-efficiency_603501">https://www.alibabacloud.com/blog/qwen3-8-flash-next-a-new-architecture-towardsultimate-cost-efficiency_603501</a></li>
+<li>模型权重（含 config.json）：<a target="_blank" rel="noopener" href="https://huggingface.co/Qwen/Qwen3.8-Flash-Next">https://huggingface.co/Qwen/Qwen3.8-Flash-Next</a></li>
+<li>技术报告：<a target="_blank" rel="noopener" href="https://github.com/QwenLM/Qwen3.8-Flash-Next/blob/main/tech_report.pdf">https://github.com/QwenLM/Qwen3.8-Flash-Next/blob/main/tech_report.pdf</a></li>
+<li>Transformers 文档中的 <code>qwen4_exp</code>：<a target="_blank" rel="noopener" href="https://huggingface.co/docs/transformers/en/model_doc/qwen4_exp">https://huggingface.co/docs/transformers/en/model_doc/qwen4_exp</a></li>
+<li>Gated DeltaNet 原论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2412.06464">https://arxiv.org/abs/2412.06464</a></li>
+<li>DeepSeek-V3.2（DSA 的来源）：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2512.02556">https://arxiv.org/abs/2512.02556</a></li>
+<li>Conditional Memory via Scalable Lookup（Engram）：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2601.07372">https://arxiv.org/abs/2601.07372</a></li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://hebangwen.github.io/2026/11/03/qwen4-architecture/">https://hebangwen.github.io/2026/11/03/qwen4-architecture/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://hebangwen.github.io" target="_blank">何榜文</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/MoE/">MoE</a><a class="post-meta__tags" href="/tags/LLM/">LLM</a><a class="post-meta__tags" href="/tags/Transformer/">Transformer</a><a class="post-meta__tags" href="/tags/Attention/">Attention</a><a class="post-meta__tags" href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型</a><a class="post-meta__tags" href="/tags/Qwen/">Qwen</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/11/02/jetson-specs-orin-to-thor/" title="Jetson 全系参数横评：从 Orin Nano 到 Thor T5000"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Jetson 全系参数横评：从 Orin Nano 到 Thor T5000</div></div><div class="info-2"><div class="info-item-1">最近把手上的 Jetson 参数整理成了一张可以横向对比的表（在线地址，支持 CSV 导出），19 个型号，从 Orin Nano 4GB 一路排到 Thor T5000。表本身没什么好说的，真正有意思的是把它横过来之后冒出来的三个问题：Orin NX 8GB 和 Orin Nano 8GB 的 GPU 是同一块，那多花的钱到底买到了什么；为什么「275 TOPS」和表里的 137.5 正好差一倍；以及 Thor 的算力涨了 3.8 倍、带宽却只涨 1.33 倍，这笔账到底该怎么算。 后半程拿 llama.cpp 和 Jetson AI Lab 的实测数字回来对了一遍，三个问题的答案基本都对得上带宽这条线。   口径：表里的数字是稠密值这是读这张表最容易踩的坑，先立规矩。 表里的所有算力都是稠密（dense）值，而 NVIDIA 官网大字报和绝大多数中文文章引用的是稀疏（sparse）值，两者默认开着 2:1 的结构化稀疏，差整整一倍。 拿四条数据验一下：    型号 表里（稠密） 官方宣传（稀疏） 倍数    Orin NX 16GB INT8 30 + DLA 20 &#x3...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/04/26/deepseek-v4-architecture/" title="DeepSeek-V4 架构全解：百万token时代的效率革命"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-26</div><div class="info-item-2">DeepSeek-V4 架构全解：百万token时代的效率革命</div></div><div class="info-2"><div class="info-item-1">2026年4月24日，DeepSeek正式开源了第四代旗舰模型 DeepSeek-V4，距离上一代DeepSeek-V3发布整整过去了484天。V4带来的核心命题不是去争夺SOTA王座，而是将百万token上下文从一个炫技参数变成可日常使用的工程能力。 一、模型规格速览V4系列分为两个版本：    规格 V4-Flash V4-Pro    总参数 284B 1.6T   激活参数 13B 49B   层数 43 61   Hidden Dim 4096 7168   Routed Experts 256 384   Shared Expert 1 1   每token激活专家 6 6   预训练Tokens 32T 33T   模型权重 160GB (FP4+FP8混合) 861GB (FP4+FP8混合)   V4-Pro 成为当下公开权重最大的开源模型，全面支持 1M token 原生上下文。 在1M上下文场景下，效率对比达到惊人水平：  V4-Pro：单token FLOPs 仅为 V3.2 的 **27%**，KV cache 仅为 10% V4-Flash：单toke...</div></div></div></a><a class="pagination-related" href="/2026/03/05/gated-delta-net/" title="Gated Delta Net"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-05</div><div class="info-item-2">Gated Delta Net</div></div><div class="info-2"><div class="info-item-1">随着大语言模型（LLM）在长文本处理、多轮对话以及复杂指令遵循等任务中的广泛应用，传统 Transformer 架构所面临的计算挑战日益凸显。自注意力机制（Self-Attention）的计算复杂度与内存占用随序列长度 $L$ 呈二次方增长（$O(L^2)$），这一“效率之墙”严重制约了模型处理超长上下文的能力 。为了突破这一瓶颈，研究界探索了多种亚线性复杂度的替代方案，其中门控增量网络（Gated Delta Network，简称 GDN 或 Gated DeltaNet）作为线性 Transformer 的演进版本，凭借其在记忆精确度与硬件效率之间的卓越平衡，正逐渐成为新一代长文本模型的核心技术 。 核心原理与理论演进GDN 的设计灵感源于对现有线性递归模型局限性的深度审视。在线性 Transformer 的语境下，模型通常被视为一种基于外积的键值关联记忆（Outer-product-based key-value associative memory） 。然而，这种记忆机制存在一个本质缺陷：其能够存储的正交键值对数量受限于模型的维度。当序列长度超过维度时，不可避免地会发生“...</div></div></div></a><a class="pagination-related" href="/2026/03/18/SonicMoE-Accelerating-MoE/" title="SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-18</div><div class="info-item-2">SonicMoE - 加速 MoE 模型的 IO 与 Tile 感知优化</div></div><div class="info-2"><div class="info-item-1">SonicMoE: 加速 MoE 模型的 IO 与 Tile 感知优化 论文地址: https://arxiv.org/abs/2512.14080代码开源: https://github.com/Dao-AILab/sonic-moe作者: Wentao Guo, Mayank Mishra, Xinle Cheng, Ion Stoica, Tri Dao  背景：MoE 模型的趋势与挑战近年来，混合专家模型 (Mixture of Experts, MoE) 已成为扩展大语言模型的主流架构。与 Dense 模型相比，MoE 可以在不显著增加计算成本的前提下大幅提升参数量。 MoE 的两个核心趋势从最新的开源模型（如 DeepSeek-V3、Qwen3 MoE、Kimi K2）可以看出两个明显的趋势：  细粒度 (Fine-grained): 专家的中间维度越来越小  Mixtral 8x22B: d&#x2F;n &#x3D; 0.38 DeepSeek-V3: d&#x2F;n &#x3D; 3.50 Qwen3-Next: d&#x2F;n &#x3D; 4.00   ...</div></div></div></a><a class="pagination-related" href="/2025/02/12/transformers-high-memory-usage/" title="关于 DeepSeek-R1-Distill-Qwen-1.5B 显存占用比下载权重高非常多的现象分析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-12</div><div class="info-item-2">关于 DeepSeek-R1-Distill-Qwen-1.5B 显存占用比下载权重高非常多的现象分析</div></div><div class="info-2"><div class="info-item-1">现象从 huggingface 上下载下来的 DeepSeek-R1-Distill-Qwen-1.5B 模型权重大小只有 3.5GB，但是加载到 GPU 上之后，占用显存达到 5.4GB，多了 1.9GB。 排查显存占用比权重多 1.9GB 的原因应该是模型在创建的时候申请了权重以外的内存，这部分内存没有体现在权重的大小中。 使用 pytorch 查看显存占用pytorch 博客 Understanding GPU Memory 1: Visualizing All Allocations over Time 中给出了 pytorch 内部的显存统计方法，函数都定义在 torch.cuda.memory 中。具体代码可以参考官方博客，下面展示显存统计结果。  可以看到从程序开始到结束，显存一直都是 5.4GB 左右，最上方有一小部分激活占用的显存，但是由于我们输入非常短，所以占用很小。从这个结果我们可以想象到，模型总显存占用比权重多的那部分显存在模型一开始就创建了，后续的应用层是无法操作的。 使用 transformers 查看显存占用transformers 的 AutoMo...</div></div></div></a><a class="pagination-related" href="/2025/02/20/minicpm-o-2-6/" title="MiniCPM-O-2_6 模型结构介绍"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-20</div><div class="info-item-2">MiniCPM-O-2_6 模型结构介绍</div></div><div class="info-2"><div class="info-item-1">目的介绍一下有关 VLM&#x2F;MLLM 的模型结构，从模型结构上指导模型部署，了解各个模块的作用。 MiniCPM-O-2_6 简介O 代表了 Omni，含义是全能。MiniCPM-O-2_6 是一个基于 MiniCPM-2 的多模态模型，在之前的 MiniCPM-V-2_6 的基础上增加了额外的多模态能力，包括【语音识别】、【语音生成】的功能。由于语音作为文本嵌入到了 LLM 的输入之中，还可以实现【语音提问图片内容，语音回复】的功能。OpenBMB 官方博客见 MiniCPM-o 2.6: A GPT-4o Level MLLM for Vision, Speech, and Multimodal Live Streaming on Your Phone。 为了实现上面的功能，MiniCPM-O-2_6 一共有四个模块：  SigLip-400M 视觉编码器：用于提取视觉特征，并映射到 LLM 嵌入空间 Whisper-medium-300M 语音编码器：用于提取语音特征，也映射到 LLM 嵌入空间 LLM：基于 Qwen2.5-7B 模型，能够支持多模态输入，但是受限...</div></div></div></a><a class="pagination-related" href="/2026/05/03/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-04-26-2026-05-03/" title="端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-03</div><div class="info-item-2">端侧 AI 推理框架周报（2026-04-26 ~ 2026-05-03）</div></div><div class="info-2"><div class="info-item-1">本周（2026-04-26 ~ 2026-05-03）共跟踪 15 个仓库，其中 9 个仓库有更新，合计 165 次提交。以下是对各仓库关键变化的详细解读。  本周无更新的仓库： tencent&#x2F;ncnn、airockchip&#x2F;rknn-toolkit2、airockchip&#x2F;rknn-llm、futz12&#x2F;ncnn_llm、mlc-ai&#x2F;mlc-llm、ml-explore&#x2F;mlx-lm   ggml-org&#x2F;llama.cpp（30 commits）本周 llama.cpp 依然保持了最高的活动量，涵盖后端优化、新硬件支持和用户界面重构。 CUDA &#x2F; GPU 后端 多 GPU PCI Bus ID 去重修复（#22533）：修复了当多个 GPU 共享 PCI Bus ID 时，CUDA 设备检测 OOM 导致仅发现 1 张卡而忽略其他 3 张的严重 bug。同时同步更新了 HIP 和 MUSA 宏的支持。 Flash Attention Pascal 架构修复（#22541）：Tile-base...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description">端侧 AI 推理、算子优化与论文细读的记录。</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">54</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">98</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E5%88%92%E4%B8%80%E4%B8%8B%E8%AF%81%E6%8D%AE%E8%BE%B9%E7%95%8C"><span class="toc-number">1.</span> <span class="toc-text">先划一下证据边界</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%84%E6%A0%BC%E9%80%9F%E8%A7%88"><span class="toc-number">2.</span> <span class="toc-text">规格速览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E6%9D%A1%E6%89%A9%E5%AE%B9%E8%BD%B4%EF%BC%8C%E4%B8%80%E6%9D%A1%E6%90%AC%E8%BF%90%E8%BD%B4"><span class="toc-number">3.</span> <span class="toc-text">三条扩容轴，一条搬运轴</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#QSA%EF%BC%9A%E6%8A%8A-indexer-%E4%B9%9F%E4%B8%80%E8%B5%B7%E5%8E%8B%E6%8E%89"><span class="toc-number">4.</span> <span class="toc-text">QSA：把 indexer 也一起压掉</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDN-QSA%EF%BC%9A3-1-%E7%9A%84%E5%88%86%E5%B7%A5"><span class="toc-number">5.</span> <span class="toc-text">GDN + QSA：3:1 的分工</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Gated-Residual%EF%BC%9A%E6%8A%8A%E4%B8%80%E6%9D%A1%E6%AE%8B%E5%B7%AE%E6%B5%81%E5%8A%88%E6%88%90%E5%9B%9B%E6%9D%A1"><span class="toc-number">6.</span> <span class="toc-text">Gated Residual：把一条残差流劈成四条</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#N-gram%EF%BC%9A51B-%E5%8F%82%E6%95%B0%E4%BD%8F%E5%9C%A8-CPU-%E5%86%85%E5%AD%98%E9%87%8C"><span class="toc-number">7.</span> <span class="toc-text">N-gram：51B 参数住在 CPU 内存里</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MoE%EF%BC%9A512-%E4%B8%AA-640-%E5%AE%BD%E7%9A%84%E4%B8%93%E5%AE%B6"><span class="toc-number">8.</span> <span class="toc-text">MoE：512 个 640 宽的专家</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%EF%BC%9AMuon%E3%80%81%E5%8E%BB%E6%8E%89-warmup%E3%80%81%E9%87%8D%E6%8B%9F%E5%90%88-scaling-law"><span class="toc-number">9.</span> <span class="toc-text">训练：Muon、去掉 warmup、重拟合 scaling law</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A8%E7%90%86%E4%BE%A7%E7%9A%84%E7%BB%8F%E6%B5%8E%E8%B4%A6"><span class="toc-number">10.</span> <span class="toc-text">推理侧的经济账</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#27B%EF%BC%9A%E8%83%BD%E4%B8%8B%E8%BD%BD%E7%9A%84%E9%82%A3%E4%B8%AA"><span class="toc-number">11.</span> <span class="toc-text">27B：能下载的那个</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%92%8C-DeepSeek-V4-%E6%91%86%E5%9C%A8%E4%B8%80%E8%B5%B7%E7%9C%8B"><span class="toc-number">12.</span> <span class="toc-text">和 DeepSeek-V4 摆在一起看</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%98%E6%B2%A1%E7%AD%94%E6%A1%88%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">13.</span> <span class="toc-text">还没答案的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">14.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-number">15.</span> <span class="toc-text">参考链接</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/03/qwen4-architecture/" title="Qwen4 架构全解：把参数从显存里搬出去">Qwen4 架构全解：把参数从显存里搬出去</a><time datetime="2026-11-03T14:10:00.000Z" title="发表于 2026-11-03 22:10:00">2026-11-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/02/jetson-specs-orin-to-thor/" title="Jetson 全系参数横评：从 Orin Nano 到 Thor T5000">Jetson 全系参数横评：从 Orin Nano 到 Thor T5000</a><time datetime="2026-11-02T15:30:00.000Z" title="发表于 2026-11-02 23:30:00">2026-11-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/28/%E7%AB%AF%E4%BE%A7AI%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-06-21-2026-06-28/" title="端侧 AI 推理框架周报（2026-06-21 ~ 2026-06-28）">端侧 AI 推理框架周报（2026-06-21 ~ 2026-06-28）</a><time datetime="2026-06-28T01:00:00.000Z" title="发表于 2026-06-28 09:00:00">2026-06-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/21/on-device-ai-framework-weekly-2026-06-21/" title="端侧 AI 推理框架周报（2026-06-14 ~ 2026-06-21）">端侧 AI 推理框架周报（2026-06-14 ~ 2026-06-21）</a><time datetime="2026-06-21T01:00:00.000Z" title="发表于 2026-06-21 09:00:00">2026-06-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/16/%E9%AB%98%E9%80%9ANPU%E7%AB%AF%E5%88%B0%E7%AB%AFRAG-Benchmark/" title="论文速读：在移动 NPU 上跑通端到端 RAG——高通 Hexagon 的 Benchmark 答卷">论文速读：在移动 NPU 上跑通端到端 RAG——高通 Hexagon 的 Benchmark 答卷</a><time datetime="2026-06-16T14:30:00.000Z" title="发表于 2026-06-16 22:30:00">2026-06-16</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="/js/index-list.js?v=20261031" defer></script><script src="/js/hero.js?v=20261031" defer></script><script src="/js/pv.js?v=20261103" defer></script><script src="/js/post.js?v=20261031" defer></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>
