@@ -1,0 +1,413 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>π0.5 与 MM-DiT：都是 joint attention，差别在谁看得见谁 | 何榜文</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="π0.5 和 SD3 的 MM-DiT 常被一句话打发掉：「都是 joint attention」。这句话不错，但它把两件不同的事混成了一件。 joint attention 描述的是算子形状：几套 QKV 权重、一个共享的 KV 池、一次 softmax。它不描述权限：哪些 token 的 key 能被哪些 query 读到。前者两边几乎逐行相同，后者是两张完全不同的矩阵——一张是 3 段块间单">
+<meta property="og:type" content="article">
+<meta property="og:title" content="π0.5 与 MM-DiT：都是 joint attention，差别在谁看得见谁">
+<meta property="og:url" content="https://hebangwen.github.io/2026/11/09/pi05-vs-mmdit-joint-attention/index.html">
+<meta property="og:site_name" content="何榜文">
+<meta property="og:description" content="π0.5 和 SD3 的 MM-DiT 常被一句话打发掉：「都是 joint attention」。这句话不错，但它把两件不同的事混成了一件。 joint attention 描述的是算子形状：几套 QKV 权重、一个共享的 KV 池、一次 softmax。它不描述权限：哪些 token 的 key 能被哪些 query 读到。前者两边几乎逐行相同，后者是两张完全不同的矩阵——一张是 3 段块间单">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2026-11-08T17:20:00.000Z">
+<meta property="article:modified_time" content="2026-11-08T17:46:02.473Z">
+<meta property="article:author" content="何榜文">
+<meta property="article:tag" content="Attention">
+<meta property="article:tag" content="VLA">
+<meta property="article:tag" content="π0.5">
+<meta property="article:tag" content="MMDiT">
+<meta property="article:tag" content="扩散模型">
+<meta property="article:tag" content="机器人">
+<meta property="article:tag" content="架构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "π0.5 与 MM-DiT：都是 joint attention，差别在谁看得见谁",
+  "url": "https://hebangwen.github.io/2026/11/09/pi05-vs-mmdit-joint-attention/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2026-11-08T17:20:00.000Z",
+  "dateModified": "2026-11-08T17:46:02.473Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "https://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="https://hebangwen.github.io/2026/11/09/pi05-vs-mmdit-joint-attention/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'π0.5 与 MM-DiT：都是 joint attention，差别在谁看得见谁',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/fonts.css?v=20261031"><link rel="stylesheet" href="/css/site.css?v=20261031"><link rel="stylesheet" href="/css/hero.css?v=20261031"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">56</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">107</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-pen-nib"></i><span> 文章</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">何榜文</span></a><a class="nav-page-title" href="/"><span class="site-name">π0.5 与 MM-DiT：都是 joint attention，差别在谁看得见谁</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-pen-nib"></i><span> 文章</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">π0.5 与 MM-DiT：都是 joint attention，差别在谁看得见谁</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-08T17:20:00.000Z" title="发表于 2026-11-09 01:20:00">2026-11-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-08T17:46:02.473Z" title="更新于 2026-11-09 01:46:02">2026-11-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI/">AI</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI/Deep-Learning/">Deep Learning</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><p>π0.5 和 SD3 的 MM-DiT 常被一句话打发掉：「都是 joint attention」。这句话不错，但它把两件不同的事混成了一件。</p>
+<p>joint attention 描述的是<strong>算子形状</strong>：几套 QKV 权重、一个共享的 KV 池、一次 softmax。它不描述<strong>权限</strong>：哪些 token 的 key 能被哪些 query 读到。前者两边几乎逐行相同，后者是两张完全不同的矩阵——一张是 3 段块间单向的有向图，一张是 2 段全连通的对称图。</p>
+<p>下面把两边都摊到代码与论文附录这一级对齐：π0.5 用 openpi 的 <code>pi0.py</code>、<code>gemma.py</code> 和论文附录 A–E，MM-DiT 用 SD3 第 4 节以及它派生出来的 MoT 家族。看完应该能回答一个具体问题：为什么 π0.5 的注意力必须有方向，而 MM-DiT 不需要。</p>
+<h2 id="先把-joint-attention-拆成两件事"><a href="#先把-joint-attention-拆成两件事" class="headerlink" title="先把 joint attention 拆成两件事"></a>先把 joint attention 拆成两件事</h2><p><img src="/images/joint-attn/joint-block.svg" alt="一个 block 的接线：两条流各有自己的 norm、QKV、输出投影与 FFN，唯一的共享是一份拼起来的 KV 池和一次 softmax"></p>
+<p>openpi 的 <code>gemma.py</code> 把这个结构写得很直白。<code>Module</code> 收一个 <code>configs</code> 列表，每个专家一份；<code>Attention.__call__</code> 里逐专家算各自的 <code>qkv_einsum</code>，然后一行拼接：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">q, k, v = (jnp.concatenate(y, axis=<span class="number">1</span>) <span class="keyword">for</span> y <span class="keyword">in</span> <span class="built_in">zip</span>(*qkvs, strict=<span class="literal">True</span>))</span><br></pre></td></tr></table></figure>
+
+<p>拼完的 K&#x2F;V 做一次 <code>softmax</code>，再按各自的区间切回去（<code>encoded[:, start:end]</code>）。函数开头那三个 assert 值得单独看：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">assert</span> <span class="built_in">all</span>(config.head_dim == self.configs[<span class="number">0</span>].head_dim ...)</span><br><span class="line"><span class="keyword">assert</span> <span class="built_in">all</span>(config.num_heads == self.configs[<span class="number">0</span>].num_heads ...)</span><br><span class="line"><span class="keyword">assert</span> <span class="built_in">all</span>(config.num_kv_heads == self.configs[<span class="number">0</span>].num_kv_heads ...)</span><br></pre></td></tr></table></figure>
+
+<p>head 几何必须完全一致，这是能把 KV 拼进同一张表的<strong>前提</strong>，不是顺手做的检查。π0.5 的两个专家一个 2048 宽、一个 1024 宽，但都是 8 个 query 头、1 个 KV 头、head_dim 256——宽度不同不妨碍联合，头形状不同就联合不了。</p>
+<p>于是「联合」的成本结构是：<strong>权重按流分开、归一化按流分开、只有 softmax 的分母是共享的</strong>。SD3 论文把这个说得很清楚，MM-DiT 的两套权重「等价于两个独立的 transformer，只把两条序列拼起来做注意力」。</p>
+<p>剩下的全部自由度都在 mask 里。</p>
+<h2 id="π0-5-的-mask：三段、两处看不到"><a href="#π0-5-的-mask：三段、两处看不到" class="headerlink" title="π0.5 的 mask：三段、两处看不到"></a>π0.5 的 mask：三段、两处看不到</h2><p><img src="/images/joint-attn/joint-mask.svg" alt="可见性矩阵：左边 π0.5 的 13 组 token 分成前缀、FAST、动作专家三段，前两段之间是阶梯，动作专家与前缀全连通但两块各有禁区；右边 MM-DiT 的文本与图像两段全部连通"></p>
+<p>先看序列怎么排。openpi 的 <code>tokenizer.py</code> 里，π0.5 的输入被拼成这样一个字符串：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Task: &#123;指令&#125;, State: &#123;32 个 0–255 的整数&#125;;</span><br><span class="line">Action: &#123;FAST token …&#125; |</span><br></pre></td></tr></table></figure>
+
+<p>机器人状态被离散成 256 个分箱、写成 32 个整数塞进<strong>前缀</strong>。这一点和 π0 不同：π0 的 state 是一个连续投影出来的 token，挂在动作流最前面、自己起一个注意力块。π0.5 把它挪进前缀，因为它是<strong>观察</strong>，不是<strong>待生成的东西</strong>——<code>pi0_config.py</code> 的注释就写着这两条差异（state 进离散语言 token、时间步改用 adaRMS）。</p>
+<p>前缀之后并排放着两套动作表示：FAST token（离散、自回归）和 50×32 的动作 chunk（连续、flow matching）。同一份数据训两次，两种表示各自拿一份监督。</p>
+<p>论文附录对 mask 的描述（译）：图像 patch、提示词、本体状态用<strong>完整的</strong>前缀 mask（即双向）；FAST 动作 token 看这个前缀，并在自己块内逐 token 自回归；动作专家的 token 看前缀、也互相看，但<strong>不看 FAST token</strong>，以免两种动作表示之间泄漏信息；VLM 一侧不看动作专家，信息单向从 VLM 流向动作专家。</p>
+<p>翻成一张权限表：</p>
+<table>
+<thead>
+<tr>
+<th>query ← key</th>
+<th>权限</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>前缀 ← 前缀</td>
+<td>双向</td>
+<td>图像 patch 与指令之间没有先后</td>
+</tr>
+<tr>
+<td>FAST ← 前缀</td>
+<td>可见</td>
+<td>它是条件</td>
+</tr>
+<tr>
+<td>FAST ← FAST</td>
+<td>逐 token 因果</td>
+<td>自回归监督，不能偷看后一位</td>
+</tr>
+<tr>
+<td>专家 ← 前缀</td>
+<td>可见</td>
+<td>它是条件</td>
+</tr>
+<tr>
+<td>专家 ← 专家</td>
+<td>双向</td>
+<td>50 个动作 token 并行去噪，同时成形</td>
+</tr>
+<tr>
+<td>前缀 ← FAST &#x2F; 专家</td>
+<td><strong>禁止</strong></td>
+<td>前缀是干净条件，不能读带噪目标</td>
+</tr>
+<tr>
+<td>专家 ← FAST</td>
+<td><strong>禁止</strong></td>
+<td>两种动作表示隔离</td>
+</tr>
+</tbody></table>
+<p>所以「π0.5 是 causal 的」这句要收窄一点：<strong>因果只发生在块边界和 FAST 块内部</strong>。50 步动作 chunk 内部是全双向的，和 MM-DiT 的图像 patch 一模一样——flow matching 本来就要整块一起成形。让它算「causal」的不是逐 token 的阶梯，而是<strong>序列被切成有先后关系的块，且跨块的边单向</strong>。</p>
+<p>在 openpi 里这一点比论文更直白。<code>embed_prefix</code> 给每个图像和文本 token 追加 <code>ar_mask += [False]</code>（全在同一块）；<code>embed_suffix</code> 才追加 <code>[True] + [False] * (H - 1)</code>（状态&#x2F;动作另起一块）。而 <code>make_attn_mask</code> 只用了一行：</p>
+<p>$$M_{ij} &#x3D; \mathbb{1}\left[\mathrm{cumsum}(m_a)_j \le \mathrm{cumsum}(m_a)_i\right]$$</p>
+<p>块号不大于我的位置全部放行。这是 prefix-LM 的写法，不是 LLM 的 <code>tril</code>。「一块」可以是 1 个 token（FAST 块，逐 token），也可以是 50 个 token（动作 chunk，整块互通）——同一个函数，两种粒度。</p>
+<p>顺带一个容易看漏的地方：π0.5 把时间步的注入方式也换了。π0 把 τ 和带噪动作拼起来过一个 MLP；π0.5 单独算 <code>swish(W2 · swish(W1 · φ(τ)))</code>，再用 adaRMS 打进动作专家<strong>每一层</strong>的 norm（<code>RMSNorm</code> 里 <code>Dense(3d)</code> 出 scale&#x2F;shift&#x2F;gate）。这套「时间步 → 逐层调制」正是 DiT 系的 adaLN modulation。<strong>在条件注入这一层，π0.5 离 MM-DiT 比离 π0 更近。</strong></p>
+<h2 id="MM-DiT：双向是免费的，因为它只有一种-target"><a href="#MM-DiT：双向是免费的，因为它只有一种-target" class="headerlink" title="MM-DiT：双向是免费的，因为它只有一种 target"></a>MM-DiT：双向是免费的，因为它只有一种 target</h2><p>SD3 第 4 节的论证只有三句：文本和图像表征「概念上差别很大」，所以用两套权重；两套权重等价于两个独立 transformer，只把序列拼起来做注意力；这样「图像与文本之间可以双向流动信息」，换来更好的文字理解与排版。</p>
+<p>双向之所以能白拿，是因为 MM-DiT 只有一种监督目标：去噪。图像 patch 是个集合，没有自然顺序，任意两个 patch 互看都不构成泄漏——它们本来就该同时成形。文本在这套架构里不是待生成的东西，只是条件：它进了同一条序列、有自己的权重、也能读图像（这正是「bidirectional flow」的含义），但模型从不去预测下一个文本 token。</p>
+<p>位置编码把同一个判断又写了一遍：图像 patch 加 2D 正弦位置编码，文本侧不加。文本被当成集合，图像被当成网格。</p>
+<p>MoE 那套「更多专家、更少激活」在这里不适用。MoT 把分流推到 attention 投影本身：按模态解耦<strong>所有</strong>非 embedding 参数（FFN、注意力矩阵、LayerNorm），注意力仍在全序列上做。参数约翻倍，每 token 激活不变——动机不是省算力，是消解模态冲突。</p>
+<p>而一旦模型既要 AR 理解、又要扩散生成（比如 Cosmos 3 的 MoT：reasoner 塔因果、generator 塔双向），方向性就回来了，而且是<strong>非对称</strong>的：generator 的 query 能读 reasoner 的 KV，reasoner 的 query 读不到 generator。这和 π0.5 那条「VLM 不看动作专家」是同一条原则的另一种写法——<strong>干净的条件可以被子孙读，子孙不能反过来改写条件</strong>。</p>
+<p>所以真正的谱系不是「因果 vs 双向」，而是看 target 的个数：</p>
+<ul>
+<li>只有一种 target（纯生成）→ 全双向，方向性没有意义；</li>
+<li>两种 target 共存（AR + 去噪、离散 + 连续）→ 必须给信息流定向，mask 从对称图变成有向图。</li>
+</ul>
+<p>π0.5 在第二格，MM-DiT 在第一格，Cosmos 3 那种双塔 MoT 落在第二格的另一侧。三者的算子完全同构。</p>
+<h2 id="逐项对照"><a href="#逐项对照" class="headerlink" title="逐项对照"></a>逐项对照</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>π0.5</th>
+<th>MM-DiT（SD3 8B &#x2F; FLUX 前段）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>序列</td>
+<td>3×256 图像 patch + 指令 + 32 个状态整数 + FAST 块 + 50×32 动作</td>
+<td>4096 图像 patch（1024² &#x2F; 16）+ 154 文本</td>
+</tr>
+<tr>
+<td>权重</td>
+<td>两套：PaliGemma-2B（2048&#x2F;16384）+ 动作专家 300M（1024&#x2F;4096），各 18 层</td>
+<td>两套：8B 档 d&#x3D;38、hidden 2432；FLUX 前 19 双流块 + 后 38 单流块</td>
+</tr>
+<tr>
+<td>mask</td>
+<td>块间因果 + 块内双向，两处禁止</td>
+<td>全双向</td>
+</tr>
+<tr>
+<td>位置</td>
+<td>一条连续 RoPE 轴，动作 token 的位置接在前缀之后</td>
+<td>图像 2D 正弦，文本无</td>
+</tr>
+<tr>
+<td>注入</td>
+<td>adaRMS，逐层</td>
+<td>adaLN modulation，逐层</td>
+</tr>
+<tr>
+<td>目标</td>
+<td>FAST 交叉熵 + flow matching（后训练 α&#x3D;10）</td>
+<td>rectified flow</td>
+</tr>
+<tr>
+<td>采样</td>
+<td>10 步 Euler，前缀 KV 只算一次</td>
+<td>28 步，全序列每步重算</td>
+</tr>
+<tr>
+<td>稳定</td>
+<td>无 QK-norm</td>
+<td>双流各加 QK-norm（SD3 图 5）</td>
+</tr>
+</tbody></table>
+<p>两边的 block 数、宽度、层数都能从 config 复算：<code>gemma_2b</code> 是 width 2048 &#x2F; mlp 16384 &#x2F; depth 18，<code>gemma_300m</code> 是 1024 &#x2F; 4096 &#x2F; 18（311M 参数）；SD3 的定标式是 hidden &#x3D; 64d、MLP &#x3D; 4×64d，8B 档取 d&#x3D;38 → 2432 &#x2F; 9728。</p>
+<h2 id="工程账：同一条序列，两种重算范围"><a href="#工程账：同一条序列，两种重算范围" class="headerlink" title="工程账：同一条序列，两种重算范围"></a>工程账：同一条序列，两种重算范围</h2><p>这是两种 mask 在部署上最直接的兑现。</p>
+<p>π0.5 采样时先跑一次前缀、把 KV 存下来，之后 10 步 Euler 只算 50 个 query：</p>
+<ul>
+<li>每步注意力对数：50 × (850 + 50) ≈ 4.5×10⁴</li>
+<li>一整条控制步（含前缀自注意力 850² 一次）：约 1.2×10⁶ 对</li>
+</ul>
+<p>MM-DiT 没有这个优待。4096 个图像 token 每一步都换一份新 latent，KV 必须重算；文本那 154 个 token 在采样期间不变、原理上可缓存，但只占 3.6%，改不了量级：</p>
+<ul>
+<li>每步注意力对数：4250² ≈ 1.8×10⁷</li>
+<li>一次采样 28 步：约 5.1×10⁸ 对</li>
+</ul>
+<p>$$\frac{28 \times 4250^{2}}{850^{2} + 10 \times 50 \times 900} \approx 430$$</p>
+<p>差 430 倍。这不是模型大小造成的，是两个结构量的差：<strong>序列长度的平方乘以步数</strong>，对<strong>固定长度前缀加 10 个短 query</strong>。π0.5 能在机器人上跑 10 步，结构上的原因是「待生成的东西只有 50 个 token」——它把昂贵的部分放在前缀，而前缀一个控制周期只算一次。</p>
+<p>Cosmos 3 的 DROID 策略把去噪压到 4 步，是同一个约束的另一种解法：既然每步都要重算整块，那就少走几步。</p>
+<p>代价也要说清。MM-DiT 的双向让 4096 个 patch 在一次 softmax 里互相协调，排版、几何一致性这类全局性质是「全见」买来的；给 patch 编一个光栅序、只允许看前面，等价于把二维协调压成一维链，得用层数补。反过来，把 π0.5 改成全双向会直接毁掉双目标训练——FAST token 会读到 flow 分支的答案，自回归那一半的损失立刻失去意义。</p>
+<h2 id="mask-不是常量：它随训练阶段和推理路径变"><a href="#mask-不是常量：它随训练阶段和推理路径变" class="headerlink" title="mask 不是常量：它随训练阶段和推理路径变"></a>mask 不是常量：它随训练阶段和推理路径变</h2><p>同一份代码，在 π0.5 的两个阶段画的是不同的图。</p>
+<p>预训练 280k 步只有离散 token——文本、检测框、FAST 动作 token，全是 next-token prediction。这时序列里只有一种 target，动作专家的权重根本不存在（$\alpha &#x3D; 0$），「专家 ⇏ FAST」这条禁令无从谈起：图里只有前缀和 FAST 两块，块间因果。</p>
+<p>后训练 80k 步才挂上动作专家（随机初始化）和 flow matching 头，$\alpha &#x3D; 10$，第二种 target 进场，前一张图才长成三段式、才需要那两条禁令。SD3 那种「全双向」则是第三种情况：从头到尾只有去噪一个 target。</p>
+<p>部署时图还会再变一次。FAST 块不在（动作不走离散表示了），但要先自回归吐一遍子任务文本，再把这段文本并进前缀、把前缀 KV 冻结，最后动作专家 10 步出 chunk。所以真正跑在机器人上的图是两段：一段因果的文本生成，接一段双向的 chunk 去噪。</p>
+<p>这解释了为什么「换个 mask 重训一遍」在实践中可行：mask 是训练配方的函数，不是模型的固有属性。同一条注意力算子，配几个 target 就画几张图。</p>
+<h2 id="三个可以带走的判断"><a href="#三个可以带走的判断" class="headerlink" title="三个可以带走的判断"></a>三个可以带走的判断</h2><ol>
+<li><strong>joint attention 决定算得多贵，mask 决定能学什么。</strong> 前者的形状两边几乎一样，后者才是设计空间。</li>
+<li><strong>方向性不是保守，是多目标共存时唯一的隔离手段。</strong> 一条序列里放两个能互相预测的表示，就必须写明禁令；只有一个 target 时，定向纯属自找麻烦。</li>
+<li><strong>位置轴跟着语义走。</strong> 有序过程用一条连续位置轴（动作 token 接着前缀往下编号），无序集合用 2D 位置或干脆不给（文本侧）。</li>
+</ol>
+<p>反过来说，看到一个新 VLA：先问它有几个 target，再看它的 ar_mask 怎么切块，基本就能推断出它的 mask 图长什么样、KV 能缓存多少、实时性上限在哪。这比记「谁用了 joint attention」有用得多。</p>
+<hr>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ol>
+<li>π0.5: a Vision-Language-Action Model with Open-World Generalization：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2504.16054">https://arxiv.org/abs/2504.16054</a></li>
+<li>openpi（<code>models/pi0.py</code>、<code>gemma.py</code>、<code>pi0_config.py</code>、<code>tokenizer.py</code>）：<a target="_blank" rel="noopener" href="https://github.com/Physical-Intelligence/openpi">https://github.com/Physical-Intelligence/openpi</a></li>
+<li>Scaling Rectified Flow Transformers for High-Resolution Image Synthesis（SD3 &#x2F; MM-DiT）：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2403.03206">https://arxiv.org/abs/2403.03206</a></li>
+<li>Mixture-of-Transformers: A Sparse and Scalable Architecture for Multi-Modal Foundation Models：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2411.04996">https://arxiv.org/abs/2411.04996</a></li>
+<li>FLUX.1（19 双流块 + 38 单流块，见 diffusers <code>transformer_flux.py</code> 默认值）：<a target="_blank" rel="noopener" href="https://github.com/huggingface/diffusers/blob/main/src/diffusers/models/transformers/transformer_flux.py">https://github.com/huggingface/diffusers/blob/main/src/diffusers/models/transformers/transformer_flux.py</a></li>
+<li>Cosmos 3（MoT 双塔、非对称 mask、动作模态）：<a target="_blank" rel="noopener" href="https://research.nvidia.com/labs/cosmos-lab/cosmos3/">https://research.nvidia.com/labs/cosmos-lab/cosmos3/</a></li>
+<li>π0: A Vision-Language-Action Flow Model for General Robot Control：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2410.24164">https://arxiv.org/abs/2410.24164</a></li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://hebangwen.github.io/2026/11/09/pi05-vs-mmdit-joint-attention/">https://hebangwen.github.io/2026/11/09/pi05-vs-mmdit-joint-attention/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://hebangwen.github.io" target="_blank">何榜文</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Attention/">Attention</a><a class="post-meta__tags" href="/tags/VLA/">VLA</a><a class="post-meta__tags" href="/tags/%CF%800-5/">π0.5</a><a class="post-meta__tags" href="/tags/MMDiT/">MMDiT</a><a class="post-meta__tags" href="/tags/%E6%89%A9%E6%95%A3%E6%A8%A1%E5%9E%8B/">扩散模型</a><a class="post-meta__tags" href="/tags/%E6%9C%BA%E5%99%A8%E4%BA%BA/">机器人</a><a class="post-meta__tags" href="/tags/%E6%9E%B6%E6%9E%84/">架构</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/11/08/opencode-go-weekly-review/" title="OpenCode Go 订阅一周用量复盘：月费 ¥68 能跑出多少 token"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">OpenCode Go 订阅一周用量复盘：月费 ¥68 能跑出多少 token</div></div><div class="info-2"><div class="info-item-1">先说结论。OpenCode Go 是每月 ¥68（订阅价 $10，全文按 1 USD &#x3D; 6.8 元人民币一次性换算，此后不再折回）的开源模型订阅：付一份月费，拿到一组已内置计价的开源模型，用量按各模型官方牌价折成等价金额，计入三层使用窗口。本计费周期（10-30 起）在 11-08 上午的配额读数：7 天窗已用 36%、月窗已用 24%；把已消耗部分折回官方等价约 ¥112，照这个节奏走完整月约 ¥544——相当于用 ¥68 扛住约 8 倍杠杆。折扣不在单价里：DeepSeek Flash 在 Go 里的牌价与官方 API 完全一致，省的全部来自「¥68 包 ¥680 月额度」的结构。 订阅机制三档：Go ¥68&#x2F;月、Go Plus ¥272&#x2F;月、Go Teams ¥136&#x2F;每人，模型清单覆盖 30 款开源模型（DeepSeek、GLM、Kimi、MiniMax、Qwen、MiMo 等）。计价单位不是 token 而是等价金额：每个模型有一张自己的价表，每条请求按所在时段的牌价折算后计入窗口（见 官方定价页）。 额度深度按模型分级，这是整...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/04/26/deepseek-v4-architecture/" title="DeepSeek-V4 架构全解：百万token时代的效率革命"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-26</div><div class="info-item-2">DeepSeek-V4 架构全解：百万token时代的效率革命</div></div><div class="info-2"><div class="info-item-1">2026年4月24日，DeepSeek正式开源了第四代旗舰模型 DeepSeek-V4，距离上一代DeepSeek-V3发布整整过去了484天。V4带来的核心命题不是去争夺SOTA王座，而是将百万token上下文从一个炫技参数变成可日常使用的工程能力。 一、模型规格速览V4系列分为两个版本：    规格 V4-Flash V4-Pro    总参数 284B 1.6T   激活参数 13B 49B   层数 43 61   Hidden Dim 4096 7168   Routed Experts 256 384   Shared Expert 1 1   每token激活专家 6 6   预训练Tokens 32T 33T   模型权重 160GB (FP4+FP8混合) 861GB (FP4+FP8混合)   V4-Pro 成为当下公开权重最大的开源模型，全面支持 1M token 原生上下文。 在1M上下文场景下，效率对比达到惊人水平：  V4-Pro：单token FLOPs 仅为 V3.2 的 **27%**，KV cache 仅为 10% V4-Flash：单toke...</div></div></div></a><a class="pagination-related" href="/2026/11/03/qwen4-architecture/" title="Qwen4 架构全解：把参数从显存里搬出去"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-03</div><div class="info-item-2">Qwen4 架构全解：把参数从显存里搬出去</div></div><div class="info-2"><div class="info-item-1">Qwen4 的权重还没发，但架构已经公开：8 月 27 日开源的 Qwen3.8-Flash-Next，官方定位是 an early preview of the architecture used in Qwen4。下面所有数字都来自它的 config.json 和官方技术博客，可以逐项复算。 规格 注意 125B 和 51B 是两个账本：算力只算前者，显存要看两者之和（176B），但后者不占 HBM。 整体架构一张图看完整条链路：token embedding 之后是 48 个 block（每层 RMSNorm → 3 层 GDN + 1 层 QSA → RMSNorm → MoE，四条残差流旁路），最后接 Final RMSNorm 与 Linear；左侧挂 51B 的 N-gram 查表，右侧三块放大注意力、MoE 与参数账本。  QSA：索引粒度也一起压 DSA 是 token 级稀疏：用小号 indexer 给每个历史 token 打分，取 top-k 再算注意力。注意力成本从 $O(n^2)$ 降到 $O(nk)$，但 indexer 仍要把 $n$ 个位置全打一遍...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description">端侧 AI 推理、算子优化与论文细读的记录。</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">56</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">107</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E6%8A%8A-joint-attention-%E6%8B%86%E6%88%90%E4%B8%A4%E4%BB%B6%E4%BA%8B"><span class="toc-number">1.</span> <span class="toc-text">先把 joint attention 拆成两件事</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%CF%800-5-%E7%9A%84-mask%EF%BC%9A%E4%B8%89%E6%AE%B5%E3%80%81%E4%B8%A4%E5%A4%84%E7%9C%8B%E4%B8%8D%E5%88%B0"><span class="toc-number">2.</span> <span class="toc-text">π0.5 的 mask：三段、两处看不到</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MM-DiT%EF%BC%9A%E5%8F%8C%E5%90%91%E6%98%AF%E5%85%8D%E8%B4%B9%E7%9A%84%EF%BC%8C%E5%9B%A0%E4%B8%BA%E5%AE%83%E5%8F%AA%E6%9C%89%E4%B8%80%E7%A7%8D-target"><span class="toc-number">3.</span> <span class="toc-text">MM-DiT：双向是免费的，因为它只有一种 target</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%90%E9%A1%B9%E5%AF%B9%E7%85%A7"><span class="toc-number">4.</span> <span class="toc-text">逐项对照</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E7%A8%8B%E8%B4%A6%EF%BC%9A%E5%90%8C%E4%B8%80%E6%9D%A1%E5%BA%8F%E5%88%97%EF%BC%8C%E4%B8%A4%E7%A7%8D%E9%87%8D%E7%AE%97%E8%8C%83%E5%9B%B4"><span class="toc-number">5.</span> <span class="toc-text">工程账：同一条序列，两种重算范围</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mask-%E4%B8%8D%E6%98%AF%E5%B8%B8%E9%87%8F%EF%BC%9A%E5%AE%83%E9%9A%8F%E8%AE%AD%E7%BB%83%E9%98%B6%E6%AE%B5%E5%92%8C%E6%8E%A8%E7%90%86%E8%B7%AF%E5%BE%84%E5%8F%98"><span class="toc-number">6.</span> <span class="toc-text">mask 不是常量：它随训练阶段和推理路径变</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E4%B8%AA%E5%8F%AF%E4%BB%A5%E5%B8%A6%E8%B5%B0%E7%9A%84%E5%88%A4%E6%96%AD"><span class="toc-number">7.</span> <span class="toc-text">三个可以带走的判断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-number">8.</span> <span class="toc-text">参考链接</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/09/pi05-vs-mmdit-joint-attention/" title="π0.5 与 MM-DiT：都是 joint attention，差别在谁看得见谁">π0.5 与 MM-DiT：都是 joint attention，差别在谁看得见谁</a><time datetime="2026-11-08T17:20:00.000Z" title="发表于 2026-11-09 01:20:00">2026-11-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/08/opencode-go-weekly-review/" title="OpenCode Go 订阅一周用量复盘：月费 ¥68 能跑出多少 token">OpenCode Go 订阅一周用量复盘：月费 ¥68 能跑出多少 token</a><time datetime="2026-11-08T12:20:00.000Z" title="发表于 2026-11-08 20:20:00">2026-11-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/03/qwen4-architecture/" title="Qwen4 架构全解：把参数从显存里搬出去">Qwen4 架构全解：把参数从显存里搬出去</a><time datetime="2026-11-03T14:10:00.000Z" title="发表于 2026-11-03 22:10:00">2026-11-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/02/jetson-specs-orin-to-thor/" title="Jetson 全系参数横评：从 Orin Nano 到 Thor T5000">Jetson 全系参数横评：从 Orin Nano 到 Thor T5000</a><time datetime="2026-11-02T15:30:00.000Z" title="发表于 2026-11-02 23:30:00">2026-11-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/28/%E7%AB%AF%E4%BE%A7AI%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-06-21-2026-06-28/" title="端侧 AI 推理框架周报（2026-06-21 ~ 2026-06-28）">端侧 AI 推理框架周报（2026-06-21 ~ 2026-06-28）</a><time datetime="2026-06-28T01:00:00.000Z" title="发表于 2026-06-28 09:00:00">2026-06-28</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="/js/index-list.js?v=20261031" defer></script><script src="/js/hero.js?v=20261031" defer></script><script src="/js/pv.js?v=20261103" defer></script><script src="/js/post.js?v=20261031" defer></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>
