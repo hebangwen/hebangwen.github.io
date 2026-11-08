@@ -1,0 +1,441 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>OpenCode Go 订阅一周用量复盘：¥71.5（$10）能跑出多少 token | 何榜文</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="先给四个数。本机一周（2026-11-01 00:00 起，复算截至 11-08 10:58，北京时间，下同）经 magpie 网关走 OpenCode Go 通道，共发出 6,474 次请求，成功率 98.1% [D01]；输出 token 5,046,952；缓存读取 1,002,195,397，命中率 96.66% [D02]；按官方牌价折算，这批流量的等价价值约 ¥117（$16.4）。O">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenCode Go 订阅一周用量复盘：¥71.5（$10）能跑出多少 token">
+<meta property="og:url" content="https://hebangwen.github.io/2026/11/08/opencode-go-weekly-review/index.html">
+<meta property="og:site_name" content="何榜文">
+<meta property="og:description" content="先给四个数。本机一周（2026-11-01 00:00 起，复算截至 11-08 10:58，北京时间，下同）经 magpie 网关走 OpenCode Go 通道，共发出 6,474 次请求，成功率 98.1% [D01]；输出 token 5,046,952；缓存读取 1,002,195,397，命中率 96.66% [D02]；按官方牌价折算，这批流量的等价价值约 ¥117（$16.4）。O">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2026-11-08T10:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-08T09:49:56.491Z">
+<meta property="article:author" content="何榜文">
+<meta property="article:tag" content="DeepSeek">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="OpenCode">
+<meta property="article:tag" content="GLM">
+<meta property="article:tag" content="成本分析">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "OpenCode Go 订阅一周用量复盘：¥71.5（$10）能跑出多少 token",
+  "url": "https://hebangwen.github.io/2026/11/08/opencode-go-weekly-review/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2026-11-08T10:00:00.000Z",
+  "dateModified": "2026-11-08T09:49:56.491Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "https://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="https://hebangwen.github.io/2026/11/08/opencode-go-weekly-review/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'OpenCode Go 订阅一周用量复盘：¥71.5（$10）能跑出多少 token',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/fonts.css?v=20261031"><link rel="stylesheet" href="/css/site.css?v=20261031"><link rel="stylesheet" href="/css/hero.css?v=20261031"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">55</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">101</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-pen-nib"></i><span> 文章</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">何榜文</span></a><a class="nav-page-title" href="/"><span class="site-name">OpenCode Go 订阅一周用量复盘：¥71.5（$10）能跑出多少 token</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-pen-nib"></i><span> 文章</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">OpenCode Go 订阅一周用量复盘：¥71.5（$10）能跑出多少 token</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-08T10:00:00.000Z" title="发表于 2026-11-08 18:00:00">2026-11-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-08T09:49:56.491Z" title="更新于 2026-11-08 17:49:56">2026-11-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BB%BC%E5%90%88%E5%AE%9E%E8%B7%B5/">综合实践</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><p>先给四个数。本机一周（2026-11-01 00:00 起，复算截至 11-08 10:58，北京时间，下同）经 magpie 网关走 OpenCode Go 通道，共发出 6,474 次请求，成功率 98.1% [D01]；输出 token 5,046,952；缓存读取 1,002,195,397，命中率 96.66% [D02]；按官方牌价折算，这批流量的等价价值约 ¥117（$16.4）。OpenCode Go 是每月 ¥71.5（$10）的开源模型订阅，额度按一组已内置计价的开源模型发放 [L01]；这一周走的全部是 OpenCode 的 Go 端点，没有直连流量混入（provider 过滤口径）。金额叙述统一按 1 美元 ≈ 7.15 元人民币换算（本文计价口径），牌价原始报价为美元的保留美元并标注。四个数和月费之间隔着命中率、峰谷时段、窗口刻度三层结构，下文用账本逐段算清。</p>
+<h2 id="一周用量"><a href="#一周用量" class="headerlink" title="一周用量"></a>一周用量</h2><p>数据源是 magpie 的本地账本 usage.jsonl，逐请求记录模型名、状态码、端到端时长与 token 明细。本文按 provider 字段筛出 OpenCode Go 通道后以脚本复算，只读账本，未改动任何文件；dsh 是本机代理所有会话的框架入口，openclaw 与脚本只占零头。口径：token 与成本只统计 status&#x3D;&#x3D;200 的 6,348 条请求，126 条 499 是 agent 侧主动中止、没有计费计量、也就进不了后文的账 [D01]；这 126 条占全周 1.9%，请求侧 token 未回流计量，账面因此比真实发送量略小。复算切断点取 11-08 10:58:55，即当周第 6,474 条记录落账的时刻；到当天下午复算截止时，账本又追加了 305 条请求且全部成功 [D18]，所以本文算的是截在周内低点上的一周，账面偏保守。</p>
+<p>一周的逐日负载如下：</p>
+<table>
+<thead>
+<tr>
+<th>日期</th>
+<th>请求</th>
+<th>输出 token</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>11-01</td>
+<td>261</td>
+<td>121,463</td>
+</tr>
+<tr>
+<td>11-02</td>
+<td>149</td>
+<td>160,607</td>
+</tr>
+<tr>
+<td>11-03</td>
+<td>1,501</td>
+<td>1,335,758</td>
+</tr>
+<tr>
+<td>11-04</td>
+<td>1,591</td>
+<td>1,158,950</td>
+</tr>
+<tr>
+<td>11-05</td>
+<td>1,279</td>
+<td>874,242</td>
+</tr>
+<tr>
+<td>11-06</td>
+<td>428</td>
+<td>418,976</td>
+</tr>
+<tr>
+<td>11-07</td>
+<td>634</td>
+<td>428,562</td>
+</tr>
+<tr>
+<td>11-08（至 10:58，半天）</td>
+<td>631</td>
+<td>548,394</td>
+</tr>
+<tr>
+<td>合计</td>
+<td>6,474</td>
+<td>5,046,952</td>
+</tr>
+</tbody></table>
+<p><em>[D03][D04]</em></p>
+<p>形态比想象中集中：11-03（周二）单日 1,501 次请求、输出 1,335,758 token，差不多是前两日合计的五倍；周二至周四三天合计 4,371 次请求，占到全周的 68%（4,371&#x2F;6,474，本文推算）。输出量的峰在 11-03（1,335,758），请求量的峰在 11-04（1,591），两个峰错开一天，批次与短交互交替。低谷出现在周初，11-01 加 11-02 两天只有 410 次；周五起回落，但日均仍维持在 550 次上下，周日至切断点的 631 次说明周末也没有停。调用方九成六是 dsh（6,231 次），其余是 openclaw（162 次）和脚本直连（81 次：httpx 73、urllib 7、curl 1）[D17]，负载基本全部来自 agent 工作流。逐日折算的等价账同样跟着负载走：周二 ¥28.0、周三 ¥26.0 为当周峰值两天（逐日分账见 [D20]），全周合计约 ¥117（本文推算）[D20][D11][D12]。</p>
+<p>token 构成方面，200 口径下输入 34,604,281，缓存读取 1,002,195,397，输出 5,046,952，其中 reasoning 2,542,093，约占输出的一半 [D02]；这项计在输出流里、单独可查，对账时能分清成本走向。命中率 96.66%（按缓存读取对输入总量之比记）换个读法：每约 29 个缓存读取 token 才对应一个未命中的新输入，重复前缀直接从缓存读走，真正按输入单价重新计费的只有零星新增 [D02]；输入总量只是缓存读取的约 3.5%，配额的大头实际由命中部分决定。两模型的命中结构也不同：DeepSeek 部分 97.5%、GLM 87.6%（本文推算），后者多承担前缀更杂的会话。按 bigmodel 给出的 GLM 系列 Token 与汉字约 1:1.6 的换算比，全周 5.0M 输出 token 约合 800 万汉字的成文量（本文推算）[L03]。</p>
+<p>想复现这篇的账，核心三步：按 provider 筛出通道（本文全部落在 OpenCode 的 Go 端点）、把每条请求的时间戳转成 UTC 判峰谷、对 in、cache_read、out 各乘当档牌价累加 [D19]。全部计算在本机离线完成：脚本是只读的，算完即走，账本从始至终未被改动。</p>
+<h2 id="模型分布与延迟"><a href="#模型分布与延迟" class="headerlink" title="模型分布与延迟"></a>模型分布与延迟</h2><p>一周的 200 流量几乎全部压在两个模型上：6,348 条成功请求里，DeepSeek 占 5,645 条、GLM 占 700 条，之外的散点请求只有 3 条。端到端时长按毫秒字段取最近邻秩百分位，统计口径是整周成功请求：</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>200 请求</th>
+<th>输入</th>
+<th>缓存读取</th>
+<th>输出</th>
+<th>时长 p50&#x2F;p90&#x2F;p99（ms）</th>
+<th>TTFT p50&#x2F;p90</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>deepseek-v4.1-flash</td>
+<td>5,645</td>
+<td>23,593,617</td>
+<td>924,542,464</td>
+<td>4,412,191</td>
+<td>8,520 &#x2F; 44,097 &#x2F; 177,410</td>
+<td>≈4.5 s &#x2F; ≈26 s</td>
+</tr>
+<tr>
+<td>glm-5.3-flash</td>
+<td>700</td>
+<td>11,010,504</td>
+<td>77,652,736</td>
+<td>634,741</td>
+<td>9,899 &#x2F; 35,689 &#x2F; 166,478</td>
+<td>4,065 &#x2F; 14,027 ms</td>
+</tr>
+</tbody></table>
+<p><em>[D05][D06][D07][D08][D09]</em></p>
+<p>DeepSeek 的 TTFT 两轮复算差小于 300 ms，表内取秒级四舍五入，GLM 列沿用完整毫秒值；TTFT 只对带该字段的请求计入。p50 意味着一半请求在 8.5 秒上下收尾，p90 把长尾与常态拉开约五倍，p99 已到三分钟量级、多计入批量任务的队列尾部。</p>
+<p>结构上 DeepSeek 占了 89% 的请求（5,645&#x2F;6,348），两模型合计覆盖 6,345 条 200 请求，余下 3 条散点本文不必逐单展开 [D05][D08]；平均每次输出约 782 token、聚合吞吐约 39 tok&#x2F;s——吞吐按输出汇总除以全部请求时长之和计，摊平了并发与排队，当整周平均产能读 [D07]；GLM 首字更快（p50 约 4.1 s）、单次输出约 907 token（本文推算），只承担部分会话与兜底。对并发 agent 而言，首字时延比全程更影响会话开工节奏——后续 token 已在流式回传，等首字与等全文是两种等待模型；两家的 p50 都压在 4 秒半上下。p99 接近三分钟的记录集中在长思考的批量任务上，不代表交互体感，正文不作进一步引申。GLM 段输出的 634,741 token 按官方 1∶1.6 换算约合 102 万汉字 [L03]。</p>
+<h2 id="配额窗口"><a href="#配额窗口" class="headerlink" title="配额窗口"></a>配额窗口</h2><p>OpenCode Go 把每个模型的月额度切成三层窗口：5 小时窗按月额度的 20% 计，7 天窗 50%，月窗 100% [L01]。两个主力模型的月额度并不均等：DeepSeek V4.1 Flash 给 $100（约 ¥715），GLM-5.3-Flash 给 $60（约 ¥429），多数旗舰与小模型在 $15–30 一档（约 ¥107–214）[L01]——额度档位直接决定谁扛得住主力，¥107 一档只够轻量轮换。窗口读数来自 quota-history 的周期快照，按剩余百分比记，与请求数口径无关；同一百分比下，不同模型的绝对额度可以差出一个量级 [L01]。月窗本轮自 10-30 起算。</p>
+<p>2026-11-08 10:56 读到的三个窗口：</p>
+<table>
+<thead>
+<tr>
+<th>窗口</th>
+<th>读数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>5 小时（滚动）</td>
+<td>剩 100%（本窗未动用）</td>
+</tr>
+<tr>
+<td>7 天窗（11-02 00:00 → 11-09 00:00 UTC）</td>
+<td>已用 36%</td>
+</tr>
+<tr>
+<td>月窗（10-30 → 11-29 14:02 UTC）</td>
+<td>已用 24%</td>
+</tr>
+</tbody></table>
+<p><em>[D16]</em></p>
+<p>半小时后键内的末次读点已推进到 7 天窗 39%、月窗 26% [D16]，38 分钟内在 7 天窗刻度上走了 3 个百分点，扣减随用量实时走，两组快照源在同一读点上互相对齐 [D16]。5 小时窗是滚动短窗，读数停在满格只说明本窗起点之后尚未起扣，单人单机的持续写入从没把短窗打满。以月窗 24% 对应约 9 天线性外推，全月约 ¥572 官方等价，相对 ¥71.5 月费约 8 倍杠杆（本文推算，只按「照此节奏」的假设读，牌价固定在 11-08 快照）。结构上最先到线的是 7 天窗：深度只有月窗一半，周中批量高峰先在这里报警；月窗触顶时的官方口径是仍可继续用免费模型 [L01]。顺带一对照：本周等价 ¥117 已经超过一个月费，月窗刻度上却只走到 24% [D16]。</p>
+<h2 id="若走官方-API"><a href="#若走官方-API" class="headerlink" title="若走官方 API"></a>若走官方 API</h2><p>等价价值的算法不复杂：把每条 200 请求的输入、缓存读取、输出，分别乘以该请求所在时段的牌价再求和 [D19]。等价价值同时就是 Go 配额的扣减口径——Go 按官方牌价把用量折成美元记进窗口 [L01]，所以 ¥117 既表示「值多少」，也表示「烧掉多少配额」。判定方法是把每条请求的时间戳转成 UTC，再按周几与时点分桶 [D10]。以 DeepSeek 谷段为例，全周流量代入官方牌价就是 15.75M 输入 ×$0.15、603.68M 缓存命中 ×$0.003、2.77M 输出 ×$0.60，合计约 ¥41.7（$5.83）[D11]。按官方页，deepseek-flash 就是本文通道里的 deepseek-v4.1-flash（旧名仍被接受），1M 上下文、单次输出上限 384K [L02]。峰段按官方定义为 UTC 01:00–04:00 与 06:00–10:00（周一至周五，节假日除外）[L02]，本周不含中国公众假期，判定口径成立；官方页另注并发上限 2,500 条 [L02]；GLM 部分按 Go 计价牌价代入。三条通道吃的是同一批 token，通道差只在牌价，token 构成不随通道变化；一批任务横跨峰谷时，各请求按各自时刻的单价分别计。并排如下：</p>
+<table>
+<thead>
+<tr>
+<th>通道</th>
+<th>牌价（每 1M token，输入&#x2F;缓存&#x2F;输出）</th>
+<th>同流量账单</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DeepSeek 官方 API</td>
+<td>谷 $0.15 &#x2F; $0.003 &#x2F; $0.60；峰 $0.30 &#x2F; $0.006 &#x2F; $1.20 [L02]</td>
+<td>≈¥86.4：峰 ¥44.7（2,033 次）、谷 ¥41.7（3,612 次）[D10][D11]</td>
+</tr>
+<tr>
+<td>bigmodel 直连 GLM-5.3-Flash</td>
+<td>¥0.8 &#x2F; ¥0.23 &#x2F; ¥2.8 [L03]</td>
+<td>GLM 部分 ¥28.45（直连人民币原价，本文推算）[D13]</td>
+</tr>
+<tr>
+<td>Claude Sonnet 类闭源 API</td>
+<td>$3 &#x2F; $0.30 &#x2F; $15</td>
+<td>≈¥3,433（$480.18）[D14]</td>
+</tr>
+<tr>
+<td>OpenCode Go</td>
+<td>DeepSeek 牌价与官方逐项相同；GLM $0.15 &#x2F; $0.03 &#x2F; $0.50 [L01]</td>
+<td>本周等价消耗 ≈¥117 ≈ ¥86.4 + ¥30.7（$16.4 &#x3D; $12.09 + $4.30）[D11][D12]</td>
+</tr>
+</tbody></table>
+<p>这张表可以一句话读出：同一份流量走 Go 与走官方 DeepSeek 完全重合，差距全部出现在 GLM 与闭源两条侧线上。Sonnet 行仅作对照价位刻度使用，并非在用通道。四条一句话级结论：</p>
+<ul>
+<li>DeepSeek 部分直连官方 API 与 Go 计价逐项相同 [D15][L02]，Go 的折扣全部来自「¥71.5 月费包 ¥715 月额度」（官方原始表述为 $10 包 $100）的结构 [L01]，不在 token 单价上；DeepSeek 部分等价 ¥86.4（$12.09）已经是月额度的 12% [D11]。</li>
+<li>GLM 是反例：Go 计价 ≈¥30.7（$4.30）——¥30.7 对 ¥28.45，贵约 8%（本文推算），输入&#x2F;输出单项牌价贵约三成、缓存项相对便宜对冲一部分后总量仍贵，直连账 ¥28.45 由 11.01M 输入 ×¥0.8、77.65M 缓存命中 ×¥0.23、0.63M 输出 ×¥2.8 三笔组成 [D13]，纯 GLM 用量直连更划算；智谱自己也把 token 订阅搬上了天猫店，个人版每月 118 元起 [L05]，两条路都在收拢个人用户，而 Go 的价值在跨模型打包 [L01][D12][D13]。</li>
+<li>同流量按 Sonnet 类牌价折到 ≈¥3,433（$480.18），账面主要压在缓存读取上，其构成是 34.60M 输入 ×$3、1,002.20M 缓存读取 ×$0.30、5.05M 输出 ×$15 [D14]；这不是质量对比，只是提示 agent 负载下缓存单价对账单的权重远高于输出单价。</li>
+<li>峰谷仍有余量：峰段 2,033 次请求带着 7.84M 输入、320.86M 缓存、1.64M 输出折 ¥44.7（$6.25），请求量只占 36%（DeepSeek 请求内）、账面却过半，是峰段牌价整体翻倍的结果 [D11]；若 DeepSeek 流量全部落在谷时段，其段账从 ¥86.4 降到约 ¥64.1，省约 26%；按全家通等价账 ¥117 计约省 19%（本文推算）[D10][D11]。</li>
+</ul>
+<p>bigmodel 另有积分制的 GLM Coding Plan：Lite 档每周 10,000 积分（5 小时窗 2,000），GLM-5.3-Flash 按 2.3&#x2F;0.56&#x2F;8 的系数折积分，非高峰再对折，95% 命中口径下周额度折算约 1.46–2.92 亿 tokens [L04]；以该公式计，本周 GLM 流量全高峰口径约 7,400 积分、非高峰对折约 3,700，占一份 Lite 周额度（10,000 分）的 37%–74%（本文推算）[L04]，单独为此订阅一份显得多余。另注意官方页提示用量限制可能随早期反馈调整 [L01]，本文全部读数固定在 11-08 的账本快照上。</p>
+<p>对「主力 DeepSeek Flash、前缀缓存稳定」的 agent 工作流，Go 目前是最干净的性价比通道——杠杆成立的前提正是主力落在月额度最大的那一档 [L01]：DeepSeek 单价与官方一致，折扣来自额度结构而非缓存差价，同一份月费里换模型几乎零成本 [L01]。这个判断只在单周窗口内给出。</p>
+<h2 id="局限"><a href="#局限" class="headerlink" title="局限"></a>局限</h2><p>三点说在前面：样本是一台机器一个人的 7.4 天窗口，结论只对本机这类 agent 负载成立，不做群体外推；月度外推依赖「负载节奏不变」的线性假设，只值「照此节奏」的读法；官方牌价取自 2026-11-08 的会话内页面快照，零外网授权下未做在线复核，页面如有更新以官方页为准。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ul>
+<li>[L01] OpenCode. Go 订阅定价与用量限制[EB&#x2F;OL]. [2026-11-08]. <a target="_blank" rel="noopener" href="https://opencode.ai/docs/go">https://opencode.ai/docs/go</a>.</li>
+<li>[L02] DeepSeek. Models &amp; Pricing[EB&#x2F;OL]. [2026-11-08]. <a target="_blank" rel="noopener" href="https://api-docs.deepseek.com/quick_start/pricing/">https://api-docs.deepseek.com/quick_start/pricing/</a>.</li>
+<li>[L03] 北京智谱华章科技有限公司. 智谱开放平台模型定价[EB&#x2F;OL]. [2026-11-08]. <a target="_blank" rel="noopener" href="https://docs.bigmodel.cn/cn/guide/start/pricing">https://docs.bigmodel.cn/cn/guide/start/pricing</a>.</li>
+<li>[L04] 北京智谱华章科技有限公司. GLM Coding Plan 套餐概览[EB&#x2F;OL]. [2026-11-08]. <a target="_blank" rel="noopener" href="https://docs.bigmodel.cn/cn/coding-plan/overview">https://docs.bigmodel.cn/cn/coding-plan/overview</a>.</li>
+<li>[L05] 界面新闻. 智谱在天猫开店卖token：个人版每月118元起，团队版598元[N&#x2F;OL]. 2026-09-02. <a target="_blank" rel="noopener" href="https://www.jiemian.com/article/15044937.html">https://www.jiemian.com/article/15044937.html</a>.</li>
+</ul>
+<h2 id="数据来源"><a href="#数据来源" class="headerlink" title="数据来源"></a>数据来源</h2><p>以下全部数据条目取自本机 magpie 账本（<code>~/.config/magpie/usage.jsonl</code>、<code>quota-history.json</code>），复算脚本与对账输出见 <code>data/t2_recalc.py</code>、<code>data/t2_cutoff_pass.out</code>（切断点 2026-11-08 10:58:55+08；token&#x2F;成本仅计 status&#x3D;&#x3D;200；金额叙述统一按 1 USD ≈ 7.15 CNY 换算，牌价原始报价为美元）：</p>
+<ul>
+<li>[D01] 周请求总量与状态分布（6,474&#x2F;6,348&#x2F;126&#x2F;98.1%），账本 2026。</li>
+<li>[D02] 200 口径 token 总计与命中率 96.66%（in 34,604,281 &#x2F; cache 1,002,195,397 &#x2F; out 5,046,952），账本 2026。</li>
+<li>[D03] 日请求分布八日值，账本 2026。</li>
+<li>[D04] 日输出 token 分布八日值，账本 2026。</li>
+<li>[D05] deepseek-v4.1-flash 条数与 token 构成，账本 2026。</li>
+<li>[D06] deepseek-v4.1-flash 时长百分位，账本 2026。</li>
+<li>[D07] deepseek-v4.1-flash TTFT&#x2F;吞吐&#x2F;平均输出，账本 2026。</li>
+<li>[D08] glm-5.3-flash 条数与 token 构成，账本 2026。</li>
+<li>[D09] glm-5.3-flash 延迟与 TTFT，账本 2026。</li>
+<li>[D10] 峰谷请求分布（峰 2,033&#x2F;谷 3,612），账本 2026。</li>
+<li>[D11] DeepSeek 等价成本 ≈¥86.4（$12.09：峰 ¥44.7&#x2F;谷 ¥41.7），token 构成+官方牌价 2026。</li>
+<li>[D12] GLM 等价成本 ≈¥30.7（$4.30，Go 计价），官方订阅页快照 2026。</li>
+<li>[D13] bigmodel 牌价对照 ¥28.45（GLM 部分），官方定价快照 2026。</li>
+<li>[D14] Sonnet 类牌价对照 ≈¥3,433（$480.18），公开牌价快照 2026。</li>
+<li>[D15] DeepSeek 直连官方价与 Go 计价对照（换算后无差），官方定价快照 2026。</li>
+<li>[D16] 配额三窗口读数（5h 100&#x2F;7d 64&#x2F;月 76），quota 快照 2026。</li>
+<li>[D17] agent 分布（dsh 6,231&#x2F;openclaw 162&#x2F;脚本 81），账本 2026。</li>
+<li>[D18] 切断点后账本追加记录（+305 条全 200），账本 2026。</li>
+<li>[D19] 四组代入牌价（Go&#x2F;DeepSeek&#x2F;bigmodel&#x2F;Sonnet 类），官方快照 2026。</li>
+<li>[D20] 逐日等价成本分账（周二 ≈¥28.0&#x2F;周三 ≈¥26.0&#x2F;合计 ≈¥117），脚本复算 2026。</li>
+</ul>
+<h2 id="案例来源"><a href="#案例来源" class="headerlink" title="案例来源"></a>案例来源</h2><p>本文不涉及企业&#x2F;事件案例（写作前已完成显式声明，cases&#x3D;0，无验证文案例可采）。</p>
+<h2 id="先行者文献"><a href="#先行者文献" class="headerlink" title="先行者文献"></a>先行者文献</h2><ul>
+<li>[先01] 本博客 2026-11-08 第一版《OpenCode Go 订阅一周用量复盘：$10 能跑出多少 token》（<code>source/_posts/opencode-go-weekly-review.md</code>）；本文为其重构精简版：篇幅压缩、评论收敛、数字全部经独立复算、计价改人民币口径（1 USD ≈ 7.15 CNY）。</li>
+<li>[先02] 外部先行者检索在零外网授权下不可得（永久缺口，已登记）。</li>
+</ul>
+<h2 id="AI-使用声明"><a href="#AI-使用声明" class="headerlink" title="AI 使用声明"></a>AI 使用声明</h2><p>初稿与修订由 AI 按人工确认的口径生成；数据&#x2F;表格与主体内容经检索、复算、写作、审计多角色机检与人工复核。</p>
+<p>※ 本文数字由本机 magpie 账本脚本复算，AI 辅助整理、经人工复核。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://hebangwen.github.io/2026/11/08/opencode-go-weekly-review/">https://hebangwen.github.io/2026/11/08/opencode-go-weekly-review/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://hebangwen.github.io" target="_blank">何榜文</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/DeepSeek/">DeepSeek</a><a class="post-meta__tags" href="/tags/LLM/">LLM</a><a class="post-meta__tags" href="/tags/OpenCode/">OpenCode</a><a class="post-meta__tags" href="/tags/GLM/">GLM</a><a class="post-meta__tags" href="/tags/%E6%88%90%E6%9C%AC%E5%88%86%E6%9E%90/">成本分析</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/11/03/qwen4-architecture/" title="Qwen4 架构全解：把参数从显存里搬出去"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Qwen4 架构全解：把参数从显存里搬出去</div></div><div class="info-2"><div class="info-item-1">Qwen4 的权重还没发，但架构已经公开：8 月 27 日开源的 Qwen3.8-Flash-Next，官方定位是 an early preview of the architecture used in Qwen4。下面所有数字都来自它的 config.json 和官方技术博客，可以逐项复算。 规格 注意 125B 和 51B 是两个账本：算力只算前者，显存要看两者之和（176B），但后者不占 HBM。 整体架构一张图看完整条链路：token embedding 之后是 48 个 block（每层 RMSNorm → 3 层 GDN + 1 层 QSA → RMSNorm → MoE，四条残差流旁路），最后接 Final RMSNorm 与 Linear；左侧挂 51B 的 N-gram 查表，右侧三块放大注意力、MoE 与参数账本。  QSA：索引粒度也一起压 DSA 是 token 级稀疏：用小号 indexer 给每个历史 token 打分，取 top-k 再算注意力。注意力成本从 $O(n^2)$ 降到 $O(nk)$，但 indexer 仍要把 $n$ 个位置全打一遍...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/04/26/deepseek-v4-architecture/" title="DeepSeek-V4 架构全解：百万token时代的效率革命"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-26</div><div class="info-item-2">DeepSeek-V4 架构全解：百万token时代的效率革命</div></div><div class="info-2"><div class="info-item-1">2026年4月24日，DeepSeek正式开源了第四代旗舰模型 DeepSeek-V4，距离上一代DeepSeek-V3发布整整过去了484天。V4带来的核心命题不是去争夺SOTA王座，而是将百万token上下文从一个炫技参数变成可日常使用的工程能力。 一、模型规格速览V4系列分为两个版本：    规格 V4-Flash V4-Pro    总参数 284B 1.6T   激活参数 13B 49B   层数 43 61   Hidden Dim 4096 7168   Routed Experts 256 384   Shared Expert 1 1   每token激活专家 6 6   预训练Tokens 32T 33T   模型权重 160GB (FP4+FP8混合) 861GB (FP4+FP8混合)   V4-Pro 成为当下公开权重最大的开源模型，全面支持 1M token 原生上下文。 在1M上下文场景下，效率对比达到惊人水平：  V4-Pro：单token FLOPs 仅为 V3.2 的 **27%**，KV cache 仅为 10% V4-Flash：单toke...</div></div></div></a><a class="pagination-related" href="/2025/02/12/transformers-high-memory-usage/" title="关于 DeepSeek-R1-Distill-Qwen-1.5B 显存占用比下载权重高非常多的现象分析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-12</div><div class="info-item-2">关于 DeepSeek-R1-Distill-Qwen-1.5B 显存占用比下载权重高非常多的现象分析</div></div><div class="info-2"><div class="info-item-1">现象从 huggingface 上下载下来的 DeepSeek-R1-Distill-Qwen-1.5B 模型权重大小只有 3.5GB，但是加载到 GPU 上之后，占用显存达到 5.4GB，多了 1.9GB。 排查显存占用比权重多 1.9GB 的原因应该是模型在创建的时候申请了权重以外的内存，这部分内存没有体现在权重的大小中。 使用 pytorch 查看显存占用pytorch 博客 Understanding GPU Memory 1: Visualizing All Allocations over Time 中给出了 pytorch 内部的显存统计方法，函数都定义在 torch.cuda.memory 中。具体代码可以参考官方博客，下面展示显存统计结果。  可以看到从程序开始到结束，显存一直都是 5.4GB 左右，最上方有一小部分激活占用的显存，但是由于我们输入非常短，所以占用很小。从这个结果我们可以想象到，模型总显存占用比权重多的那部分显存在模型一开始就创建了，后续的应用层是无法操作的。 使用 transformers 查看显存占用transformers 的 AutoMo...</div></div></div></a><a class="pagination-related" href="/2026/06/14/%E7%AB%AF%E4%BE%A7-AI-%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-06-07-2026-06-14/" title="端侧 AI 推理框架周报（2026-06-07 ~ 2026-06-14）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-14</div><div class="info-item-2">端侧 AI 推理框架周报（2026-06-07 ~ 2026-06-14）</div></div><div class="info-2"><div class="info-item-1">本周（2026-06-07 ~ 2026-06-14）共追踪 15 个开源推理框架&#x2F;工具链仓库，其中 11 个有更新，总计 182 次提交。以下是各仓库的关键变化与技术分析。   alibaba&#x2F;MNN — 8 commitsWan2.1 视频生成模型支持 MNN 本周合并了对 Wan2.1-T2V-1.3B 视频生成模型的导出和推理支持（#4469）。这是继之前支持的 Wan2.1 文生图模型之后的进一步扩展，将 MNN 的 Diffusion 推理能力从图像扩展到视频生成领域。SD1.5 的 resize cache warmup bug 也在同一波修复中（#4530）。 LLM 核心修复  Qwen2.5-Omni 音频预处理（#4459）：修复了多模态音频输入在预处理中的边界情况，这对于 Omni 模型在实际场景中的部署至关重要。 gapLen 计算 bug（#4527）：修复了 _maskQK 中 mask 为空时提前返回导致的 gapLen 未初始化问题，这个 patch 来自阿里内部代码审查（Merge-Request 27957084）。  后...</div></div></div></a><a class="pagination-related" href="/2026/06/16/%E9%AB%98%E9%80%9ANPU%E7%AB%AF%E5%88%B0%E7%AB%AFRAG-Benchmark/" title="论文速读：在移动 NPU 上跑通端到端 RAG——高通 Hexagon 的 Benchmark 答卷"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-16</div><div class="info-item-2">论文速读：在移动 NPU 上跑通端到端 RAG——高通 Hexagon 的 Benchmark 答卷</div></div><div class="info-2"><div class="info-item-1">论文信息 标题：Energy-Efficient On-Device RAG on a Mobile NPU: System Design and Benchmark on Snapdragon X Elite 作者：Zhiyuan Cheng, Longying Lai 链接：https://arxiv.org/abs/2606.11257 提交：2026-06-09 | 9 pages | cs.CL &#x2F; cs.LG &#x2F; cs.PF  TL;DR这篇论文做了件事：把 Embedding + Reranker + LLM 三条推理管线全部搬上高通 Hexagon NPU（Snapdragon X Elite），在 Dell XPS 13 上跑通了可能是首个端到端的 NPU RAG 系统。结论是 NPU 比 CPU 快 4-18 倍、省 4-12 倍电，且答案质量不降。 系统设计整个 RAG Pipeline 分两条链路： 索引链路：文档切片 → EmbeddingGemma 300M 生成 1024 维向量 → FAISS 构建索引 查询链路：混合检索（BM...</div></div></div></a><a class="pagination-related" href="/2025/02/20/minicpm-o-2-6/" title="MiniCPM-O-2_6 模型结构介绍"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-20</div><div class="info-item-2">MiniCPM-O-2_6 模型结构介绍</div></div><div class="info-2"><div class="info-item-1">目的介绍一下有关 VLM&#x2F;MLLM 的模型结构，从模型结构上指导模型部署，了解各个模块的作用。 MiniCPM-O-2_6 简介O 代表了 Omni，含义是全能。MiniCPM-O-2_6 是一个基于 MiniCPM-2 的多模态模型，在之前的 MiniCPM-V-2_6 的基础上增加了额外的多模态能力，包括【语音识别】、【语音生成】的功能。由于语音作为文本嵌入到了 LLM 的输入之中，还可以实现【语音提问图片内容，语音回复】的功能。OpenBMB 官方博客见 MiniCPM-o 2.6: A GPT-4o Level MLLM for Vision, Speech, and Multimodal Live Streaming on Your Phone。 为了实现上面的功能，MiniCPM-O-2_6 一共有四个模块：  SigLip-400M 视觉编码器：用于提取视觉特征，并映射到 LLM 嵌入空间 Whisper-medium-300M 语音编码器：用于提取语音特征，也映射到 LLM 嵌入空间 LLM：基于 Qwen2.5-7B 模型，能够支持多模态输入，但是受限...</div></div></div></a><a class="pagination-related" href="/2025/04/29/window-attn-in-qwen2-5vl/" title="Qwen2.5-VL 中视觉模型的窗口注意力机制"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-04-29</div><div class="info-item-2">Qwen2.5-VL 中视觉模型的窗口注意力机制</div></div><div class="info-2"><div class="info-item-1">背景在算能的 LLM-TPU 里有对 Qwen2.5-VL 视觉模型的导出，但是并没有增加对窗口注意力的支持，因此跟 Qwen2.5-VL 原生相比，性能下降较大。 UPDATE: 算能官方已经支持 qwen2.5-vl 的窗口注意力，具体实现参考 tpu-mlir&#x2F;llm。 qwen2.5-vl 视觉编码器的注意力机制qwen2.5-vl 中有两种不同的注意力机制：  全局注意力：用于处理全图特征，但是计算量较大，计算量增长随着图像尺寸的增加而呈平方增长，因此只在 4 个特殊的 layer 使用。 窗口注意力：只计算局部区域的注意力，计算量较小，适用于大多数层。  qwen2.5-vl 的视觉编码器注意力计算如下： 1234567891011121314151617181920212223class Qwen2_5_VLVisionFlashAttention2(nn.Module):    ...    def forward(        self,        hidden_states: torch.Tensor,        cu_seqlens: t...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description">端侧 AI 推理、算子优化与论文细读的记录。</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">55</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">101</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%91%A8%E7%94%A8%E9%87%8F"><span class="toc-number">1.</span> <span class="toc-text">一周用量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E5%88%86%E5%B8%83%E4%B8%8E%E5%BB%B6%E8%BF%9F"><span class="toc-number">2.</span> <span class="toc-text">模型分布与延迟</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E9%A2%9D%E7%AA%97%E5%8F%A3"><span class="toc-number">3.</span> <span class="toc-text">配额窗口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%8B%A5%E8%B5%B0%E5%AE%98%E6%96%B9-API"><span class="toc-number">4.</span> <span class="toc-text">若走官方 API</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B1%80%E9%99%90"><span class="toc-number">5.</span> <span class="toc-text">局限</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-number">6.</span> <span class="toc-text">参考文献</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%9D%A5%E6%BA%90"><span class="toc-number">7.</span> <span class="toc-text">数据来源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E6%9D%A5%E6%BA%90"><span class="toc-number">8.</span> <span class="toc-text">案例来源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E8%A1%8C%E8%80%85%E6%96%87%E7%8C%AE"><span class="toc-number">9.</span> <span class="toc-text">先行者文献</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AI-%E4%BD%BF%E7%94%A8%E5%A3%B0%E6%98%8E"><span class="toc-number">10.</span> <span class="toc-text">AI 使用声明</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/08/opencode-go-weekly-review/" title="OpenCode Go 订阅一周用量复盘：¥71.5（$10）能跑出多少 token">OpenCode Go 订阅一周用量复盘：¥71.5（$10）能跑出多少 token</a><time datetime="2026-11-08T10:00:00.000Z" title="发表于 2026-11-08 18:00:00">2026-11-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/03/qwen4-architecture/" title="Qwen4 架构全解：把参数从显存里搬出去">Qwen4 架构全解：把参数从显存里搬出去</a><time datetime="2026-11-03T14:10:00.000Z" title="发表于 2026-11-03 22:10:00">2026-11-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/02/jetson-specs-orin-to-thor/" title="Jetson 全系参数横评：从 Orin Nano 到 Thor T5000">Jetson 全系参数横评：从 Orin Nano 到 Thor T5000</a><time datetime="2026-11-02T15:30:00.000Z" title="发表于 2026-11-02 23:30:00">2026-11-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/28/%E7%AB%AF%E4%BE%A7AI%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E5%91%A8%E6%8A%A5-2026-06-21-2026-06-28/" title="端侧 AI 推理框架周报（2026-06-21 ~ 2026-06-28）">端侧 AI 推理框架周报（2026-06-21 ~ 2026-06-28）</a><time datetime="2026-06-28T01:00:00.000Z" title="发表于 2026-06-28 09:00:00">2026-06-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/21/on-device-ai-framework-weekly-2026-06-21/" title="端侧 AI 推理框架周报（2026-06-14 ~ 2026-06-21）">端侧 AI 推理框架周报（2026-06-14 ~ 2026-06-21）</a><time datetime="2026-06-21T01:00:00.000Z" title="发表于 2026-06-21 09:00:00">2026-06-21</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="/js/index-list.js?v=20261031" defer></script><script src="/js/hero.js?v=20261031" defer></script><script src="/js/pv.js?v=20261103" defer></script><script src="/js/post.js?v=20261031" defer></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>
