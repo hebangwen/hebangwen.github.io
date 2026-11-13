@@ -1,0 +1,418 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>SuperMimic：单卡三小时跑赢 128 卡集群，省下的算力从哪来 | 何榜文</title><meta name="author" content="何榜文"><meta name="copyright" content="何榜文"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="CoRL 2026 的最佳论文 SuperMimic（UC Berkeley，Qiayuan Liao 等）做的事一句话能说清：人形机器人的动作千差万别，但执行动作的是同一具身体——把这套共享的刚体动力学学成一个可微世界模型，让策略梯度直接从模型里流出来。结果是：在 129,514 段动作的基准上，此前最强的动作跟踪器 SONIC 用 128 张 L40 训 7 天（约 21,000 GPU 小时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SuperMimic：单卡三小时跑赢 128 卡集群，省下的算力从哪来">
+<meta property="og:url" content="https://hebangwen.github.io/2026/11/12/supermimic-differentiable-world-model/index.html">
+<meta property="og:site_name" content="何榜文">
+<meta property="og:description" content="CoRL 2026 的最佳论文 SuperMimic（UC Berkeley，Qiayuan Liao 等）做的事一句话能说清：人形机器人的动作千差万别，但执行动作的是同一具身体——把这套共享的刚体动力学学成一个可微世界模型，让策略梯度直接从模型里流出来。结果是：在 129,514 段动作的基准上，此前最强的动作跟踪器 SONIC 用 128 张 L40 训 7 天（约 21,000 GPU 小时">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/32662175">
+<meta property="article:published_time" content="2026-11-12T15:55:00.000Z">
+<meta property="article:modified_time" content="2026-11-12T16:38:53.585Z">
+<meta property="article:author" content="何榜文">
+<meta property="article:tag" content="SuperMimic">
+<meta property="article:tag" content="世界模型">
+<meta property="article:tag" content="人形机器人">
+<meta property="article:tag" content="强化学习">
+<meta property="article:tag" content="BPTT">
+<meta property="article:tag" content="Sim2Real">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/32662175"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "SuperMimic：单卡三小时跑赢 128 卡集群，省下的算力从哪来",
+  "url": "https://hebangwen.github.io/2026/11/12/supermimic-differentiable-world-model/",
+  "image": "https://avatars.githubusercontent.com/u/32662175",
+  "datePublished": "2026-11-12T15:55:00.000Z",
+  "dateModified": "2026-11-12T16:38:53.585Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "何榜文",
+      "url": "https://hebangwen.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/32662175"><link rel="canonical" href="https://hebangwen.github.io/2026/11/12/supermimic-differentiable-world-model/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'SuperMimic：单卡三小时跑赢 128 卡集群，省下的算力从哪来',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/fonts.css?v=20261031"><link rel="stylesheet" href="/css/site.css?v=20261031"><link rel="stylesheet" href="/css/hero.css?v=20261031"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">57</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">115</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-pen-nib"></i><span> 文章</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/bilibili_autumn.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://avatars.githubusercontent.com/u/32662175" alt="Logo"><span class="site-name">何榜文</span></a><a class="nav-page-title" href="/"><span class="site-name">SuperMimic：单卡三小时跑赢 128 卡集群，省下的算力从哪来</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-pen-nib"></i><span> 文章</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">SuperMimic：单卡三小时跑赢 128 卡集群，省下的算力从哪来</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-12T15:55:00.000Z" title="发表于 2026-11-12 23:55:00">2026-11-12</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-12T16:38:53.585Z" title="更新于 2026-11-13 00:38:53">2026-11-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">论文解读</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/AI/">AI</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><link rel="stylesheet" type="text&#x2F;css" href="https://cdn.jsdelivr.net/npm/hexo-tag-hint@0.3.1/dist/hexo-tag-hint.min.css"><p>CoRL 2026 的最佳论文 SuperMimic（UC Berkeley，Qiayuan Liao 等）做的事一句话能说清：人形机器人的动作千差万别，但执行动作的是同一具身体——把这套共享的刚体动力学学成一个<strong>可微世界模型</strong>，让策略梯度直接从模型里流出来。结果是：在 129,514 段动作的基准上，此前最强的动作跟踪器 SONIC 用 128 张 L40 训 7 天（约 21,000 GPU 小时），发布的 checkpoint 归一化回报 0.90、失败 179 段；SuperMimic 一张 H100 训 3 小时就超过这个回报（失败 25 段），双卡 9.8 小时后<strong>零失败</strong>，GPU 小时数降了 1000 倍以上，策略还能直接迁到真机 Unitree G1。省下的一千倍来自一个替换：把策略梯度从「黑盒采样估计」换成「穿过学出来的模型反向传播」。</p>
+<h2 id="背景：动作跟踪的算力墙"><a href="#背景：动作跟踪的算力墙" class="headerlink" title="背景：动作跟踪的算力墙"></a>背景：动作跟踪的算力墙</h2><p>Physics-based motion imitation（物理动作模仿）是人形全身控制的主流路线：RL 策略跟踪 mocap 参考动作，从 DeepMimic（2018）一路走到今天。参考动作告诉机器人接下来该怎样移动，控制器持续输出关节指令把动作真正做出来——身体一旦偏离目标，还要调整后续动作，兼顾跟踪和稳定。</p>
+<p>要覆盖更多动作，现有两条路：把大量片段专家蒸馏进一个控制器（BeyondMimic），或者在超大动作库上直接硬训一个通用策略（SONIC）。共同前提是「动作库越全、控制器越强」，代价也随之而来——SONIC 用了 611 小时的动作数据、128 卡集群训 7 天。</p>
+<p>浪费在哪？参考动作各不相同，执行它们的却是同一具 29 自由度的身体，动力学完全相同。Model-free RL（PPO）不显式建模这个共享结构：它把仿真器当黑盒，用带噪声的采样轨迹一遍一遍重新估计「这个动作会带来什么」。动作库翻倍，试错量跟着翻倍——扩展动作覆盖变成扩展算力。</p>
+<h2 id="方法：一个闭环，两个学习者"><a href="#方法：一个闭环，两个学习者" class="headerlink" title="方法：一个闭环，两个学习者"></a>方法：一个闭环，两个学习者</h2><p><img src="/images/supermimic/supermimic-loop.svg" alt="SuperMimic 训练闭环：① 策略在仿真器采集数据入缓冲区；② 用 k=8 步自回归窗口拟合可微世界模型；③ 冻结模型，在 32 步想象 rollout 上做 BPTT 改进策略，评论家引导窗口之外的回报。虚线是梯度，只走学习到的世界模型，从不穿过仿真器"></p>
+<p>训练就是图上这个循环，转一圈算一次迭代，分三个阶段。</p>
+<p><strong>① 采集。</strong> 当前策略在 MuJoCo Warp（GPU 版 MuJoCo）里并行跑 4096 个环境，动作上加噪声 ε ~ N(0, 0.1²)——它只为拓宽世界模型拟合的动作分布，策略本身是确定性的，不靠噪声探索。状态转移连同本回合的仿真上下文 ξ 一起灌进定长回放缓冲区，新替旧。</p>
+<p><strong>② 拟合世界模型。</strong> 从缓冲区采 k&#x3D;8 步的自回归窗口，从记录状态起跑、沿记录动作前滚，最小化四项误差：</p>
+<p>$$\mathcal{L}_{\text{WM}}(\omega)&#x3D;\mathbb{E}_{\mathcal{B}}\sum_{j&#x3D;1}^{k}\Big[\lVert\hat{s}_{j}-s_{j}\rVert^{2}+(\hat{r}_{j}-r_{j})^{2}+\lVert\hat{\bar{o}}_{j}-\bar{o}_{j}\rVert^{2}+\mathrm{BCE}(\hat{d}_{j},d_{j})\Big]$$</p>
+<p>四项分别是状态预测、奖励预测、无噪观测预测的均方误差和终止概率的交叉熵；世界模型是确定性的 MLP：ŝ_{t+1} &#x3D; f_ω(ŝ_t, a_t, ξ)，ξ 收编了摩擦、关节校准偏移、躯干质心这些领域随机化参数——已知的噪声来源都显式给了条件，网络学的是「给定条件下的干净动力学」，传感器噪声在模型外面采样后加回去，不进动力学。注意窗口是自回归的：第 j 步的输入是第 j−1 步的预测 ŝ_{j−1}，模型被迫学会纠正自己的误差——这是它后面能支撑 32 步想象展开的前提。</p>
+<p><strong>③ 改进策略。</strong> 冻结模型，从缓冲区状态起跑 H&#x3D;32 步想象 rollout，对想象回报做 BPTT：</p>
+<p>$$\hat{J}(\theta)&#x3D;\mathbb{E}\Big[\sum_{t&#x3D;0}^{H-1}\gamma^{t}\hat{c}_t,\hat{r}_{t+1}+\gamma^{H}\hat{c}_H,V_\psi(\hat{s}_H,g_H,\xi)\Big]$$</p>
+<p>前半是窗口内的折扣奖励，后半由评论家 V_ψ 引导窗口之外的回报；梯度沿 32 步想象链回传，直接落到策略参数上。这就是它和 PPO 的全部区别：PPO 用采样轨迹的回报给 logπ 打权（likelihood-ratio 估计，方差大），BPTT 对每个动作直接求回报的导数（短时程内信号强得多）。</p>
+<p>两处设计值得停一下。</p>
+<p><strong>存活权重把终止变软，评论家不是可选项。</strong> 仿真器给硬终止标签，模型改预测终止概率 d̂ ∈ [0,1]，回报里的存活权重 ĉ_{t+1} &#x3D; ĉ_t(1−d̂_{t+1}) 于是可微——BPTT 能穿过「这一步会不会死」。评论家负责 H&#x3D;32 步窗口之外的回报：没有它，H≤16 直接训不动；有它，16 步顶 32 步。0.5–4 m&#x2F;s 推扰测试里，带评论家的策略 0.5–2.4 秒内站稳，没有的一直踉跄、4 m&#x2F;s 直接摔——恢复类奖励落在窗口之外，只有 bootstrap 看得见。</p>
+<p><strong>梯度从不穿过仿真器。</strong> 模型从仿真记录里学，梯度只在学到的模型上算，MuJoCo 的接触和摩擦完全不必可微——任何刚体仿真器，包括非光滑接触、不可微实现的，都照用。仿真器只负责出数据；而动力学不依赖采集它的策略，早期策略的转移照样能拟合模型，缓冲区里的旧数据不会过期——所以世界模型和策略每个迭代同步更新，不需要先预训练好再冻结。</p>
+<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><h3 id="设置与口径"><a href="#设置与口径" class="headerlink" title="设置与口径"></a>设置与口径</h3><p>仿真器 MuJoCo Warp，50 Hz 控制（内部四个 5 ms 子步），每卡 4096 个环境。策略输出 29 维动作，映射为关节 setpoint（低 PD 增益下近似力矩代理）；观测是 93 维本体感觉（关节位置&#x2F;速度、IMU 角速度、重力投影、上一动作）取最近 10 帧；目标接口把未来 10 帧参考动作编码成 32 维潜变量（tanh 有界），与观测历史一起进共享解码器。世界模型是完整状态上的 MLP（2048×3），评论家 MLP(256,128)。动作库用 BONES-SEED 公开子集，过滤后 129,514 段、264.56 小时。</p>
+<p>对照基线沿用 BeyondMimic 的设置，动了四处，都有明确理由：</p>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>BeyondMimic</th>
+<th>SuperMimic</th>
+<th>为什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>自碰撞惩罚</td>
+<td>有</td>
+<td>删</td>
+<td>防的是随机策略蹭奖励的 exploit，确定性策略下无利可图</td>
+</tr>
+<tr>
+<td>关节限位惩罚</td>
+<td>−10</td>
+<td>−2</td>
+<td>同上，威慑需求降低</td>
+</tr>
+<tr>
+<td>根速度推扰随机化</td>
+<td>有</td>
+<td>移除</td>
+<td>推击造成状态跳变，确定性世界模型表达不了；仅物理参数随机化就够迁到真机</td>
+</tr>
+<tr>
+<td>终止条件</td>
+<td>高度&#x2F;倾角&#x2F;末端偏差</td>
+<td>只留高度（0.25 m）与倾角（≈78°）</td>
+<td>末端偏差不再触发终止，交给奖励处理</td>
+</tr>
+</tbody></table>
+<p>评测口径：每段动作从首帧播一遍（摩擦 1.0、无随机化、确定性物理），触发训练终止即算失败；归一化回报 &#x3D; 全回合无折扣奖励和 ÷ 最大可能值。<strong>所以这组数字衡量的是训练覆盖，不是未见动作的泛化。</strong></p>
+<h3 id="主结果"><a href="#主结果" class="headerlink" title="主结果"></a>主结果</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>SONIC</th>
+<th>SuperMimic</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>方法</td>
+<td>仿真器里的 model-free PPO</td>
+<td>穿过一个世界模型做 BPTT</td>
+</tr>
+<tr>
+<td>硬件</td>
+<td>128 × L40</td>
+<td>1 × H100（另有双卡 9.8 h 版本）</td>
+</tr>
+<tr>
+<td>训练时长</td>
+<td>168 h（7 天）</td>
+<td>3 h 即超过其回报</td>
+</tr>
+<tr>
+<td>GPU 小时</td>
+<td>≈ 21,000</td>
+<td>3（双卡版 ≈ 20）</td>
+</tr>
+<tr>
+<td>动作数据</td>
+<td>611 h</td>
+<td>264.56 h（公开子集，少 2.3 倍）</td>
+</tr>
+<tr>
+<td>归一化回报</td>
+<td>0.90</td>
+<td>&gt; 0.90</td>
+</tr>
+<tr>
+<td>失败动作 &#x2F; 129,514</td>
+<td>179</td>
+<td>25（3 h）→ 0（双卡 9.8 h）</td>
+</tr>
+</tbody></table>
+<p>失败的构成比总数更有信息量：SONIC 的 179 个失败里，包含<strong>全部</strong> 44 个翻转和<strong>全部</strong> 22 个侧滚——集群训出来的最强基线，恰恰在最需要全身协调的动作上全军覆没。SuperMimic 单卡 3 小时后侧滚只剩 2 个失败、跳跃类全过，双卡 9.8 小时全部归零。</p>
+<p>公平性论文自己算过账：SuperMimic 的动作数据少 2.3 倍，H100 的 fp32 峰值只有 L40 的 0.74 倍（tensor 峰值 5.5 倍）——2.3 倍的数据差距加上最多 5.5 倍的峰值算力差距，解释不了 1000 倍。3 小时还是保守说法：从那时起，每个 checkpoint 在回报和失败数上都至少领先 SONIC 一半差距。</p>
+<h3 id="收益来自哪里"><a href="#收益来自哪里" class="headerlink" title="收益来自哪里"></a>收益来自哪里</h3><table>
+<thead>
+<tr>
+<th>收益来源</th>
+<th>对照实验</th>
+<th>数字</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>想象比仿真快</td>
+<td>神经世界模型 vs MuJoCo Warp 的吞吐（H100；一步 &#x3D; 一个 50 Hz 控制步）</td>
+<td>实践批大小（2k–16k 并行环境）下 &gt;10×；64k 并行时 62×</td>
+</tr>
+<tr>
+<td>解析梯度省样本</td>
+<td>同一个世界模型上，把 BPTT 换成 PPO（PPO-WM）</td>
+<td>达到 PPO-WM 最佳训练回报，想象步数只用 ≈ 1&#x2F;64</td>
+</tr>
+<tr>
+<td>一个模型摊平动作库</td>
+<td>数据 1 → 7 → 40 → 264 h 扫描</td>
+<td>8 步预测误差（归一化）始终在 0.007–0.011；达到目标回报的 GPU 小时 0.54 → 1.9，远低于随数据线性增长</td>
+</tr>
+</tbody></table>
+<p>三条注释：第一行说的是「每次练习变便宜」——策略更新时的 rollout 全跑在神经网络，仿真器只负责喂训练数据，且仿真器吞吐在 64k 并行时已经走平、神经网络还在涨。第二行说明收益不只是「更快的仿真替身」：同样的模型、同样的想象轨迹，换成 PPO 更新就要多花两个数量级的步数，差别在梯度本身。第三行说的是「练习总量没有跟着动作库爆炸」：每段动作都是同一具身体执行的，新增动作提供的只是同一套动力学的更多证据，不是新的容量需求。</p>
+<p>还有一个控制变量版本，排除「网络规模&#x2F;奖励设计不同」的可能：同样 40 段 LAFAN1 动作（2.45 小时）、同样的观测、奖励、终止、领域随机化和网络规模，PPO 直接在仿真器里训：</p>
+<table>
+<thead>
+<tr>
+<th>配置</th>
+<th>0.82 回报</th>
+<th>18 h 预算内最终回报</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PPO-Sim，1 GPU</td>
+<td>未达到</td>
+<td>0.60</td>
+</tr>
+<tr>
+<td>PPO-Sim，4 GPU</td>
+<td>未达到</td>
+<td>0.70</td>
+</tr>
+<tr>
+<td>PPO-Sim，8 GPU</td>
+<td>未达到</td>
+<td>0.72</td>
+</tr>
+<tr>
+<td>SuperMimic，1 GPU</td>
+<td>1.2 h 达到</td>
+<td>≈ 0.87</td>
+</tr>
+</tbody></table>
+<p>从 4 卡到 8 卡只涨 0.02——PPO 在这个任务上的瓶颈不是算力。</p>
+<h2 id="真机与下游接口"><a href="#真机与下游接口" class="headerlink" title="真机与下游接口"></a>真机与下游接口</h2><p>同一个策略零逐动作调参上真机 Unitree G1，论文展示了跳步、侧滚（躯干四肢贴地）、90° 翻转、原地 360° 翻转——后两个正是 SONIC 全挂的类别。</p>
+<p>下游接口实验：SuperMimic 支持多目标接口，每个接口配自己的 encoder、共享同一个解码器和同一个世界模型。初步实验里，速度指令接口不走蒸馏，直接用速度跟踪奖励穿过世界模型训练 encoder——672 个速度阶跃响应中 650 个比蒸馏基线更准，相对稳态误差中位数 0.16 对 0.49；蒸馏版在 7 个「平移 + 急转」命令上全部摔倒，那些角落里动作库几乎没有数据。「想做什么」和「身体怎么协调」部分解耦之后，新接口可以借用已学到的身体技能，而不是照抄参考动作。</p>
+<h2 id="边界与讨论"><a href="#边界与讨论" class="headerlink" title="边界与讨论"></a>边界与讨论</h2><ul>
+<li>核心数字是<strong>训练动作覆盖</strong>，不是泛化；「不摔倒」的口径也被质疑过——英伟达的 Tessler（参与过 ProtoMotions、MaskedMimic）指出 SONIC 其实很稳健，这个指标对它不公平。</li>
+<li>只有平地，没有地形和物体交互；世界模型目前只吃仿真数据。作者的下一步是真机数据进缓冲区、在线系统辨识。</li>
+<li>世界模型是完整状态上的三层 MLP，没有潜变量、没有循环。它能装下整套动力学，靠的是「单一刚体、噪声来源已知」这个受控设定；换到带感知、带场景交互的任务，这一块会首先被考验——这也是它和 Dreamer 一类潜变量世界模型的分野。</li>
+<li>这条线的谱系：SuperTrack（2021）在仿真角色上穿学习模型训策略，SuperDyno（2025）扩到数万段动作，SuperMimic 把它带到人形真机、砍到单卡成本。和 Dreamer&#x2F;TD-MPC（想象 rollout 上跑 PPO）、SHAC（穿过可微仿真器）的区别都在「梯度从哪来」。</li>
+<li>复现门槛不高：官方已开源 mjlab 训练代码（HybridRobotics&#x2F;supermimic），已有社区在单卡 RTX PRO 6000 上用约 1.5 GPU 小时复现出相近结果。</li>
+</ul>
+<p>计算不再是瓶颈，更实际的后果是：运动跟踪的 scaling law 第一次可以用「每次实验一张卡」的方式去量——这可能是这篇论文比任何一个数字都更持久的贡献。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ol>
+<li>SuperMimic: Scaling Humanoid Whole-Body Control with One Differentiable World Model：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2610.28480">https://arxiv.org/abs/2610.28480</a></li>
+<li>项目主页（含浏览器 demo 与真机视频）：<a target="_blank" rel="noopener" href="https://supermimic.github.io/">https://supermimic.github.io</a></li>
+<li>训练代码（mjlab）：<a target="_blank" rel="noopener" href="https://github.com/HybridRobotics/supermimic">https://github.com/HybridRobotics/supermimic</a></li>
+<li>SONIC: Supersizing motion tracking for natural humanoid whole-body control，Science Robotics 11(117)：<a target="_blank" rel="noopener" href="https://www.science.org/doi/10.1126/scirobotics.aed4592">https://www.science.org/doi/10.1126/scirobotics.aed4592</a></li>
+<li>BeyondMimic: From motion tracking to versatile humanoid control via guided diffusion，Science Robotics 11(117)：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2508.08241">https://arxiv.org/abs/2508.08241</a></li>
+<li>BONES-SEED 动作数据集：<a target="_blank" rel="noopener" href="https://huggingface.co/datasets/bones-studio/seed">https://huggingface.co/datasets/bones-studio/seed</a></li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://hebangwen.github.io">何榜文</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://hebangwen.github.io/2026/11/12/supermimic-differentiable-world-model/">https://hebangwen.github.io/2026/11/12/supermimic-differentiable-world-model/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://hebangwen.github.io" target="_blank">何榜文</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/SuperMimic/">SuperMimic</a><a class="post-meta__tags" href="/tags/%E4%B8%96%E7%95%8C%E6%A8%A1%E5%9E%8B/">世界模型</a><a class="post-meta__tags" href="/tags/%E4%BA%BA%E5%BD%A2%E6%9C%BA%E5%99%A8%E4%BA%BA/">人形机器人</a><a class="post-meta__tags" href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">强化学习</a><a class="post-meta__tags" href="/tags/BPTT/">BPTT</a><a class="post-meta__tags" href="/tags/Sim2Real/">Sim2Real</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/32662175" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/11/10/dsh-magpie-usage-panel/" title="给 DeepSeek Harness 写一个插件：把 Magpie 的用量摊在侧栏里"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">给 DeepSeek Harness 写一个插件：把 Magpie 的用量摊在侧栏里</div></div><div class="info-2"><div class="info-item-1">Magpie 把每个请求都记了账。这个 DeepSeek Harness 插件把它摊到侧栏：点开图标，今天花了多少、哪个订阅窗口快满，一眼看完。  功能 五个数字块：调用次数、成本（按 1 USD &#x3D; 6.8 折成人民币）、输入 &#x2F; 输出 token、缓存读取，副行带错误数与缓存命中率 成本柱状图：今天按小时，7 天 &#x2F; 30 天按天；点一根柱子，下方立刻给出这一桶的金额、调用数与 token 流量，再点收起 额度卡片：各 provider 余额、5 小时 &#x2F; 7 天 &#x2F; 月度窗口进度条与重置倒计时，读不到会写明原因 模型消耗 Top 6 与最近请求流水 一键打码：金额、余额与账号尾号换成 •，截图不用担心露数字 三栏瀑布流：卡片按自身高度排布，下一张填进空当，不留洞 停用的供应商会自动腾位：额度卡移出列流，其余卡片回流填满；单张卡也能 × 收起，底部可一键恢复 随窗口高度收缩：窗口矮时收紧图表、行数与留白，一屏就能看到重点 自动刷新可选 5 &#x2F; 10 &#x2F; 30 &#x2F; 60 秒，页面切到后台自动暂停 附...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/32662175" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">何榜文</div><div class="author-info-description">端侧 AI 推理、算子优化与论文细读的记录。</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">57</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">115</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hebangwen"><i class="https://avatars.githubusercontent.com/u/32662175"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">One week is 2% of a year</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF%EF%BC%9A%E5%8A%A8%E4%BD%9C%E8%B7%9F%E8%B8%AA%E7%9A%84%E7%AE%97%E5%8A%9B%E5%A2%99"><span class="toc-number">1.</span> <span class="toc-text">背景：动作跟踪的算力墙</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%EF%BC%9A%E4%B8%80%E4%B8%AA%E9%97%AD%E7%8E%AF%EF%BC%8C%E4%B8%A4%E4%B8%AA%E5%AD%A6%E4%B9%A0%E8%80%85"><span class="toc-number">2.</span> <span class="toc-text">方法：一个闭环，两个学习者</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="toc-number">3.</span> <span class="toc-text">实验结果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E4%B8%8E%E5%8F%A3%E5%BE%84"><span class="toc-number">3.1.</span> <span class="toc-text">设置与口径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E7%BB%93%E6%9E%9C"><span class="toc-number">3.2.</span> <span class="toc-text">主结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%94%B6%E7%9B%8A%E6%9D%A5%E8%87%AA%E5%93%AA%E9%87%8C"><span class="toc-number">3.3.</span> <span class="toc-text">收益来自哪里</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9C%9F%E6%9C%BA%E4%B8%8E%E4%B8%8B%E6%B8%B8%E6%8E%A5%E5%8F%A3"><span class="toc-number">4.</span> <span class="toc-text">真机与下游接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%AE%A8%E8%AE%BA"><span class="toc-number">5.</span> <span class="toc-text">边界与讨论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-number">6.</span> <span class="toc-text">参考链接</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/12/supermimic-differentiable-world-model/" title="SuperMimic：单卡三小时跑赢 128 卡集群，省下的算力从哪来">SuperMimic：单卡三小时跑赢 128 卡集群，省下的算力从哪来</a><time datetime="2026-11-12T15:55:00.000Z" title="发表于 2026-11-12 23:55:00">2026-11-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/10/dsh-magpie-usage-panel/" title="给 DeepSeek Harness 写一个插件：把 Magpie 的用量摊在侧栏里">给 DeepSeek Harness 写一个插件：把 Magpie 的用量摊在侧栏里</a><time datetime="2026-11-09T17:05:00.000Z" title="发表于 2026-11-10 01:05:00">2026-11-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/09/pi05-vs-mmdit-joint-attention/" title="π0.5 与 MM-DiT：都是 joint attention，差别在谁看得见谁">π0.5 与 MM-DiT：都是 joint attention，差别在谁看得见谁</a><time datetime="2026-11-08T17:20:00.000Z" title="发表于 2026-11-09 01:20:00">2026-11-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/03/qwen4-architecture/" title="Qwen4 架构全解：把参数从显存里搬出去">Qwen4 架构全解：把参数从显存里搬出去</a><time datetime="2026-11-03T14:10:00.000Z" title="发表于 2026-11-03 22:10:00">2026-11-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/02/jetson-specs-orin-to-thor/" title="Jetson 全系参数横评：从 Orin Nano 到 Thor T5000">Jetson 全系参数横评：从 Orin Nano 到 Thor T5000</a><time datetime="2026-11-02T15:30:00.000Z" title="发表于 2026-11-02 23:30:00">2026-11-02</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 何榜文</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script src="/js/index-list.js?v=20261031" defer></script><script src="/js/hero.js?v=20261031" defer></script><script src="/js/pv.js?v=20261103" defer></script><script src="/js/post.js?v=20261031" defer></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>
